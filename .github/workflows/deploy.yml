@@ -1,0 +1,105 @@
+name: Deploy Elmen Shop
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect Changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+
+            backend:
+              - 'backend/**'
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+
+          script: |
+
+            set -e
+
+            echo "============================"
+            echo "Starting Deployment..."
+            echo "============================"
+
+            cd /var/www/elmenShop
+
+            git fetch origin
+            git reset --hard origin/main
+
+            FRONTEND="${{ steps.filter.outputs.frontend }}"
+            BACKEND="${{ steps.filter.outputs.backend }}"
+
+            echo "Frontend Changed: $FRONTEND"
+            echo "Backend Changed: $BACKEND"
+
+            ####################################################
+            ## FRONTEND
+            ####################################################
+
+            if [ "$FRONTEND" = "true" ]; then
+
+              echo "Building Frontend..."
+
+              cd frontend
+
+              npm ci
+
+              npm run build
+
+              cd ..
+
+            fi
+
+            ####################################################
+            ## BACKEND
+            ####################################################
+
+            if [ "$BACKEND" = "true" ]; then
+
+              echo "Installing Backend..."
+
+              cd backend
+
+              npm ci --omit=dev
+
+              cd ..
+
+              pm2 restart elmenshop --update-env
+
+            fi
+
+            echo "Checking Backend..."
+
+            sleep 5
+
+            curl http://localhost:5000/api/health
+
+            pm2 save
+
+            echo "Deployment Completed Successfully"
