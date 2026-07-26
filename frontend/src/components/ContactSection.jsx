@@ -10,14 +10,14 @@ export default function ContactSection() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
-    
+
     setIsSent(true);
     try {
       const payload = {
         ...formData,
         message: formData.isDealer ? `[DEALER ENQUIRY] ${formData.message}` : formData.message
       };
-      await axios.post('http://localhost:5000/api/enquiries', payload);
+      await axios.post('${API_BASE_URL}/api/enquiries', payload);
       setFormData({ name: '', email: '', message: '', isDealer: false });
       setIsOpen(false);
       alert('Your message has been sent successfully! Our team will get in touch with you shortly.');
@@ -85,9 +85,9 @@ export default function ContactSection() {
           </div>
 
           {/* Card 3: WhatsApp Us */}
-          <a 
+          <a
             href="https://wa.me/919119119187"
-            target="_blank" 
+            target="_blank"
             rel="noreferrer"
             style={{ textDecoration: 'none', color: 'inherit' }}
           >
@@ -106,8 +106,8 @@ export default function ContactSection() {
               transition: 'transform 0.25s',
               cursor: 'pointer'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
             >
               <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#e8f5e9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <img src="/whastapp.png" alt="WhatsApp Support" style={{ width: 26, height: 26, objectFit: 'contain' }} />
@@ -142,7 +142,7 @@ export default function ContactSection() {
           </div>
 
           {/* Card 5: Business Enquiry */}
-          <div 
+          <div
             onClick={() => window.dispatchEvent(new CustomEvent('elmen:openBusinessEnquiry'))}
             style={{
               background: 'var(--bg-dark-800)',

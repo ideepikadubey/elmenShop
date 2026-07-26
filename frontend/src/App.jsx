@@ -11,7 +11,7 @@ import AuthenticityPage from './components/AuthenticityPage';
 import LabReportsPage from './components/LabReportsPage';
 import ContactSection from './components/ContactSection';
 import ReviewsSection from './components/ReviewsSection';
-import InstagramSection from './components/InstagramSection';
+import ProductVideosSection from './components/ProductVideosSection';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
 import Offers from './components/Offers';
@@ -20,7 +20,7 @@ import TermsPolicyModal from './components/TermsPolicyModal';
 import TrackOrder from './components/TrackOrder';
 import LeadPopupModal from './components/LeadPopupModal';
 import BusinessEnquiryModal from './components/BusinessEnquiryModal';
-import { products as staticProducts } from './data/products';
+const staticProducts = [];
 import { Award, Compass, RefreshCw, Layers, Shield, LayoutGrid, Zap, Truck, FlaskConical, Gem, CheckCircle } from 'lucide-react';
 import AdminDashboard from './components/AdminDashboard';
 import FAQSection from './components/FAQSection';
@@ -50,22 +50,22 @@ export default function App() {
   useEffect(() => {
     const token = localStorage.getItem('elmen_token');
     if (token) {
-      axios.get('http://localhost:5000/api/auth/me', {
+      axios.get('${API_BASE_URL}/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
-      .then(res => {
-        if (res.data.success && res.data.user) {
-          setUser(res.data.user);
-          localStorage.setItem('elmen_user', JSON.stringify(res.data.user));
-        }
-      })
-      .catch(err => {
-        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-          setUser(null);
-          localStorage.removeItem('elmen_user');
-          localStorage.removeItem('elmen_token');
-        }
-      });
+        .then(res => {
+          if (res.data.success && res.data.user) {
+            setUser(res.data.user);
+            localStorage.setItem('elmen_user', JSON.stringify(res.data.user));
+          }
+        })
+        .catch(err => {
+          if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+            setUser(null);
+            localStorage.removeItem('elmen_user');
+            localStorage.removeItem('elmen_token');
+          }
+        });
     }
   }, []);
 
@@ -110,7 +110,7 @@ export default function App() {
     try {
       const token = localStorage.getItem('elmen_token');
       if (!token) return;
-      const res = await axios.get('http://localhost:5000/api/orders/my', {
+      const res = await axios.get('${API_BASE_URL}/api/orders/my', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) {
@@ -131,7 +131,7 @@ export default function App() {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/products?limit=100');
+      const response = await axios.get('${API_BASE_URL}/api/products?limit=100');
       const data = response.data;
       if (data.success && data.products && data.products.length > 0) {
         setProductsList(data.products);
@@ -145,7 +145,7 @@ export default function App() {
 
   const fetchTickerOffers = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/offers');
+      const res = await axios.get('${API_BASE_URL}/api/offers');
       if (res.data.success && Array.isArray(res.data.offers)) {
         const now = Date.now();
         const validOffers = res.data.offers.filter(o => {
@@ -380,8 +380,8 @@ export default function App() {
   return (
     <div style={{ position: 'relative', minHeight: '100vh' }}>
       {activeTab !== 'admin' && (
-        <Navbar 
-          cartCount={cartCount} 
+        <Navbar
+          cartCount={cartCount}
           onCartClick={() => setIsCartOpen(true)}
           wishlistCount={wishlist.length}
           onWishlistClick={() => setIsWishlistOpen(true)}
@@ -398,28 +398,28 @@ export default function App() {
       )}
 
       {activeTab === 'admin' ? (
-        <AdminDashboard 
-          onRefreshStoreProducts={fetchProducts} 
+        <AdminDashboard
+          onRefreshStoreProducts={fetchProducts}
           onLogout={handleLogout}
           onGoToStore={() => setActiveTab('home')}
         />
       ) : activeTab === 'track-order' ? (
-        <TrackOrder 
-          initialAwb={trackingAwb} 
-          onGoBack={() => setActiveTab('home')} 
+        <TrackOrder
+          initialAwb={trackingAwb}
+          onGoBack={() => setActiveTab('home')}
         />
       ) : activeTab === 'offers' ? (
-        <Offers 
-          onGoBack={() => setActiveTab('home')} 
+        <Offers
+          onGoBack={() => setActiveTab('home')}
           onShopClick={() => handleNavClick('catalog')}
         />
       ) : activeTab === 'authenticity' ? (
-        <AuthenticityPage 
-          onGoBack={() => setActiveTab('home')} 
+        <AuthenticityPage
+          onGoBack={() => setActiveTab('home')}
         />
       ) : activeTab === 'lab-reports' ? (
-        <LabReportsPage 
-          onGoBack={() => setActiveTab('home')} 
+        <LabReportsPage
+          onGoBack={() => setActiveTab('home')}
         />
       ) : (
         <>
@@ -538,14 +538,14 @@ export default function App() {
                         {cat.isGrid ? (
                           <LayoutGrid size={32} color="#1a1a1a" />
                         ) : (
-                          <img 
-                            src={cat.image} 
-                            alt={cat.label} 
-                            style={{ 
-                              width: '72px', 
-                              height: '72px', 
-                              objectFit: 'contain' 
-                            }} 
+                          <img
+                            src={cat.image}
+                            alt={cat.label}
+                            style={{
+                              width: '72px',
+                              height: '72px',
+                              objectFit: 'contain'
+                            }}
                           />
                         )}
                       </div>
@@ -588,16 +588,16 @@ export default function App() {
                 </h2>
                 <p style={{ color: 'var(--text-gray)' }}>The most popular formulas trusted by our elite fitness community.</p>
               </div>
-              
+
               <div className="products-grid">
                 {(productsList.filter(p => {
                   const badgeText = p.badge ? String(p.badge).toLowerCase() : '';
                   return badgeText.includes('best') || p.rating >= 4.8 || p.name.includes('Whey') || p.name.includes('Hunter');
-                }).slice(0, 3).length > 0 
+                }).slice(0, 3).length > 0
                   ? productsList.filter(p => {
-                      const badgeText = p.badge ? String(p.badge).toLowerCase() : '';
-                      return badgeText.includes('best') || p.rating >= 4.8 || p.name.includes('Whey') || p.name.includes('Hunter');
-                    }).slice(0, 3)
+                    const badgeText = p.badge ? String(p.badge).toLowerCase() : '';
+                    return badgeText.includes('best') || p.rating >= 4.8 || p.name.includes('Whey') || p.name.includes('Hunter');
+                  }).slice(0, 3)
                   : productsList.slice(0, 3)
                 ).map((product) => (
                   <ProductCard
@@ -615,7 +615,7 @@ export default function App() {
 
           {/* ── Why Choose Us: Video Background Feature Showcase ── */}
           <section className="why-choose-us-section reveal-slide-up" style={{ position: 'relative', padding: '90px 0', overflow: 'hidden', borderBottom: '1px solid var(--bg-dark-600)' }}>
-            
+
             {/* Auto-playing Background Video */}
             <video
               autoPlay
@@ -660,14 +660,14 @@ export default function App() {
 
               {/* 3x2 Grid Showcase */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
-                
+
                 {/* Feature 1 */}
-                <div 
-                  style={{ 
-                    background: 'rgba(15, 23, 42, 0.55)', 
+                <div
+                  style={{
+                    background: 'rgba(15, 23, 42, 0.55)',
                     backdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)', 
-                    borderRadius: '20px', 
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderRadius: '20px',
                     padding: '28px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -696,12 +696,12 @@ export default function App() {
                 </div>
 
                 {/* Feature 2 */}
-                <div 
-                  style={{ 
-                    background: 'rgba(15, 23, 42, 0.55)', 
+                <div
+                  style={{
+                    background: 'rgba(15, 23, 42, 0.55)',
                     backdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)', 
-                    borderRadius: '20px', 
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderRadius: '20px',
                     padding: '28px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -730,12 +730,12 @@ export default function App() {
                 </div>
 
                 {/* Feature 3 */}
-                <div 
-                  style={{ 
-                    background: 'rgba(15, 23, 42, 0.55)', 
+                <div
+                  style={{
+                    background: 'rgba(15, 23, 42, 0.55)',
                     backdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)', 
-                    borderRadius: '20px', 
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderRadius: '20px',
                     padding: '28px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -764,12 +764,12 @@ export default function App() {
                 </div>
 
                 {/* Feature 4 */}
-                <div 
-                  style={{ 
-                    background: 'rgba(15, 23, 42, 0.55)', 
+                <div
+                  style={{
+                    background: 'rgba(15, 23, 42, 0.55)',
                     backdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)', 
-                    borderRadius: '20px', 
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderRadius: '20px',
                     padding: '28px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -798,12 +798,12 @@ export default function App() {
                 </div>
 
                 {/* Feature 5 */}
-                <div 
-                  style={{ 
-                    background: 'rgba(15, 23, 42, 0.55)', 
+                <div
+                  style={{
+                    background: 'rgba(15, 23, 42, 0.55)',
                     backdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)', 
-                    borderRadius: '20px', 
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderRadius: '20px',
                     padding: '28px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -832,12 +832,12 @@ export default function App() {
                 </div>
 
                 {/* Feature 6 */}
-                <div 
-                  style={{ 
-                    background: 'rgba(15, 23, 42, 0.55)', 
+                <div
+                  style={{
+                    background: 'rgba(15, 23, 42, 0.55)',
                     backdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)', 
-                    borderRadius: '20px', 
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderRadius: '20px',
                     padding: '28px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -930,9 +930,9 @@ export default function App() {
             <FAQSection />
           </div>
 
-          {/* Instagram Feed Section */}
+          {/* Product Videos Section */}
           <div className="reveal-slide-up">
-            <InstagramSection />
+            <ProductVideosSection />
           </div>
 
           {/* Contact Section */}
@@ -1018,22 +1018,22 @@ export default function App() {
                   {productsList
                     .filter(p => wishlist.map(String).includes(getProductId(p)))
                     .map(product => (
-                      <div 
+                      <div
                         className="cart-item animate-fade-in"
-                        key={getProductId(product)} 
-                        style={{ 
-                          display: 'flex', 
-                          gap: '16px', 
-                          backgroundColor: 'var(--bg-dark-800)', 
-                          padding: '12px', 
-                          borderRadius: '8px', 
+                        key={getProductId(product)}
+                        style={{
+                          display: 'flex',
+                          gap: '16px',
+                          backgroundColor: 'var(--bg-dark-800)',
+                          padding: '12px',
+                          borderRadius: '8px',
                           border: '1px solid var(--bg-dark-600)',
                           alignItems: 'center'
                         }}
                       >
                         <div style={{ width: '60px', height: '60px', borderRadius: '4px', background: 'var(--bg-dark-950)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           {product.image ? (
-                            <img src={product.image.startsWith('http') ? product.image : `http://localhost:5000${product.image}`} alt={product.name} style={{ width: '45px', height: '45px', objectFit: 'contain' }} />
+                            <img src={product.image.startsWith('http') ? product.image : `${API_BASE_URL}${product.image}`} alt={product.name} style={{ width: '45px', height: '45px', objectFit: 'contain' }} />
                           ) : (
                             <div className="jar-graphic" style={{ height: '45px', width: '35px', padding: '2px', borderRadius: '4px', transform: 'scale(0.8)' }}>
                               <div className="jar-lid" style={{ height: '3px', width: '25px' }}></div>
@@ -1048,8 +1048,8 @@ export default function App() {
                           <div style={{ fontSize: '0.85rem', color: 'var(--primary-yellow-hover)', fontWeight: 'bold' }}>₹{product.price.toLocaleString('en-IN')}</div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <button 
-                            className="btn btn-primary" 
+                          <button
+                            className="btn btn-primary"
                             style={{ padding: '6px 10px', fontSize: '0.7rem' }}
                             onClick={() => {
                               handleAddToCart(product);
@@ -1058,8 +1058,8 @@ export default function App() {
                           >
                             Add
                           </button>
-                          <button 
-                            className="btn-icon" 
+                          <button
+                            className="btn-icon"
                             style={{ color: 'var(--primary-red)', alignSelf: 'center', background: 'none', border: 'none', cursor: 'pointer' }}
                             onClick={() => handleToggleWishlist(getProductId(product))}
                           >
@@ -1217,10 +1217,10 @@ export default function App() {
                     const status = order.orderStatus || 'processing';
                     const statusConfig = {
                       processing: { color: '#f39c12', bg: 'rgba(243,156,18,0.12)', border: 'rgba(243,156,18,0.3)', icon: <Clock size={12} /> },
-                      confirmed:  { color: '#2ecc71', bg: 'rgba(46,204,113,0.12)', border: 'rgba(46,204,113,0.3)', icon: <CheckCircle2 size={12} /> },
-                      shipped:    { color: '#3498db', bg: 'rgba(52,152,219,0.12)', border: 'rgba(52,152,219,0.3)', icon: <TruckIcon size={12} /> },
-                      delivered:  { color: '#27ae60', bg: 'rgba(39,174,96,0.12)',  border: 'rgba(39,174,96,0.3)',  icon: <CheckCircle2 size={12} /> },
-                      cancelled:  { color: '#e74c3c', bg: 'rgba(231,76,60,0.12)',  border: 'rgba(231,76,60,0.3)',  icon: <XCircle size={12} /> },
+                      confirmed: { color: '#2ecc71', bg: 'rgba(46,204,113,0.12)', border: 'rgba(46,204,113,0.3)', icon: <CheckCircle2 size={12} /> },
+                      shipped: { color: '#3498db', bg: 'rgba(52,152,219,0.12)', border: 'rgba(52,152,219,0.3)', icon: <TruckIcon size={12} /> },
+                      delivered: { color: '#27ae60', bg: 'rgba(39,174,96,0.12)', border: 'rgba(39,174,96,0.3)', icon: <CheckCircle2 size={12} /> },
+                      cancelled: { color: '#e74c3c', bg: 'rgba(231,76,60,0.12)', border: 'rgba(231,76,60,0.3)', icon: <XCircle size={12} /> },
                     };
                     const cfg = statusConfig[status] || statusConfig.processing;
 
@@ -1272,7 +1272,7 @@ export default function App() {
                             <Calendar size={12} />
                             {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                           </div>
-                          
+
                           {/* If AWB number is attached, show Track button */}
                           {order.trackingNumber && (
                             <button
@@ -1282,11 +1282,11 @@ export default function App() {
                                 setTrackingAwb(order.trackingNumber);
                                 setActiveTab('track-order');
                               }}
-                              style={{ 
-                                padding: '4px 10px', 
-                                fontSize: '0.7rem', 
-                                display: 'flex', 
-                                alignItems: 'center', 
+                              style={{
+                                padding: '4px 10px',
+                                fontSize: '0.7rem',
+                                display: 'flex',
+                                alignItems: 'center',
                                 gap: '4px',
                                 textTransform: 'uppercase',
                                 fontWeight: 800,

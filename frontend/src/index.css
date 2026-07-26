@@ -2122,31 +2122,48 @@ footer {
   border-radius: 5px;
 }
 
-/* ── Instagram Section ───────────────────────────────────── */
-.instagram-section {
+/* ── Product Videos & Instagram Section ─────────────────────── */
+.product-videos-section {
   padding: 80px 0;
-  background: #fff;
+  background: #0d0e12;
+  color: #fff;
+  border-top: 1fr solid rgba(255, 255, 255, 0.05);
 }
 
-.instagram-header {
+.product-videos-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 20px;
   margin-bottom: 40px;
+  flex-wrap: wrap;
 }
 
-.instagram-header h2 {
+.videos-header-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.videos-header-title h2 {
   font-size: 2rem;
   font-weight: 900;
-  color: var(--text-white);
+  color: #fff;
   margin: 0;
+  letter-spacing: -0.5px;
 }
 
-.instagram-header h2 span {
+.videos-header-title h2 span {
   background: linear-gradient(90deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.videos-section-subtitle {
+  font-size: 0.9rem;
+  color: #9aa0a6;
+  margin: 4px 0 0 0;
 }
 
 .insta-logo-badge {
@@ -2159,116 +2176,172 @@ footer {
   justify-content: center;
   color: #fff;
   flex-shrink: 0;
+  box-shadow: 0 6px 20px rgba(220, 39, 67, 0.3);
 }
 
-.insta-handle-link {
-  display: flex;
-  align-items: center;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--primary-red);
-  text-decoration: none;
-  margin-top: 4px;
-  transition: var(--transition-smooth);
-}
-
-.insta-handle-link:hover {
-  color: #cc2366;
-}
-
-.instagram-grid {
+/* Product Videos Grid */
+.product-videos-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin-bottom: 40px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
-.insta-post-card {
-  text-decoration: none;
-  display: block;
+.product-video-card {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #16181f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.35s ease, box-shadow 0.35s ease;
 }
 
-.insta-image-wrapper {
+.product-video-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(220, 39, 67, 0.5);
+  box-shadow: 0 16px 40px rgba(220, 39, 67, 0.25);
+}
+
+.product-video-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 12px;
+  aspect-ratio: 9 / 14;
+  background: #000;
   overflow: hidden;
-  background: var(--bg-dark-700);
 }
 
-.insta-image {
+.product-video-element {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease;
+  display: block;
 }
 
-.insta-post-card:hover .insta-image {
-  transform: scale(1.06);
+/* Top bar badge and mute */
+.video-card-top-bar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 5;
 }
 
-.insta-overlay {
+.video-badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.video-mute-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.video-mute-btn:hover {
+  transform: scale(1.1);
+  background: rgba(220, 39, 67, 0.8);
+}
+
+/* Play / Pause button overlay */
+.video-play-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(0, 0, 0, 0.25);
+  transition: background 0.3s ease, opacity 0.3s ease;
+  z-index: 4;
+}
+
+.video-play-overlay.is-playing {
   opacity: 0;
-  transition: var(--transition-smooth);
 }
 
-.insta-post-card:hover .insta-overlay {
+.product-video-card:hover .video-play-overlay.is-playing {
   opacity: 1;
+  background: rgba(0, 0, 0, 0.35);
 }
 
-.insta-stats {
-  display: flex;
-  gap: 20px;
-  color: #fff;
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.insta-stats span {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.insta-corner-logo {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 26px;
-  height: 26px;
-  background: rgba(255,255,255,0.9);
-  border-radius: 6px;
+.video-play-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f09433, #dc2743, #bc1888);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #cc2366;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.25s ease;
 }
 
-.insta-caption {
-  font-size: 0.78rem;
-  color: var(--text-gray);
-  line-height: 1.5;
-  margin-top: 8px;
+.product-video-card:hover .video-play-btn {
+  transform: scale(1.12);
+}
+
+/* Bottom details overlay */
+.video-info-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 14px 14px 14px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.88) 60%, rgba(0, 0, 0, 0.98) 100%);
+  z-index: 5;
+  color: #fff;
+}
+
+.video-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin: 0 0 3px 0;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.video-subtitle {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+  line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+/* Instagram CTA */
 .instagram-cta {
   display: flex;
   justify-content: center;
 }
 
 .btn-instagram {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
   background: linear-gradient(90deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
@@ -2277,43 +2350,38 @@ footer {
   padding: 14px 32px;
   border-radius: 50px;
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 0.95rem;
   cursor: pointer;
   text-decoration: none;
   transition: var(--transition-smooth);
-  box-shadow: 0 4px 20px rgba(220, 39, 67, 0.3);
+  box-shadow: 0 4px 20px rgba(220, 39, 67, 0.35);
 }
 
 .btn-instagram:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(220, 39, 67, 0.4);
+  box-shadow: 0 8px 30px rgba(220, 39, 67, 0.5);
+  color: #fff;
 }
 
 @media (max-width: 1024px) {
-  .reviews-grid {
+  .product-videos-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .instagram-grid {
-    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (max-width: 768px) {
-  .reviews-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 640px) {
+  .product-videos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
-  .reviews-aggregate {
+  .product-videos-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
   }
-  .instagram-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .instagram-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+  .header-insta-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 

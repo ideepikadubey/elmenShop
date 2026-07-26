@@ -31,13 +31,13 @@ export default function BusinessEnquiryModal({ isOpen, onClose }) {
         name: formData.name.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
-        message: formData.isDealer 
-          ? `[BECOME A DEALER / RETAILER] ${formData.message.trim()}` 
+        message: formData.isDealer
+          ? `[BECOME A DEALER / RETAILER] ${formData.message.trim()}`
           : formData.message.trim(),
         isDealer: formData.isDealer
       };
 
-      await axios.post('http://localhost:5000/api/enquiries', payload);
+      await axios.post('${API_BASE_URL}/api/enquiries', payload);
       setIsSuccess(true);
     } catch (err) {
       setErrorMsg(err.response?.data?.message || err.message || 'Failed to submit enquiry. Please try again.');
@@ -54,13 +54,13 @@ export default function BusinessEnquiryModal({ isOpen, onClose }) {
   };
 
   return (
-    <div 
-      className="modal-overlay" 
-      onClick={handleReset} 
-      style={{ 
-        zIndex: 99999, 
-        backgroundColor: 'rgba(15, 23, 42, 0.65)', 
-        backdropFilter: 'blur(8px)', 
+    <div
+      className="modal-overlay"
+      onClick={handleReset}
+      style={{
+        zIndex: 99999,
+        backgroundColor: 'rgba(15, 23, 42, 0.65)',
+        backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
         display: 'flex',
         alignItems: 'center',
@@ -68,8 +68,8 @@ export default function BusinessEnquiryModal({ isOpen, onClose }) {
         padding: '16px'
       }}
     >
-      <div 
-        className="modal-content animate-fade-in" 
+      <div
+        className="modal-content animate-fade-in"
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%',
@@ -168,12 +168,12 @@ export default function BusinessEnquiryModal({ isOpen, onClose }) {
               </label>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <User size={16} style={{ position: 'absolute', left: '14px', color: '#94a3b8' }} />
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="e.g. Rahul Sharma"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required 
+                  required
                   style={{
                     width: '100%',
                     padding: '12px 14px 12px 42px',
@@ -200,12 +200,12 @@ export default function BusinessEnquiryModal({ isOpen, onClose }) {
                 </label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <Mail size={16} style={{ position: 'absolute', left: '14px', color: '#94a3b8' }} />
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
                     placeholder="name@company.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required 
+                    required
                     style={{
                       width: '100%',
                       padding: '12px 14px 12px 42px',
@@ -230,8 +230,8 @@ export default function BusinessEnquiryModal({ isOpen, onClose }) {
                 </label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <Phone size={16} style={{ position: 'absolute', left: '14px', color: '#94a3b8' }} />
-                  <input 
-                    type="tel" 
+                  <input
+                    type="tel"
                     placeholder="+91 9876543210"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -259,8 +259,8 @@ export default function BusinessEnquiryModal({ isOpen, onClose }) {
               <label style={{ display: 'block', color: '#475569', fontWeight: 800, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
                 Requirements / Message *
               </label>
-              <textarea 
-                rows="3" 
+              <textarea
+                rows="3"
                 placeholder="Describe your bulk requirements, target delivery, business location, etc."
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
@@ -284,21 +284,21 @@ export default function BusinessEnquiryModal({ isOpen, onClose }) {
             </div>
 
             {/* Become a Dealer Checkbox */}
-            <label 
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '10px', 
-                cursor: 'pointer', 
-                userSelect: 'none', 
-                backgroundColor: formData.isDealer ? '#fffbeb' : '#f8fafc', 
-                border: formData.isDealer ? '1.5px solid var(--primary-yellow)' : '1.5px solid #e2e8f0', 
-                padding: '10px 14px', 
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                cursor: 'pointer',
+                userSelect: 'none',
+                backgroundColor: formData.isDealer ? '#fffbeb' : '#f8fafc',
+                border: formData.isDealer ? '1.5px solid var(--primary-yellow)' : '1.5px solid #e2e8f0',
+                padding: '10px 14px',
                 borderRadius: '12px',
                 transition: 'all 0.2s ease'
               }}
             >
-              <input 
+              <input
                 type="checkbox"
                 checked={formData.isDealer}
                 onChange={(e) => setFormData({ ...formData, isDealer: e.target.checked })}
@@ -325,8 +325,8 @@ export default function BusinessEnquiryModal({ isOpen, onClose }) {
               </div>
             )}
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isSubmitting}
               style={{
                 width: '100%',

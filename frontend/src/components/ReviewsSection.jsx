@@ -36,21 +36,21 @@ function avatarColor(name = '') {
 }
 
 export default function ReviewsSection({ user, productsList = [] }) {
-  const [reviews,       setReviews]       = useState([]);
-  const [loading,       setLoading]       = useState(true);
-  const [currentPage,   setCurrentPage]   = useState(0);
-  const [showForm,      setShowForm]      = useState(false);
-  const [formData,      setFormData]      = useState({ productId: '', rating: 5, comment: '' });
-  const [submitting,    setSubmitting]    = useState(false);
-  const [formError,     setFormError]     = useState('');
-  const [formSuccess,   setFormSuccess]   = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ productId: '', rating: 5, comment: '' });
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [formSuccess, setFormSuccess] = useState(false);
 
   const reviewsPerPage = 3;
 
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5000/api/reviews');
+      const res = await axios.get('${API_BASE_URL}/api/reviews');
       if (res.data.success) setReviews(res.data.reviews);
     } catch {
       // stay with empty array
@@ -64,9 +64,9 @@ export default function ReviewsSection({ user, productsList = [] }) {
   // Reset page when reviews change
   useEffect(() => { setCurrentPage(0); }, [reviews.length]);
 
-  const totalPages      = Math.ceil(reviews.length / reviewsPerPage);
-  const visibleReviews  = reviews.slice(currentPage * reviewsPerPage, currentPage * reviewsPerPage + reviewsPerPage);
-  const avgRating       = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : '0.0';
+  const totalPages = Math.ceil(reviews.length / reviewsPerPage);
+  const visibleReviews = reviews.slice(currentPage * reviewsPerPage, currentPage * reviewsPerPage + reviewsPerPage);
+  const avgRating = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : '0.0';
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
@@ -78,10 +78,10 @@ export default function ReviewsSection({ user, productsList = [] }) {
     setFormError('');
     try {
       const token = localStorage.getItem('elmen_token');
-      await axios.post('http://localhost:5000/api/reviews', {
+      await axios.post('${API_BASE_URL}/api/reviews', {
         productId: formData.productId,
-        rating:    formData.rating,
-        comment:   formData.comment.trim(),
+        rating: formData.rating,
+        comment: formData.comment.trim(),
       }, { headers: { Authorization: `Bearer ${token}` } });
 
       setFormSuccess(true);
@@ -132,7 +132,7 @@ export default function ReviewsSection({ user, productsList = [] }) {
               <div className="agg-bars">
                 {[5, 4, 3, 2, 1].map((star) => {
                   const count = reviews.filter(r => r.rating === star).length;
-                  const pct   = reviews.length ? Math.round((count / reviews.length) * 100) : 0;
+                  const pct = reviews.length ? Math.round((count / reviews.length) * 100) : 0;
                   return (
                     <div className="agg-bar-row" key={star}>
                       <span>{star} ★</span>
@@ -149,9 +149,9 @@ export default function ReviewsSection({ user, productsList = [] }) {
             {/* ── Review Cards ── */}
             <div className="reviews-grid">
               {visibleReviews.map((review) => {
-                const name    = review.userName || 'Anonymous';
+                const name = review.userName || 'Anonymous';
                 const product = review.product?.name || 'EL MEN Product';
-                const date    = new Date(review.createdAt).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+                const date = new Date(review.createdAt).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
 
                 return (
                   <div className="review-card" key={review._id}>

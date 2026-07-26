@@ -16,7 +16,7 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
   const fetchReviews = async () => {
     try {
       const pid = product._id || product.id;
-      const res = await axios.get(`http://localhost:5000/api/reviews/product/${pid}`);
+      const res = await axios.get(`${API_BASE_URL}/api/reviews/product/${pid}`);
       if (res.data.success) {
         setReviews(res.data.reviews);
       }
@@ -45,7 +45,7 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
       }
 
       const pid = product._id || product.id;
-      const res = await axios.post('http://localhost:5000/api/reviews', {
+      const res = await axios.post('${API_BASE_URL}/api/reviews', {
         productId: pid,
         rating: newRating,
         comment: newComment
@@ -87,8 +87,8 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
 
   return (
     <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1100, backgroundColor: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
-      <div 
-        className="modal-content animate-fade-in" 
+      <div
+        className="modal-content animate-fade-in"
         onClick={(e) => e.stopPropagation()}
         style={{
           maxWidth: '850px',
@@ -105,8 +105,8 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
         }}
       >
         <div className="modal-close-wrapper" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             aria-label="Close Modal"
             style={{
               background: '#f1f5f9', border: 'none', borderRadius: '50%',
@@ -123,14 +123,14 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
 
         <div className="modal-body" style={{ padding: 0 }}>
           <div className="product-detail-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
-            
+
             {/* Left Column: Images */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
               {activeImage ? (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '380px', backgroundColor: '#f8fafc', borderRadius: '18px', border: '1px solid #f1f5f9', padding: '16px' }}>
-                  <img 
-                    src={activeImage.startsWith('http') ? activeImage : `http://localhost:5000${activeImage}`} 
-                    alt={product.name} 
+                  <img
+                    src={activeImage.startsWith('http') ? activeImage : `${API_BASE_URL}${activeImage}`}
+                    alt={product.name}
                     style={{ height: '100%', width: 'auto', maxWidth: '100%', objectFit: 'contain' }}
                   />
                 </div>
@@ -173,7 +173,7 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
                         }}
                       >
                         <img
-                          src={img.startsWith('http') ? img : `http://localhost:5000${img}`}
+                          src={img.startsWith('http') ? img : `${API_BASE_URL}${img}`}
                           alt={`${product.name} view ${idx + 1}`}
                           style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
                         />
@@ -190,7 +190,7 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
                 <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#d97706', textTransform: 'uppercase', letterSpacing: '1px' }}>{product.subtitle}</span>
                 <h2 style={{ fontSize: '2.1rem', fontWeight: 900, color: '#0f172a', margin: '4px 0 10px 0', letterSpacing: '-0.75px' }}>{product.name}</h2>
               </div>
-              
+
               {(() => {
                 const isOutOfStock = product.stock !== undefined && Number(product.stock) <= 0;
                 return (
@@ -255,14 +255,14 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
                     </div>
 
                     {/* Add to Cart Button */}
-                    <button 
-                      className="btn btn-primary" 
+                    <button
+                      className="btn btn-primary"
                       disabled={isOutOfStock}
-                      style={{ 
-                        width: '100%', 
-                        padding: '14px 20px', 
-                        borderRadius: '30px', 
-                        fontWeight: 800, 
+                      style={{
+                        width: '100%',
+                        padding: '14px 20px',
+                        borderRadius: '30px',
+                        fontWeight: 800,
                         textTransform: 'uppercase',
                         display: 'flex',
                         alignItems: 'center',
@@ -313,10 +313,10 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
                           onClick={() => setNewRating(star)}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                         >
-                          <Star 
-                            size={16} 
-                            color="#eab308" 
-                            fill={star <= newRating ? '#eab308' : 'none'} 
+                          <Star
+                            size={16}
+                            color="#eab308"
+                            fill={star <= newRating ? '#eab308' : 'none'}
                           />
                         </button>
                       ))}
@@ -327,14 +327,14 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
                     placeholder="Write your verified feedback here..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    style={{ 
-                      width: '100%', 
-                      minHeight: '60px', 
-                      background: '#ffffff', 
-                      border: '1.5px solid #cbd5e1', 
-                      borderRadius: '10px', 
-                      color: '#0f172a', 
-                      padding: '10px', 
+                    style={{
+                      width: '100%',
+                      minHeight: '60px',
+                      background: '#ffffff',
+                      border: '1.5px solid #cbd5e1',
+                      borderRadius: '10px',
+                      color: '#0f172a',
+                      padding: '10px',
                       fontSize: '0.85rem',
                       fontFamily: 'inherit',
                       outline: 'none'
@@ -349,10 +349,10 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
                   <button
                     type="submit"
                     className="btn btn-secondary"
-                    style={{ 
-                      fontSize: '0.78rem', 
-                      padding: '8px 16px', 
-                      alignSelf: 'flex-end', 
+                    style={{
+                      fontSize: '0.78rem',
+                      padding: '8px 16px',
+                      alignSelf: 'flex-end',
                       borderRadius: '20px',
                       fontWeight: 700,
                       backgroundColor: '#ffffff',
@@ -374,12 +374,12 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
                     <p style={{ color: '#64748b', fontSize: '0.85rem', textAlign: 'center', padding: '16px 0', fontStyle: 'italic' }}>No reviews yet. Be the first to share your feedback!</p>
                   ) : (
                     reviews.map((rev) => (
-                      <div 
-                        key={rev._id} 
-                        style={{ 
-                          backgroundColor: '#ffffff', 
-                          padding: '16px', 
-                          borderRadius: '14px', 
+                      <div
+                        key={rev._id}
+                        style={{
+                          backgroundColor: '#ffffff',
+                          padding: '16px',
+                          borderRadius: '14px',
                           border: '1px solid #e2e8f0',
                           boxShadow: '0 2px 8px rgba(0,0,0,0.01)'
                         }}
@@ -388,11 +388,11 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
                           <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a' }}>{rev.userName}</span>
                           <div style={{ display: 'flex', gap: '2px' }}>
                             {[1, 2, 3, 4, 5].map((star) => (
-                              <Star 
-                                key={star} 
-                                size={12} 
-                                color="#eab308" 
-                                fill={star <= rev.rating ? '#eab308' : 'none'} 
+                              <Star
+                                key={star}
+                                size={12}
+                                color="#eab308"
+                                fill={star <= rev.rating ? '#eab308' : 'none'}
                               />
                             ))}
                           </div>

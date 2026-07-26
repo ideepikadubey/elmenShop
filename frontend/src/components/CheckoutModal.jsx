@@ -100,7 +100,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
         country: 'India'
       };
 
-      const response = await axios.post('http://localhost:5000/api/orders', {
+      const response = await axios.post('${API_BASE_URL}/api/orders', {
         items: orderItems,
         shippingAddress,
         paymentMethod: paymentMethod === 'cod' ? 'cod' : 'razorpay',
@@ -121,7 +121,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
         return;
       }
 
-      const paymentRes = await axios.post('http://localhost:5000/api/payments/create-order', {
+      const paymentRes = await axios.post('${API_BASE_URL}/api/payments/create-order', {
         orderId: data.order._id
       }, {
         headers: {
@@ -135,7 +135,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
       }
 
       if (paymentData.mock) {
-        await axios.post('http://localhost:5000/api/payments/verify', {
+        await axios.post('${API_BASE_URL}/api/payments/verify', {
           orderId: data.order._id,
           razorpayOrderId: paymentData.razorpayOrderId,
           razorpayPaymentId: 'mock_payment_id',
@@ -162,7 +162,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
         handler: async function (response) {
           try {
             setIsProcessing(true);
-            const verifyRes = await axios.post('http://localhost:5000/api/payments/verify', {
+            const verifyRes = await axios.post('${API_BASE_URL}/api/payments/verify', {
               orderId: data.order._id,
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
@@ -216,8 +216,8 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
 
   return (
     <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1100, backgroundColor: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
-      <div 
-        className="modal-content animate-fade-in" 
+      <div
+        className="modal-content animate-fade-in"
         onClick={(e) => e.stopPropagation()}
         style={{
           maxWidth: '850px',
@@ -233,8 +233,8 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
         }}
       >
         <div className="modal-close-wrapper" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             style={{
               background: '#f1f5f9', border: 'none', borderRadius: '50%',
               width: '36px', height: '36px', display: 'flex', alignItems: 'center',
@@ -273,7 +273,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
                 Your order is confirmed. A receipt and shipment tracking details will be sent to <strong style={{ color: '#0f172a' }}>{formData.email}</strong>.
               </p>
 
-              <div style={{ 
+              <div style={{
                 width: '100%', maxWidth: '500px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', marginBottom: '32px', textAlign: 'left',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.01)'
               }}>
@@ -330,10 +330,10 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
                 </p>
               </div>
 
-              <button 
-                className="btn btn-primary" 
+              <button
+                className="btn btn-primary"
                 onClick={handleFinish}
-                style={{ 
+                style={{
                   padding: '12px 36px', borderRadius: '30px', fontWeight: 800, textTransform: 'uppercase',
                   boxShadow: '0 4px 10px rgba(234, 179, 8, 0.2)', border: 'none', cursor: 'pointer', backgroundColor: '#eab308', color: '#0f172a'
                 }}
@@ -348,24 +348,24 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
               <h2 style={{ textTransform: 'uppercase', fontWeight: 900, marginBottom: '24px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px', fontSize: '1.5rem', color: '#0f172a', letterSpacing: '-0.5px' }}>
                 Secure Checkout
               </h2>
-              
+
               <div className="checkout-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
-                
+
                 {/* Shipping Info Form */}
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <h3 style={{ fontSize: '1rem', textTransform: 'uppercase', marginBottom: '4px', color: '#d97706', fontWeight: 800, letterSpacing: '0.5px' }}>
                     Shipping Information
                   </h3>
-                  
+
                   <div className="form-group">
                     <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>Full Name</label>
-                    <input 
-                      type="text" 
-                      name="name" 
-                      className="form-input" 
-                      style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }} 
-                      value={formData.name} 
-                      onChange={handleInputChange} 
+                    <input
+                      type="text"
+                      name="name"
+                      className="form-input"
+                      style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                      value={formData.name}
+                      onChange={handleInputChange}
                     />
                     {errors.name && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.name}</span>}
                   </div>
@@ -373,25 +373,25 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     <div className="form-group">
                       <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>Email Address</label>
-                      <input 
-                        type="email" 
-                        name="email" 
-                        className="form-input" 
-                        style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }} 
-                        value={formData.email} 
-                        onChange={handleInputChange} 
+                      <input
+                        type="email"
+                        name="email"
+                        className="form-input"
+                        style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                        value={formData.email}
+                        onChange={handleInputChange}
                       />
                       {errors.email && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.email}</span>}
                     </div>
                     <div className="form-group">
                       <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>Phone Number</label>
-                      <input 
-                        type="text" 
-                        name="phone" 
-                        className="form-input" 
-                        style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }} 
-                        value={formData.phone} 
-                        onChange={handleInputChange} 
+                      <input
+                        type="text"
+                        name="phone"
+                        className="form-input"
+                        style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                        value={formData.phone}
+                        onChange={handleInputChange}
                       />
                       {errors.phone && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.phone}</span>}
                     </div>
@@ -399,13 +399,13 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
 
                   <div className="form-group">
                     <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>Street Address</label>
-                    <input 
-                      type="text" 
-                      name="address" 
-                      className="form-input" 
-                      style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }} 
-                      value={formData.address} 
-                      onChange={handleInputChange} 
+                    <input
+                      type="text"
+                      name="address"
+                      className="form-input"
+                      style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                      value={formData.address}
+                      onChange={handleInputChange}
                     />
                     {errors.address && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.address}</span>}
                   </div>
@@ -413,38 +413,38 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                     <div className="form-group">
                       <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>City</label>
-                      <input 
-                        type="text" 
-                        name="city" 
-                        className="form-input" 
-                        style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }} 
-                        value={formData.city} 
-                        onChange={handleInputChange} 
+                      <input
+                        type="text"
+                        name="city"
+                        className="form-input"
+                        style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                        value={formData.city}
+                        onChange={handleInputChange}
                       />
                       {errors.city && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.city}</span>}
                     </div>
                     <div className="form-group">
                       <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>State</label>
-                      <input 
-                        type="text" 
-                        name="state" 
-                        className="form-input" 
-                        style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }} 
-                        value={formData.state} 
+                      <input
+                        type="text"
+                        name="state"
+                        className="form-input"
+                        style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                        value={formData.state}
                         placeholder="e.g. Maharashtra"
-                        onChange={handleInputChange} 
+                        onChange={handleInputChange}
                       />
                       {errors.state && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.state}</span>}
                     </div>
                     <div className="form-group">
                       <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>Pincode</label>
-                      <input 
-                        type="text" 
-                        name="pincode" 
-                        className="form-input" 
-                        style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }} 
-                        value={formData.pincode} 
-                        onChange={handleInputChange} 
+                      <input
+                        type="text"
+                        name="pincode"
+                        className="form-input"
+                        style={{ height: '44px', padding: '0 16px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                        value={formData.pincode}
+                        onChange={handleInputChange}
                       />
                       {errors.pincode && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.pincode}</span>}
                     </div>
@@ -455,7 +455,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
                   </h3>
 
                   <div className="payment-options" style={{ display: 'flex', gap: '16px' }}>
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setPaymentMethod('online')}
                       style={{
@@ -469,7 +469,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
                       <CreditCard size={20} />
                       <span>Pay Online</span>
                     </button>
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setPaymentMethod('cod')}
                       style={{
@@ -510,10 +510,10 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
                     </div>
                   )}
 
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary" 
-                    style={{ 
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{
                       width: '100%', padding: '14px 20px', borderRadius: '30px', fontWeight: 800, textTransform: 'uppercase',
                       boxShadow: '0 4px 10px rgba(234, 179, 8, 0.2)', border: 'none', cursor: 'pointer', backgroundColor: '#eab308', color: '#0f172a',
                       marginTop: '16px'
@@ -526,14 +526,14 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
                 </form>
 
                 {/* Sidebar Order Review */}
-                <div style={{ 
+                <div style={{
                   borderRadius: '16px', height: 'fit-content', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', padding: '24px',
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.01)'
                 }}>
                   <h3 style={{ fontSize: '1rem', textTransform: 'uppercase', marginBottom: '16px', color: '#0f172a', fontWeight: 800 }}>
                     Order Summary
                   </h3>
-                  
+
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px', maxHeight: '180px', overflowY: 'auto', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
                     {cartItems.map((item) => (
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#475569' }} key={item.id || item._id}>

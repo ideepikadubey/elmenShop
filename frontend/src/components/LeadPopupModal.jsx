@@ -46,12 +46,12 @@ export default function LeadPopupModal() {
 
     try {
       // Send lead to backend API or WhatsApp redirect
-      await axios.post('http://localhost:5000/api/offers', {
+      await axios.post('${API_BASE_URL}/api/offers', {
         code: 'WELCOME10',
         title: `Popup Lead: ${cleanPhone}`,
         discountType: 'percentage',
         discountValue: 10
-      }).catch(() => {}); // Fallback silently if route varies
+      }).catch(() => { }); // Fallback silently if route varies
 
       setIsSuccess(true);
       sessionStorage.setItem('elmen_lead_popup_seen', 'true');
@@ -72,7 +72,7 @@ export default function LeadPopupModal() {
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       style={{
         position: 'fixed',
         inset: 0,
@@ -87,7 +87,7 @@ export default function LeadPopupModal() {
         animation: 'fadeIn 0.3s ease-out'
       }}
     >
-      <div 
+      <div
         style={{
           position: 'relative',
           width: '100%',
@@ -139,7 +139,7 @@ export default function LeadPopupModal() {
         </button>
 
         {/* Left Side: Uncropped Poster Image */}
-        <div 
+        <div
           style={{
             position: 'relative',
             backgroundColor: '#050505',
@@ -152,9 +152,9 @@ export default function LeadPopupModal() {
           }}
           className="lead-popup-image-col"
         >
-          <img 
-            src="/popup.png" 
-            alt="Exclusive Offer" 
+          <img
+            src="/popup.png"
+            alt="Exclusive Offer"
             style={{
               width: '100%',
               height: '100%',
@@ -165,7 +165,7 @@ export default function LeadPopupModal() {
         </div>
 
         {/* Right Side: Form Content */}
-        <div 
+        <div
           style={{
             padding: '36px 32px',
             display: 'flex',

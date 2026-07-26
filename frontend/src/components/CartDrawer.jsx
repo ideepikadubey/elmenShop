@@ -3,9 +3,9 @@ import axios from 'axios';
 import { X, Trash2, ArrowRight, Tag, LogIn, ChevronDown, ChevronUp, CheckCircle2, Percent, IndianRupee } from 'lucide-react';
 
 export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveItem, onCheckout, user, onRequireLogin }) {
-  const [promoCode,    setPromoCode]    = useState('');
+  const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null); // { code, discountType, discountValue, title }
-  const [promoError,   setPromoError]   = useState('');
+  const [promoError, setPromoError] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
   const [availableOffers, setAvailableOffers] = useState([]);
   const [showOffers, setShowOffers] = useState(false);
@@ -15,9 +15,9 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
 
   // Fetch available offers from backend
   useEffect(() => {
-    axios.get('http://localhost:5000/api/offers')
+    axios.get('${API_BASE_URL}/api/offers')
       .then(res => { if (res.data.success) setAvailableOffers(res.data.offers); })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // Calculate totals
@@ -30,7 +30,7 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
   })();
 
   const deliveryCharges = subtotal > 1500 || subtotal === 0 ? 0 : 150;
-  const finalTotal      = subtotal - discountAmount + deliveryCharges;
+  const finalTotal = subtotal - discountAmount + deliveryCharges;
 
   // Validate coupon via backend (one coupon only)
   const handleApplyPromo = async (codeOverride) => {
@@ -43,11 +43,11 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
     setPromoLoading(true);
     setPromoError('');
     try {
-      const res = await axios.post('http://localhost:5000/api/offers/validate', { code });
+      const res = await axios.post('${API_BASE_URL}/api/offers/validate', { code });
       setAppliedPromo({
-        code:          res.data.offer.code,
-        title:         res.data.offer.title,
-        discountType:  res.data.offer.discountType,
+        code: res.data.offer.code,
+        title: res.data.offer.title,
+        discountType: res.data.offer.discountType,
         discountValue: res.data.offer.discountValue,
       });
       setPromoCode('');
@@ -72,12 +72,12 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
 
   return (
     <>
-      <div 
-        className="cart-drawer-overlay" 
-        onClick={onClose} 
+      <div
+        className="cart-drawer-overlay"
+        onClick={onClose}
         style={{ zIndex: 1050, backgroundColor: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
       ></div>
-      <div 
+      <div
         className="cart-drawer"
         style={{
           zIndex: 1060,
@@ -89,7 +89,7 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
         }}
       >
         {/* Header */}
-        <div 
+        <div
           className="cart-header"
           style={{
             background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -103,8 +103,8 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
           <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.25px' }}>
             Shopping Cart ({cartItems.length})
           </h3>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             aria-label="Close Cart"
             style={{
               background: '#f1f5f9', border: 'none', borderRadius: '50%',
@@ -124,10 +124,10 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
           {cartItems.length === 0 ? (
             <div className="empty-cart-message" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '16px', textAlign: 'center' }}>
               <p style={{ fontSize: '1.1rem', color: '#64748b', fontWeight: 500, margin: 0 }}>Your cart is empty.</p>
-              <button 
-                className="btn btn-primary" 
+              <button
+                className="btn btn-primary"
                 onClick={onClose}
-                style={{ 
+                style={{
                   padding: '10px 24px', borderRadius: '20px', fontWeight: 800, textTransform: 'uppercase',
                   boxShadow: '0 4px 10px rgba(234, 179, 8, 0.2)', border: 'none', cursor: 'pointer', backgroundColor: '#eab308', color: '#0f172a'
                 }}
@@ -139,8 +139,8 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
             </div>
           ) : (
             cartItems.map((item) => (
-              <div 
-                className="cart-item animate-fade-in" 
+              <div
+                className="cart-item animate-fade-in"
                 key={item.id || item._id}
                 style={{
                   display: 'flex',
@@ -153,7 +153,7 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
                 <div style={{ width: '70px', height: '70px', borderRadius: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '4px' }}>
                   {item.image ? (
                     <img
-                      src={item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`}
+                      src={item.image.startsWith('http') ? item.image : `${API_BASE_URL}${item.image}`}
                       alt={item.name}
                       style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                     />
@@ -183,7 +183,7 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
                     <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0f172a' }}>₹{formatPrice(item.price * item.quantity)}</div>
                   </div>
 
-                  <button 
+                  <button
                     onClick={() => onRemoveItem(item.id || item._id)}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '0.75rem', fontWeight: 700, padding: 0, alignSelf: 'flex-start', marginTop: '8px',
@@ -201,7 +201,7 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
         </div>
 
         {cartItems.length > 0 && (
-          <div 
+          <div
             className="cart-summary"
             style={{
               padding: '24px 28px',
@@ -214,7 +214,7 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
           >
             {/* ── Coupon Section ── */}
             {appliedPromo ? (
-              <div 
+              <div
                 style={{
                   background: '#f0fdf4',
                   border: '1px solid #bbf7d0',
@@ -230,7 +230,7 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
                   <CheckCircle2 size={14} style={{ color: '#22c55e' }} />
                   <span><strong>{appliedPromo.code}</strong> Applied ({discountLabel})</span>
                 </span>
-                <button 
+                <button
                   onClick={handleRemovePromo}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontWeight: 800, fontSize: '0.82rem' }}
                 >
@@ -248,7 +248,7 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
                     onChange={(e) => { setPromoCode(e.target.value); setPromoError(''); }}
                     onKeyDown={(e) => e.key === 'Enter' && handleApplyPromo()}
                     disabled={promoLoading}
-                    style={{ 
+                    style={{
                       flex: 1, height: '40px', padding: '0 12px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase'
                     }}
                     onFocus={e => e.target.style.borderColor = '#eab308'}
@@ -377,7 +377,7 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
             {/* Action button */}
             <button
               className="btn btn-primary"
-              style={{ 
+              style={{
                 width: '100%', padding: '14px 20px', borderRadius: '30px', fontWeight: 800, textTransform: 'uppercase',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                 backgroundColor: '#eab308', color: '#0f172a', border: 'none', cursor: 'pointer',

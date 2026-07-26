@@ -71,14 +71,14 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       }
 
       // Fetch products
-      const prodRes = await axios.get('http://localhost:5000/api/products?limit=100');
+      const prodRes = await axios.get('${API_BASE_URL}/api/products?limit=100');
       const prodData = prodRes.data;
       if (prodData.success) {
         setProducts(prodData.products);
       }
 
       // Fetch orders
-      const orderRes = await axios.get('http://localhost:5000/api/orders?limit=100', {
+      const orderRes = await axios.get('${API_BASE_URL}/api/orders?limit=100', {
         headers: getHeaders()
       });
       const orderData = orderRes.data;
@@ -87,7 +87,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       }
 
       // Fetch enquiries
-      const enqRes = await axios.get('http://localhost:5000/api/enquiries', {
+      const enqRes = await axios.get('${API_BASE_URL}/api/enquiries', {
         headers: getHeaders()
       });
       const enqData = enqRes.data;
@@ -96,7 +96,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       }
 
       // Fetch offers
-      const offRes = await axios.get('http://localhost:5000/api/offers', {
+      const offRes = await axios.get('${API_BASE_URL}/api/offers', {
         headers: getHeaders()
       });
       const offData = offRes.data;
@@ -175,9 +175,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const handleOpenEditProduct = (prod) => {
     setEditingProduct(prod);
     setSelectedFiles([]);
-    
+
     // Map Map/Object to key-value inputs array
-    const factsArray = prod.nutritionFacts 
+    const factsArray = prod.nutritionFacts
       ? Object.entries(prod.nutritionFacts).map(([k, v]) => ({ key: k, value: v }))
       : [{ key: '', value: '' }];
 
@@ -264,9 +264,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
         formData.append('images', JSON.stringify(editingProduct.images));
       }
 
-      const url = editingProduct 
-        ? `http://localhost:5000/api/products/${editingProduct._id}`
-        : 'http://localhost:5000/api/products';
+      const url = editingProduct
+        ? `${API_BASE_URL}/api/products/${editingProduct._id}`
+        : '${API_BASE_URL}/api/products';
       const method = editingProduct ? 'PUT' : 'POST';
 
       const response = await axios({
@@ -295,7 +295,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
     if (!window.confirm('Are you sure you want to delete this product? it will be soft-deleted.')) return;
     setIsLoading(true);
     try {
-      const response = await axios.delete(`http://localhost:5000/api/products/${id}`, {
+      const response = await axios.delete(`${API_BASE_URL}/api/products/${id}`, {
         headers: getHeaders()
       });
       const data = response.data;
@@ -315,7 +315,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
     if (currentStock === newStock) return;
 
     try {
-      const response = await axios.put(`http://localhost:5000/api/products/${id}/stock`, {
+      const response = await axios.put(`${API_BASE_URL}/api/products/${id}/stock`, {
         stock: newStock
       }, {
         headers: getHeaders()
@@ -335,7 +335,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       const payload = { orderStatus: newStatus };
       if (trackingNum !== undefined) payload.trackingNumber = trackingNum;
 
-      const response = await axios.put(`http://localhost:5000/api/orders/${orderId}/status`, payload, {
+      const response = await axios.put(`${API_BASE_URL}/api/orders/${orderId}/status`, payload, {
         headers: getHeaders()
       });
       showSuccess(`Order updated successfully!`);
@@ -353,12 +353,12 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const outOfStockCount = products.filter(p => p.stock <= 0).length;
 
   // Filtered lists
-  const filteredProducts = products.filter(p => 
+  const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
     p.category.toLowerCase().includes(productSearch.toLowerCase())
   );
 
-  const filteredOrders = orders.filter(o => 
+  const filteredOrders = orders.filter(o =>
     orderFilter === 'all' || o.orderStatus === orderFilter
   );
 
@@ -489,23 +489,23 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
             </p>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <button 
-              className="btn btn-secondary" 
+            <button
+              className="btn btn-secondary"
               style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '0.8rem' }}
               onClick={fetchAdminData}
               disabled={isLoading}
             >
               <RotateCw size={14} className={isLoading ? 'animate-spin' : ''} /> Refresh Data
             </button>
-            <button 
-              className="btn btn-secondary" 
+            <button
+              className="btn btn-secondary"
               style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '0.8rem' }}
               onClick={onGoToStore}
             >
               Exit Admin Panel
             </button>
-            <button 
-              className="btn btn-primary" 
+            <button
+              className="btn btn-primary"
               style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '0.8rem', backgroundColor: 'var(--primary-red)', borderColor: 'var(--primary-red)' }}
               onClick={onLogout}
             >
@@ -582,9 +582,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
               </div>
 
               <div className="admin-stat-card" style={{ border: outOfStockCount > 0 ? '1px solid rgba(193, 0, 0, 0.25)' : '1px solid var(--bg-dark-600)' }}>
-                <div className="admin-stat-icon" style={{ 
-                  color: outOfStockCount > 0 ? 'var(--primary-red)' : 'var(--text-gray)', 
-                  backgroundColor: outOfStockCount > 0 ? 'rgba(193, 0, 0, 0.1)' : 'var(--bg-dark-700)' 
+                <div className="admin-stat-icon" style={{
+                  color: outOfStockCount > 0 ? 'var(--primary-red)' : 'var(--text-gray)',
+                  backgroundColor: outOfStockCount > 0 ? 'rgba(193, 0, 0, 0.1)' : 'var(--bg-dark-700)'
                 }}>
                   <AlertCircle size={24} />
                 </div>
@@ -624,9 +624,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
           <div>
             <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap', justifyContent: 'space-between' }}>
               <div className="search-bar" style={{ flex: 1, maxWidth: '400px', backgroundColor: 'var(--bg-dark-800)', border: '1px solid var(--bg-dark-600)' }}>
-                <input 
-                  type="text" 
-                  placeholder="Search by name or category..." 
+                <input
+                  type="text"
+                  placeholder="Search by name or category..."
                   value={productSearch}
                   onChange={(e) => setProductSearch(e.target.value)}
                   style={{ width: '100%' }}
@@ -673,7 +673,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                         </td>
                         <td>
                           {/* Inline Stock editing input */}
-                          <input 
+                          <input
                             type="number"
                             defaultValue={p.stock}
                             onBlur={(e) => handleUpdateStockInline(p._id, p.stock, e.target.value)}
@@ -788,19 +788,19 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                               <option value="delivered">Delivered</option>
                               <option value="cancelled">Cancelled</option>
                             </select>
-                            
-                            <input 
+
+                            <input
                               type="text"
                               placeholder="AWB Tracking #"
                               defaultValue={o.trackingNumber || ''}
                               onBlur={(e) => handleOrderStatusUpdate(o._id, o.orderStatus, e.target.value)}
-                              style={{ 
-                                padding: '4px 8px', 
-                                fontSize: '0.7rem', 
-                                width: '130px', 
-                                borderRadius: '4px', 
-                                border: '1px solid var(--bg-dark-600)', 
-                                background: 'var(--bg-dark-950)', 
+                              style={{
+                                padding: '4px 8px',
+                                fontSize: '0.7rem',
+                                width: '130px',
+                                borderRadius: '4px',
+                                border: '1px solid var(--bg-dark-600)',
+                                background: 'var(--bg-dark-950)',
                                 color: 'var(--text-white)',
                                 fontFamily: 'monospace'
                               }}
@@ -827,14 +827,14 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
             ) : (
               <div style={{ display: 'grid', gap: '16px' }}>
                 {enquiries.map(enq => (
-                  <div 
-                    key={enq._id} 
-                    style={{ 
-                      backgroundColor: 'var(--bg-dark-800)', 
-                      border: '1px solid var(--bg-dark-600)', 
-                      borderRadius: 'var(--border-radius)', 
-                      padding: '20px', 
-                      position: 'relative' 
+                  <div
+                    key={enq._id}
+                    style={{
+                      backgroundColor: 'var(--bg-dark-800)',
+                      border: '1px solid var(--bg-dark-600)',
+                      borderRadius: 'var(--border-radius)',
+                      padding: '20px',
+                      position: 'relative'
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', borderBottom: '1px solid var(--bg-dark-700)', paddingBottom: '10px', marginBottom: '10px' }}>
@@ -853,19 +853,19 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                         </span>
                       </div>
                     </div>
-                    
+
                     <p style={{ color: 'var(--text-gray)', fontSize: '0.9rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
                       {enq.message}
                     </p>
 
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '12px' }}>
                       {enq.status === 'unread' && (
-                        <button 
-                          className="btn btn-secondary" 
-                          style={{ padding: '6px 12px', fontSize: '0.75rem' }} 
+                        <button
+                          className="btn btn-secondary"
+                          style={{ padding: '6px 12px', fontSize: '0.75rem' }}
                           onClick={async () => {
                             try {
-                              await axios.put(`http://localhost:5000/api/enquiries/${enq._id}`, { status: 'read' }, { headers: getHeaders() });
+                              await axios.put(`${API_BASE_URL}/api/enquiries/${enq._id}`, { status: 'read' }, { headers: getHeaders() });
                               showSuccess('Enquiry marked as read.');
                               fetchAdminData();
                             } catch (err) {
@@ -876,13 +876,13 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                           Mark as Read
                         </button>
                       )}
-                      <button 
-                        className="btn-icon" 
-                        style={{ color: 'var(--primary-red)' }} 
+                      <button
+                        className="btn-icon"
+                        style={{ color: 'var(--primary-red)' }}
                         onClick={async () => {
                           if (!window.confirm('Delete this enquiry?')) return;
                           try {
-                            await axios.delete(`http://localhost:5000/api/enquiries/${enq._id}`, { headers: getHeaders() });
+                            await axios.delete(`${API_BASE_URL}/api/enquiries/${enq._id}`, { headers: getHeaders() });
                             showSuccess('Enquiry deleted.');
                             fetchAdminData();
                           } catch (err) {
@@ -907,9 +907,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
               <h3 style={{ textTransform: 'uppercase', fontWeight: 900, margin: 0 }}>
                 🏷️ Campaign Coupons & Discounts
               </h3>
-              <button 
-                className="btn btn-primary" 
-                style={{ display: 'flex', gap: '8px', alignItems: 'center' }} 
+              <button
+                className="btn btn-primary"
+                style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
                 onClick={() => {
                   setOfferForm({
                     title: '', description: '', code: '', discountType: 'percentage', discountValue: '',
@@ -990,12 +990,12 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                           </td>
                           <td style={{ textAlign: 'right' }}>
                             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
-                              <button 
-                                className="btn btn-secondary" 
+                              <button
+                                className="btn btn-secondary"
                                 style={{ padding: '4px 8px', fontSize: '0.7rem' }}
                                 onClick={async () => {
                                   try {
-                                    await axios.put(`http://localhost:5000/api/offers/${off._id}`, { isActive: !off.isActive }, { headers: getHeaders() });
+                                    await axios.put(`${API_BASE_URL}/api/offers/${off._id}`, { isActive: !off.isActive }, { headers: getHeaders() });
                                     showSuccess('Offer status updated.');
                                     fetchAdminData();
                                   } catch (err) {
@@ -1005,13 +1005,13 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                               >
                                 {off.isActive ? 'Disable' : 'Enable'}
                               </button>
-                              <button 
-                                className="btn-icon" 
-                                style={{ color: 'var(--primary-red)' }} 
+                              <button
+                                className="btn-icon"
+                                style={{ color: 'var(--primary-red)' }}
                                 onClick={async () => {
                                   if (!window.confirm('Delete this promotion?')) return;
                                   try {
-                                    await axios.delete(`http://localhost:5000/api/offers/${off._id}`, { headers: getHeaders() });
+                                    await axios.delete(`${API_BASE_URL}/api/offers/${off._id}`, { headers: getHeaders() });
                                     showSuccess('Promotion deleted successfully.');
                                     fetchAdminData();
                                   } catch (err) {
@@ -1043,15 +1043,15 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
             </h2>
 
             <form onSubmit={handleProductSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              
+
               {/* Row 1: Name and Subtitle */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
                   <label>Supplement Name *</label>
-                  <input 
-                    type="text" 
-                    required 
-                    className="form-input" 
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
                     value={productForm.name}
                     onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
                     placeholder="e.g. Clean Whey Protein"
@@ -1059,9 +1059,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 </div>
                 <div className="form-group">
                   <label>Sub-title / Tagline</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
+                  <input
+                    type="text"
+                    className="form-input"
                     value={productForm.subtitle}
                     onChange={(e) => setProductForm({ ...productForm, subtitle: e.target.value })}
                     placeholder="e.g. Premium Protein Formula"
@@ -1073,7 +1073,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
                   <label>Category *</label>
-                  <select 
+                  <select
                     className="form-input"
                     value={productForm.category}
                     onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
@@ -1085,10 +1085,10 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 </div>
                 <div className="form-group">
                   <label>Initial Stock *</label>
-                  <input 
-                    type="number" 
-                    required 
-                    className="form-input" 
+                  <input
+                    type="number"
+                    required
+                    className="form-input"
                     value={productForm.stock}
                     onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
                     min="0"
@@ -1100,10 +1100,10 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
                   <label>Discounted Price (INR ₹) *</label>
-                  <input 
-                    type="number" 
-                    required 
-                    className="form-input" 
+                  <input
+                    type="number"
+                    required
+                    className="form-input"
                     value={productForm.price}
                     onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
                     placeholder="e.g. 6499"
@@ -1112,9 +1112,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 </div>
                 <div className="form-group">
                   <label>Original MRP Price (INR ₹)</label>
-                  <input 
-                    type="number" 
-                    className="form-input" 
+                  <input
+                    type="number"
+                    className="form-input"
                     value={productForm.originalPrice}
                     onChange={(e) => setProductForm({ ...productForm, originalPrice: e.target.value })}
                     placeholder="e.g. 7999"
@@ -1127,9 +1127,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
                   <label>Total weight</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
+                  <input
+                    type="text"
+                    className="form-input"
                     value={productForm.weight}
                     onChange={(e) => setProductForm({ ...productForm, weight: e.target.value })}
                     placeholder="e.g. 2000g (2kg)"
@@ -1137,9 +1137,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 </div>
                 <div className="form-group">
                   <label>Serving Size</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
+                  <input
+                    type="text"
+                    className="form-input"
                     value={productForm.servingSize}
                     onChange={(e) => setProductForm({ ...productForm, servingSize: e.target.value })}
                     placeholder="e.g. 1 Scoop (33g)"
@@ -1147,9 +1147,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 </div>
                 <div className="form-group">
                   <label>Servings Count</label>
-                  <input 
-                    type="number" 
-                    className="form-input" 
+                  <input
+                    type="number"
+                    className="form-input"
                     value={productForm.servingsCount}
                     onChange={(e) => setProductForm({ ...productForm, servingsCount: e.target.value })}
                     placeholder="60"
@@ -1162,9 +1162,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
                   <label>Protein per Serving</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
+                  <input
+                    type="text"
+                    className="form-input"
                     value={productForm.protein}
                     onChange={(e) => setProductForm({ ...productForm, protein: e.target.value })}
                     placeholder="e.g. 24g"
@@ -1172,9 +1172,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 </div>
                 <div className="form-group">
                   <label>Promo Badge Text</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
+                  <input
+                    type="text"
+                    className="form-input"
                     value={productForm.badge}
                     onChange={(e) => setProductForm({ ...productForm, badge: e.target.value })}
                     placeholder="e.g. Best Seller"
@@ -1202,15 +1202,15 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
               {/* Product Image File Selector */}
               <div className="form-group">
                 <label>Upload Supplement Images (Select multiple)</label>
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   accept="image/*"
                   multiple
-                  className="form-input" 
+                  className="form-input"
                   onChange={(e) => setSelectedFiles(Array.from(e.target.files))}
                   style={{ border: '1px dashed var(--bg-dark-600)', padding: '12px' }}
                 />
-                
+
                 {/* Previews of selected files */}
                 {selectedFiles.length > 0 && (
                   <div style={{ marginTop: '10px' }}>
@@ -1219,14 +1219,14 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     </span>
                     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                       {selectedFiles.map((file, idx) => (
-                        <div 
-                          key={idx} 
+                        <div
+                          key={idx}
                           draggable
                           onDragStart={(e) => handleDragStart(e, idx)}
                           onDragOver={handleDragOver}
                           onDrop={(e) => handleDropNew(e, idx)}
-                          style={{ 
-                            position: 'relative', 
+                          style={{
+                            position: 'relative',
                             cursor: 'grab',
                             border: draggedIndex === idx ? '2px dashed var(--primary-yellow)' : '1.5px solid var(--bg-dark-600)',
                             borderRadius: '8px',
@@ -1268,14 +1268,14 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                         ? editingProduct.images
                         : [editingProduct.image].filter(Boolean)
                       ).map((img, idx) => (
-                        <div 
-                          key={idx} 
+                        <div
+                          key={idx}
                           draggable
                           onDragStart={(e) => handleDragStart(e, idx)}
                           onDragOver={handleDragOver}
                           onDrop={(e) => handleDropExisting(e, idx)}
-                          style={{ 
-                            position: 'relative', 
+                          style={{
+                            position: 'relative',
                             cursor: 'grab',
                             border: draggedIndex === idx ? '2px dashed var(--primary-yellow)' : '1.5px solid var(--bg-dark-600)',
                             borderRadius: '8px',
@@ -1293,7 +1293,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                           onDragEnd={() => setDraggedIndex(null)}
                         >
                           <img
-                            src={img.startsWith('http') ? img : `http://localhost:5000${img}`}
+                            src={img.startsWith('http') ? img : `${API_BASE_URL}${img}`}
                             alt={`current preview ${idx}`}
                             style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
                           />
@@ -1310,9 +1310,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
               {/* Features and Description */}
               <div className="form-group">
                 <label>Core Features (Comma separated)</label>
-                <input 
-                  type="text" 
-                  className="form-input" 
+                <input
+                  type="text"
+                  className="form-input"
                   value={productForm.features}
                   onChange={(e) => setProductForm({ ...productForm, features: e.target.value })}
                   placeholder="Builds Lean Muscle, Faster Recovery, Premium Quality"
@@ -1321,7 +1321,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
 
               <div className="form-group">
                 <label>Product Details Description</label>
-                <textarea 
+                <textarea
                   className="form-input"
                   style={{ minHeight: '80px', padding: '12px', fontFamily: 'inherit' }}
                   value={productForm.details}
@@ -1336,7 +1336,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 <div style={{ display: 'grid', gap: '10px' }}>
                   {productForm.nutritionFactsInput.map((fact, index) => (
                     <div key={index} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <input 
+                      <input
                         type="text"
                         placeholder="Nutrient (e.g. BCAAs)"
                         className="form-input"
@@ -1344,7 +1344,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                         onChange={(e) => handleNutritionFactChange(index, 'key', e.target.value)}
                         style={{ flex: 1 }}
                       />
-                      <input 
+                      <input
                         type="text"
                         placeholder="Amount (e.g. 5.5g)"
                         className="form-input"
@@ -1352,9 +1352,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                         onChange={(e) => handleNutritionFactChange(index, 'value', e.target.value)}
                         style={{ flex: 1 }}
                       />
-                      <button 
-                        type="button" 
-                        className="btn-icon" 
+                      <button
+                        type="button"
+                        className="btn-icon"
                         onClick={() => removeNutritionFactRow(index)}
                         disabled={productForm.nutritionFactsInput.length <= 1}
                         style={{ color: 'var(--primary-red)' }}
@@ -1363,9 +1363,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                       </button>
                     </div>
                   ))}
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary" 
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
                     style={{ fontSize: '0.75rem', alignSelf: 'flex-start', padding: '6px 12px' }}
                     onClick={addNutritionFactRow}
                   >
@@ -1396,7 +1396,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
               🏷️ Create Promotion Coupon
             </h2>
 
-            <form 
+            <form
               onSubmit={async (e) => {
                 e.preventDefault();
                 setIsLoading(true);
@@ -1413,7 +1413,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     targetProducts: offerForm.targetProducts
                   };
 
-                  await axios.post('http://localhost:5000/api/offers', body, { headers: getHeaders() });
+                  await axios.post('${API_BASE_URL}/api/offers', body, { headers: getHeaders() });
                   showSuccess('Promotion Coupon created successfully!');
                   setIsOfferModalOpen(false);
                   fetchAdminData();
@@ -1427,10 +1427,10 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
             >
               <div className="form-group">
                 <label>Offer Title *</label>
-                <input 
-                  type="text" 
-                  required 
-                  className="form-input" 
+                <input
+                  type="text"
+                  required
+                  className="form-input"
                   value={offerForm.title}
                   onChange={(e) => setOfferForm({ ...offerForm, title: e.target.value })}
                   placeholder="e.g. New Year Fitness Discount"
@@ -1439,9 +1439,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
 
               <div className="form-group">
                 <label>Description</label>
-                <input 
-                  type="text" 
-                  className="form-input" 
+                <input
+                  type="text"
+                  className="form-input"
                   value={offerForm.description}
                   onChange={(e) => setOfferForm({ ...offerForm, description: e.target.value })}
                   placeholder="e.g. Flat ₹500 off on all preworkouts"
@@ -1451,10 +1451,10 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
                   <label>Coupon Code *</label>
-                  <input 
-                    type="text" 
-                    required 
-                    className="form-input" 
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
                     value={offerForm.code}
                     onChange={(e) => setOfferForm({ ...offerForm, code: e.target.value })}
                     placeholder="e.g. FIT500"
@@ -1463,7 +1463,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 </div>
                 <div className="form-group">
                   <label>Discount Type *</label>
-                  <select 
+                  <select
                     className="form-input"
                     value={offerForm.discountType}
                     onChange={(e) => setOfferForm({ ...offerForm, discountType: e.target.value })}
@@ -1476,10 +1476,10 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
 
               <div className="form-group">
                 <label>Discount Value *</label>
-                <input 
-                  type="number" 
-                  required 
-                  className="form-input" 
+                <input
+                  type="number"
+                  required
+                  className="form-input"
                   value={offerForm.discountValue}
                   onChange={(e) => setOfferForm({ ...offerForm, discountValue: e.target.value })}
                   placeholder={offerForm.discountType === 'percentage' ? 'e.g. 10 for 10%' : 'e.g. 500 for ₹500'}
@@ -1490,20 +1490,20 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
                   <label>Start Date & Time *</label>
-                  <input 
-                    type="datetime-local" 
-                    required 
-                    className="form-input" 
+                  <input
+                    type="datetime-local"
+                    required
+                    className="form-input"
                     value={offerForm.startDate}
                     onChange={(e) => setOfferForm({ ...offerForm, startDate: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
                   <label>End Date & Time *</label>
-                  <input 
-                    type="datetime-local" 
-                    required 
-                    className="form-input" 
+                  <input
+                    type="datetime-local"
+                    required
+                    className="form-input"
                     value={offerForm.endDate}
                     onChange={(e) => setOfferForm({ ...offerForm, endDate: e.target.value })}
                   />
@@ -1515,7 +1515,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
                   Hold Ctrl/Cmd to select multiple products. Leave empty to apply to all products.
                 </span>
-                <select 
+                <select
                   multiple
                   className="form-input"
                   style={{ height: '110px' }}

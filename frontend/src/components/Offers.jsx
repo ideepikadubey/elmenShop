@@ -8,9 +8,9 @@ export default function Offers({ onGoBack, onShopClick }) {
   const [copiedCode, setCopiedCode] = useState('');
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/offers')
-      .then(res => { 
-        if (res.data.success) setOffers(res.data.offers); 
+    axios.get('${API_BASE_URL}/api/offers')
+      .then(res => {
+        if (res.data.success) setOffers(res.data.offers);
       })
       .catch((err) => {
         console.error('Failed to load offers:', err);
@@ -33,11 +33,11 @@ export default function Offers({ onGoBack, onShopClick }) {
   };
 
   return (
-    <div 
+    <div
       className="offers-page-wrapper"
-      style={{ 
-        background: 'radial-gradient(circle at 50% 0%, #ffffff 0%, #f4f6f9 100%)', 
-        minHeight: '85vh', 
+      style={{
+        background: 'radial-gradient(circle at 50% 0%, #ffffff 0%, #f4f6f9 100%)',
+        minHeight: '85vh',
         paddingTop: '150px',
         paddingBottom: '80px',
         paddingLeft: 0,
@@ -53,10 +53,10 @@ export default function Offers({ onGoBack, onShopClick }) {
       <div style={{ position: 'absolute', bottom: '5%', right: '5%', width: '550px', height: '550px', background: 'rgba(34, 197, 94, 0.05)', filter: 'blur(120px)', borderRadius: '50%', pointerEvents: 'none' }}></div>
 
       <div className="container" style={{ maxWidth: '960px', margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 1 }}>
-        
+
         {/* Back Button & Top Header Tag */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '36px' }}>
-          <button 
+          <button
             onClick={onGoBack}
             style={{
               display: 'inline-flex',
@@ -87,7 +87,7 @@ export default function Offers({ onGoBack, onShopClick }) {
           >
             <ArrowLeft size={16} /> Back to Store
           </button>
-          
+
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', border: '1.5px solid #fde68a', padding: '8px 18px', borderRadius: '30px', boxShadow: '0 4px 12px rgba(217, 119, 6, 0.08)', whiteSpace: 'nowrap' }}>
             <Sparkles size={15} style={{ color: '#d97706' }} />
             <span style={{ fontSize: '0.78rem', fontWeight: 900, color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.75px' }}>
@@ -113,12 +113,12 @@ export default function Offers({ onGoBack, onShopClick }) {
             <p style={{ marginTop: '20px', color: '#64748b', fontSize: '0.95rem', fontWeight: 600 }}>Loading active promotional deals...</p>
           </div>
         ) : offers.length === 0 ? (
-          <div 
-            style={{ 
-              textAlign: 'center', 
-              padding: '64px 32px', 
-              backgroundColor: '#ffffff', 
-              borderRadius: '24px', 
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '64px 32px',
+              backgroundColor: '#ffffff',
+              borderRadius: '24px',
               border: '1px solid #e2e8f0',
               boxShadow: '0 10px 30px rgba(0,0,0,0.03)'
             }}
@@ -130,7 +130,7 @@ export default function Offers({ onGoBack, onShopClick }) {
             <p style={{ color: '#64748b', fontSize: '0.95rem', maxWidth: '420px', margin: '0 auto 24px', lineHeight: '1.5' }}>
               We update our special discounts regularly. Check back soon or browse our catalog for everyday low prices.
             </p>
-            <button 
+            <button
               onClick={onGoBack}
               style={{
                 padding: '12px 28px',
@@ -193,12 +193,12 @@ export default function Offers({ onGoBack, onShopClick }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{
-                          background: 'linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%)', 
+                          background: 'linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%)',
                           border: '1px solid #fde68a',
-                          borderRadius: '10px', 
+                          borderRadius: '10px',
                           padding: '6px 14px',
-                          display: 'flex', 
-                          alignItems: 'center', 
+                          display: 'flex',
+                          alignItems: 'center',
                           gap: '6px'
                         }}>
                           {offer.discountType === 'percentage'
@@ -246,16 +246,16 @@ export default function Offers({ onGoBack, onShopClick }) {
                   {/* Coupon Box & Copy CTA */}
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     <div style={{
-                      flex: 1, 
-                      background: '#f8fafc', 
+                      flex: 1,
+                      background: '#f8fafc',
                       border: '1.5px dashed #cbd5e1',
-                      borderRadius: '14px', 
+                      borderRadius: '14px',
                       padding: '12px 18px',
-                      fontFamily: 'monospace', 
-                      fontWeight: 900, 
+                      fontFamily: 'monospace',
+                      fontWeight: 900,
                       fontSize: '1.15rem',
-                      color: '#b45309', 
-                      letterSpacing: '2px', 
+                      color: '#b45309',
+                      letterSpacing: '2px',
                       textAlign: 'center',
                       userSelect: 'all'
                     }}>
@@ -267,27 +267,27 @@ export default function Offers({ onGoBack, onShopClick }) {
                       style={{
                         background: isCopied ? '#f0fdf4' : 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
                         border: isCopied ? '1.5px solid #bbf7d0' : 'none',
-                        borderRadius: '14px', 
+                        borderRadius: '14px',
                         padding: '14px 22px',
-                        display: 'flex', 
-                        alignItems: 'center', 
+                        display: 'flex',
+                        alignItems: 'center',
                         gap: '8px',
-                        cursor: 'pointer', 
+                        cursor: 'pointer',
                         color: isCopied ? '#166534' : '#0f172a',
-                        fontWeight: 900, 
+                        fontWeight: 900,
                         fontSize: '0.88rem',
                         textTransform: 'uppercase',
-                        transition: 'all 0.25s ease', 
+                        transition: 'all 0.25s ease',
                         whiteSpace: 'nowrap',
                         boxShadow: isCopied ? 'none' : '0 6px 18px rgba(245, 158, 11, 0.25)'
                       }}
-                      onMouseEnter={e => { 
+                      onMouseEnter={e => {
                         if (!isCopied) {
                           e.currentTarget.style.transform = 'scale(1.02)';
                           e.currentTarget.style.boxShadow = '0 8px 22px rgba(245, 158, 11, 0.35)';
                         }
                       }}
-                      onMouseLeave={e => { 
+                      onMouseLeave={e => {
                         if (!isCopied) {
                           e.currentTarget.style.transform = 'none';
                           e.currentTarget.style.boxShadow = '0 6px 18px rgba(245, 158, 11, 0.25)';

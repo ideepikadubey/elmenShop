@@ -1,12 +1,12 @@
 import React from 'react';
 import { Eye, Plus, Heart } from 'lucide-react';
 
-export default function ProductCard({ 
-  product, 
-  isWishlisted = false, 
-  onToggleWishlist, 
-  onAddToCart, 
-  onQuickView 
+export default function ProductCard({
+  product,
+  isWishlisted = false,
+  onToggleWishlist,
+  onAddToCart,
+  onQuickView
 }) {
   // Format price helper
   const formatPrice = (amount) => {
@@ -18,12 +18,12 @@ export default function ProductCard({
   return (
     <div className="product-card animate-fade-in" style={{ position: 'relative', opacity: isOutOfStock ? 0.85 : 1 }}>
       {isOutOfStock ? (
-        <div 
-          className="product-badge" 
-          style={{ 
-            backgroundColor: '#dc2626', 
-            color: '#ffffff', 
-            fontWeight: 900, 
+        <div
+          className="product-badge"
+          style={{
+            backgroundColor: '#dc2626',
+            color: '#ffffff',
+            fontWeight: 900,
             letterSpacing: '0.5px',
             boxShadow: '0 4px 10px rgba(220, 38, 38, 0.3)'
           }}
@@ -65,12 +65,12 @@ export default function ProductCard({
           <Heart size={16} fill={isWishlisted ? '#e74c3c' : 'none'} />
         </button>
       )}
-      
+
       <div className="product-card-image">
         {product.image ? (
-          <img 
-            src={product.image.startsWith('http') ? product.image : `http://localhost:5000${product.image}`} 
-            alt={product.name} 
+          <img
+            src={product.image.startsWith('http') ? product.image : `${API_BASE_URL}${product.image}`}
+            alt={product.name}
             style={{ height: '190px', width: 'auto', maxWidth: '100%', objectFit: 'contain', filter: isOutOfStock ? 'grayscale(40%)' : 'none' }}
           />
         ) : (
@@ -90,7 +90,7 @@ export default function ProductCard({
       <div className="product-card-info">
         <div className="product-card-subtitle">{product.subtitle}</div>
         <h3 className="product-card-title">{product.name}</h3>
-        
+
         <div className="product-card-specs">
           <span className="spec-badge">{product.weight}</span>
           <span className="spec-badge">Servings: {product.servingsCount}</span>
@@ -111,19 +111,19 @@ export default function ProductCard({
         </div>
 
         <div className="card-actions">
-          <button 
-            className="btn-icon" 
+          <button
+            className="btn-icon"
             onClick={() => onQuickView(product)}
             title="Quick View"
             aria-label="Quick View"
           >
             <Eye size={18} />
           </button>
-          <button 
-            className="btn btn-primary" 
+          <button
+            className="btn btn-primary"
             disabled={isOutOfStock}
-            style={{ 
-              padding: '10px 14px', 
+            style={{
+              padding: '10px 14px',
               fontSize: '0.78rem',
               backgroundColor: isOutOfStock ? '#64748b' : undefined,
               borderColor: isOutOfStock ? '#64748b' : undefined,

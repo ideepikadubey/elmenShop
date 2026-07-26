@@ -3,17 +3,17 @@ import axios from 'axios';
 import { X, Lock, Mail, User, Phone, CheckCircle2, ShieldCheck, RefreshCw, ArrowLeft } from 'lucide-react';
 
 export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
-  const [tab,        setTab]        = useState(promptMessage ? 'register' : 'login');
-  const [loginData,  setLoginData]  = useState({ email: '', password: '' });
+  const [tab, setTab] = useState(promptMessage ? 'register' : 'login');
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [registerData, setRegisterData] = useState({ name: '', email: '', phone: '', password: '' });
-  const [errors,     setErrors]     = useState({});
+  const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   // OTP flow state
-  const [otpStep,      setOtpStep]      = useState(false);   // true = show OTP screen
+  const [otpStep, setOtpStep] = useState(false);   // true = show OTP screen
   const [pendingEmail, setPendingEmail] = useState('');
-  const [otpDigits,    setOtpDigits]    = useState(['', '', '', '', '', '']);
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
   const [resendCooldown, setResendCooldown] = useState(0);
   const otpRefs = [useRef(), useRef(), useRef(), useRef(), useRef(), useRef()];
 
@@ -59,21 +59,21 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
   // ── Validation ──────────────────────────────────────────────────────────
   const validateLogin = () => {
     const newErrors = {};
-    if (!loginData.email.trim())             newErrors.email    = 'Email is required';
+    if (!loginData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(loginData.email)) newErrors.email = 'Invalid email';
-    if (!loginData.password)                 newErrors.password = 'Password is required';
+    if (!loginData.password) newErrors.password = 'Password is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const validateRegister = () => {
     const newErrors = {};
-    if (!registerData.name.trim())           newErrors.name = 'Full name is required';
-    if (!registerData.email.trim())          newErrors.email = 'Email is required';
+    if (!registerData.name.trim()) newErrors.name = 'Full name is required';
+    if (!registerData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(registerData.email)) newErrors.email = 'Invalid email';
-    if (!registerData.phone.trim())          newErrors.phone = 'Phone number is required';
+    if (!registerData.phone.trim()) newErrors.phone = 'Phone number is required';
     else if (!/^\d{10}$/.test(registerData.phone.trim())) newErrors.phone = 'Enter a 10-digit number';
-    if (!registerData.password)              newErrors.password = 'Password is required';
+    if (!registerData.password) newErrors.password = 'Password is required';
     else if (registerData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -87,7 +87,7 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
     setIsSubmitting(true);
     setErrors({});
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
+      const response = await axios.post('${API_BASE_URL}/api/auth/login', loginData);
       const data = response.data;
 
       if (data.requiresOtp) {
@@ -114,7 +114,7 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
     setIsSubmitting(true);
     setErrors({});
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/verify-otp', {
+      const response = await axios.post('${API_BASE_URL}/api/auth/verify-otp', {
         email: pendingEmail,
         otp,
       });
@@ -137,7 +137,7 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
   const handleResendOtp = async () => {
     if (resendCooldown > 0) return;
     try {
-      await axios.post('http://localhost:5000/api/auth/resend-otp', { email: pendingEmail });
+      await axios.post('${API_BASE_URL}/api/auth/resend-otp', { email: pendingEmail });
       setOtpDigits(['', '', '', '', '', '']);
       setResendCooldown(30);
       otpRefs[0].current?.focus();
@@ -154,10 +154,10 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
     setIsSubmitting(true);
     setErrors({});
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
-        name:     registerData.name,
-        email:    registerData.email,
-        phone:    registerData.phone,
+      const response = await axios.post('${API_BASE_URL}/api/auth/register', {
+        name: registerData.name,
+        email: registerData.email,
+        phone: registerData.phone,
         password: registerData.password,
       });
       const data = response.data;
@@ -182,13 +182,13 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
     <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1100, backgroundColor: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div
         className="modal-content animate-fade-in"
-        style={{ 
+        style={{
           maxWidth: '450px',
-          width: '100%', 
+          width: '100%',
           maxHeight: '90vh',
           overflowY: 'auto',
-          padding: 0, 
-          borderRadius: '24px', 
+          padding: 0,
+          borderRadius: '24px',
           background: '#ffffff',
           border: '1px solid rgba(255, 255, 255, 0.8)',
           boxShadow: '0 30px 60px rgba(15, 23, 42, 0.15)',
@@ -213,17 +213,17 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
             <p style={{ color: '#64748b', margin: 0, fontWeight: 500 }}>Welcome back to EL MEN Nutrition!</p>
           </div>
 
-        /* ── OTP Verification Screen ── */
+          /* ── OTP Verification Screen ── */
         ) : otpStep ? (
           <div>
             {/* Header */}
             <div style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)', padding: '28px 32px 20px', borderBottom: '1px solid #f1f5f9', position: 'relative' }}>
               <button
                 onClick={() => { setOtpStep(false); setErrors({}); }}
-                style={{ 
-                  position: 'absolute', top: '20px', left: '20px', 
-                  background: '#f1f5f9', border: 'none', borderRadius: '50%', 
-                  width: '32px', height: '32px', display: 'flex', alignItems: 'center', 
+                style={{
+                  position: 'absolute', top: '20px', left: '20px',
+                  background: '#f1f5f9', border: 'none', borderRadius: '50%',
+                  width: '32px', height: '32px', display: 'flex', alignItems: 'center',
                   justifyContent: 'center', cursor: 'pointer', color: '#475569',
                   transition: 'all 0.2s ease'
                 }}
@@ -234,10 +234,10 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
               </button>
               <button
                 onClick={onClose}
-                style={{ 
-                  position: 'absolute', top: '20px', right: '20px', 
-                  background: '#f1f5f9', border: 'none', borderRadius: '50%', 
-                  width: '32px', height: '32px', display: 'flex', alignItems: 'center', 
+                style={{
+                  position: 'absolute', top: '20px', right: '20px',
+                  background: '#f1f5f9', border: 'none', borderRadius: '50%',
+                  width: '32px', height: '32px', display: 'flex', alignItems: 'center',
                   justifyContent: 'center', cursor: 'pointer', color: '#475569',
                   transition: 'all 0.2s ease'
                 }}
@@ -248,10 +248,10 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
               </button>
 
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', paddingTop: '12px' }}>
-                <div style={{ 
-                  width: '52px', height: '52px', borderRadius: '50%', 
-                  background: 'linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%)', 
-                  border: '1px solid #fde68a', 
+                <div style={{
+                  width: '52px', height: '52px', borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%)',
+                  border: '1px solid #fde68a',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   boxShadow: '0 4px 12px rgba(251, 191, 36, 0.12)'
                 }}>
@@ -307,7 +307,7 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
               <button
                 type="submit"
                 className="btn btn-primary"
-                style={{ 
+                style={{
                   width: '100%', marginBottom: '16px', padding: '14px 20px', borderRadius: '30px', fontWeight: 800, textTransform: 'uppercase',
                   boxShadow: '0 4px 10px rgba(234, 179, 8, 0.2)', border: 'none', cursor: 'pointer', backgroundColor: '#eab308', color: '#0f172a'
                 }}
@@ -339,12 +339,12 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
             </form>
           </div>
 
-        /* ── Login / Register Forms ── */
+          /* ── Login / Register Forms ── */
         ) : (
           <div style={{ background: '#ffffff' }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '20px 20px 0' }}>
-              <button 
-                onClick={onClose} 
+              <button
+                onClick={onClose}
                 aria-label="Close"
                 style={{
                   background: '#f1f5f9', border: 'none', borderRadius: '50%',
@@ -402,15 +402,15 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                     <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', display: 'block', marginBottom: '8px' }}>Email Address</label>
                     <div style={{ position: 'relative' }}>
                       <Mail size={16} style={inputIconStyle} />
-                      <input 
-                        type="email" 
-                        name="email" 
-                        placeholder="yourname@gmail.com" 
-                        className="form-input" 
-                        style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }} 
-                        value={loginData.email} 
-                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })} 
-                        disabled={isSubmitting} 
+                      <input
+                        type="email"
+                        name="email"
+                        placeholder="yourname@gmail.com"
+                        className="form-input"
+                        style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                        value={loginData.email}
+                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                        disabled={isSubmitting}
                       />
                     </div>
                     {errors.email && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.email}</span>}
@@ -420,15 +420,15 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                     <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', display: 'block', marginBottom: '8px' }}>Password</label>
                     <div style={{ position: 'relative' }}>
                       <Lock size={16} style={inputIconStyle} />
-                      <input 
-                        type="password" 
-                        name="password" 
-                        placeholder="••••••••" 
-                        className="form-input" 
-                        style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }} 
-                        value={loginData.password} 
-                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })} 
-                        disabled={isSubmitting} 
+                      <input
+                        type="password"
+                        name="password"
+                        placeholder="••••••••"
+                        className="form-input"
+                        style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                        value={loginData.password}
+                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                        disabled={isSubmitting}
                       />
                     </div>
                     {errors.password && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.password}</span>}
@@ -444,10 +444,10 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                     🔒 An OTP verification link will be sent to your email to complete login.
                   </p>
 
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary" 
-                    style={{ 
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{
                       width: '100%', padding: '14px 20px', borderRadius: '30px', fontWeight: 800, textTransform: 'uppercase',
                       boxShadow: '0 4px 10px rgba(234, 179, 8, 0.2)', border: 'none', cursor: 'pointer', backgroundColor: '#eab308', color: '#0f172a'
                     }}
@@ -464,15 +464,15 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                     <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', display: 'block', marginBottom: '8px' }}>Full Name</label>
                     <div style={{ position: 'relative' }}>
                       <User size={16} style={inputIconStyle} />
-                      <input 
-                        type="text" 
-                        name="name" 
-                        placeholder="Alex Johnson" 
-                        className="form-input" 
-                        style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }} 
-                        value={registerData.name} 
-                        onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })} 
-                        disabled={isSubmitting} 
+                      <input
+                        type="text"
+                        name="name"
+                        placeholder="Alex Johnson"
+                        className="form-input"
+                        style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                        value={registerData.name}
+                        onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                        disabled={isSubmitting}
                       />
                     </div>
                     {errors.name && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.name}</span>}
@@ -482,15 +482,15 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                     <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', display: 'block', marginBottom: '8px' }}>Email Address</label>
                     <div style={{ position: 'relative' }}>
                       <Mail size={16} style={inputIconStyle} />
-                      <input 
-                        type="email" 
-                        name="email" 
-                        placeholder="alex@gmail.com" 
-                        className="form-input" 
-                        style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }} 
-                        value={registerData.email} 
-                        onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })} 
-                        disabled={isSubmitting} 
+                      <input
+                        type="email"
+                        name="email"
+                        placeholder="alex@gmail.com"
+                        className="form-input"
+                        style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                        value={registerData.email}
+                        onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                        disabled={isSubmitting}
                       />
                     </div>
                     {errors.email && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.email}</span>}
@@ -500,15 +500,15 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                     <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', display: 'block', marginBottom: '8px' }}>Phone Number</label>
                     <div style={{ position: 'relative' }}>
                       <Phone size={16} style={inputIconStyle} />
-                      <input 
-                        type="text" 
-                        name="phone" 
-                        placeholder="9876543210" 
-                        className="form-input" 
-                        style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }} 
-                        value={registerData.phone} 
-                        onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })} 
-                        disabled={isSubmitting} 
+                      <input
+                        type="text"
+                        name="phone"
+                        placeholder="9876543210"
+                        className="form-input"
+                        style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                        value={registerData.phone}
+                        onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
+                        disabled={isSubmitting}
                       />
                     </div>
                     {errors.phone && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.phone}</span>}
@@ -518,15 +518,15 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                     <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', display: 'block', marginBottom: '8px' }}>Password</label>
                     <div style={{ position: 'relative' }}>
                       <Lock size={16} style={inputIconStyle} />
-                      <input 
-                        type="password" 
-                        name="password" 
-                        placeholder="Min 6 characters" 
-                        className="form-input" 
-                        style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }} 
-                        value={registerData.password} 
-                        onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })} 
-                        disabled={isSubmitting} 
+                      <input
+                        type="password"
+                        name="password"
+                        placeholder="Min 6 characters"
+                        className="form-input"
+                        style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                        value={registerData.password}
+                        onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                        disabled={isSubmitting}
                       />
                     </div>
                     {errors.password && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.password}</span>}
@@ -538,10 +538,10 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                     </div>
                   )}
 
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary" 
-                    style={{ 
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{
                       width: '100%', padding: '14px 20px', borderRadius: '30px', fontWeight: 800, textTransform: 'uppercase',
                       boxShadow: '0 4px 10px rgba(234, 179, 8, 0.2)', border: 'none', cursor: 'pointer', backgroundColor: '#eab308', color: '#0f172a'
                     }}

@@ -29,7 +29,7 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
     setTrackingData(null);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/orders/track', {
+      const response = await axios.post('${API_BASE_URL}/api/orders/track', {
         trackingNumber: trimmed
       });
 
@@ -82,11 +82,11 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
   const isCancelled = trackingData?.current_status?.toLowerCase().includes('cancel');
 
   return (
-    <div 
+    <div
       className="track-order-wrapper"
-      style={{ 
-        background: 'radial-gradient(circle at 50% 0%, #ffffff 0%, #f4f6f9 100%)', 
-        minHeight: '85vh', 
+      style={{
+        background: 'radial-gradient(circle at 50% 0%, #ffffff 0%, #f4f6f9 100%)',
+        minHeight: '85vh',
         paddingTop: '150px',
         paddingBottom: '80px',
         paddingLeft: 0,
@@ -102,10 +102,10 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
       <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: '500px', height: '500px', background: 'rgba(34, 197, 94, 0.04)', filter: 'blur(120px)', borderRadius: '50%', pointerEvents: 'none' }}></div>
 
       <div className="container" style={{ maxWidth: '850px', margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 1 }}>
-        
+
         {/* Back Link & Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '36px' }}>
-          <button 
+          <button
             onClick={onGoBack}
             style={{
               display: 'inline-flex',
@@ -136,7 +136,7 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
           >
             <ArrowLeft size={16} /> Back to Store
           </button>
-          
+
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', border: '1.5px solid #fde68a', padding: '8px 18px', borderRadius: '30px', boxShadow: '0 4px 12px rgba(217, 119, 6, 0.08)', whiteSpace: 'nowrap' }}>
             <span style={{ width: '8px', height: '8px', backgroundColor: '#d97706', borderRadius: '50%', display: 'inline-block' }}></span>
             <span style={{ fontSize: '0.78rem', fontWeight: 900, color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.75px' }}>
@@ -156,7 +156,7 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
         </div>
 
         {/* Search Panel Card */}
-        <div 
+        <div
           style={{
             backgroundColor: 'rgba(255, 255, 255, 0.85)',
             backdropFilter: 'blur(20px)',
@@ -171,9 +171,9 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
         >
           <form onSubmit={handleTrackSubmit} style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
             <div style={{ flex: 1, minWidth: '280px', position: 'relative' }}>
-              <input 
-                type="text" 
-                placeholder="Enter AWB Tracking Number..." 
+              <input
+                type="text"
+                placeholder="Enter AWB Tracking Number..."
                 value={awb}
                 onChange={(e) => setAwb(e.target.value)}
                 disabled={isLoading}
@@ -203,11 +203,11 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
                 }}
               />
             </div>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isLoading || !awb.trim()}
-              style={{ 
-                padding: '18px 40px', 
+              style={{
+                padding: '18px 40px',
                 borderRadius: '100px',
                 display: 'flex',
                 alignItems: 'center',
@@ -322,7 +322,7 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
 
         {/* Active Tracking Portal */}
         {trackingData && (
-          <div 
+          <div
             style={{
               backgroundColor: '#ffffff',
               borderRadius: '24px',
@@ -354,9 +354,9 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
               ].map((card, idx) => (
                 <div key={idx} style={{ background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <span style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.75px', fontWeight: 700 }}>{card.title}</span>
-                  <strong 
-                    style={{ 
-                      fontSize: '1rem', 
+                  <strong
+                    style={{
+                      fontSize: '1rem',
                       color: card.isStatus ? (isCancelled ? '#ef4444' : '#10b981') : (card.isHighlight ? '#d97706' : '#0f172a'),
                       fontFamily: card.isMono ? 'monospace' : 'inherit',
                       textTransform: card.isStatus ? 'uppercase' : 'none',
@@ -385,7 +385,7 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
                 <h4 style={{ textTransform: 'uppercase', fontWeight: 800, fontSize: '0.8rem', color: '#64748b', letterSpacing: '1px', marginBottom: '24px' }}>
                   Delivery Milestones
                 </h4>
-                
+
                 {/* Horizontal Progress Timeline */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', overflowX: 'auto', paddingBottom: '16px', gap: '8px' }}>
                   {milestones.map((m, idx) => {
@@ -394,12 +394,12 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
                     const isLast = idx === milestones.length - 1;
 
                     return (
-                      <div 
-                        key={idx} 
-                        style={{ 
-                          flex: 1, 
-                          textAlign: 'center', 
-                          position: 'relative', 
+                      <div
+                        key={idx}
+                        style={{
+                          flex: 1,
+                          textAlign: 'center',
+                          position: 'relative',
                           minWidth: '110px',
                           display: 'flex',
                           flexDirection: 'column',
@@ -408,7 +408,7 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
                       >
                         {/* Connecting track line */}
                         {!isLast && (
-                          <div 
+                          <div
                             style={{
                               position: 'absolute',
                               top: '20px',
@@ -424,7 +424,7 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
                         )}
 
                         {/* Node bubble */}
-                        <div 
+                        <div
                           style={{
                             width: '40px',
                             height: '40px',
@@ -449,11 +449,11 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
                         </div>
 
                         {/* Node titles */}
-                        <span 
-                          style={{ 
-                            fontSize: '0.8rem', 
-                            fontWeight: 800, 
-                            marginTop: '14px', 
+                        <span
+                          style={{
+                            fontSize: '0.8rem',
+                            fontWeight: 800,
+                            marginTop: '14px',
                             color: isActive ? '#0f172a' : isPassed ? '#334155' : '#94a3b8',
                             textTransform: 'uppercase',
                             letterSpacing: '0.25px'
@@ -479,10 +479,10 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                   {trackingData.scan_details.map((scan, idx) => (
-                    <div 
+                    <div
                       key={idx}
-                      style={{ 
-                        display: 'flex', 
+                      style={{
+                        display: 'flex',
                         gap: '24px',
                         position: 'relative',
                         paddingBottom: '24px',
@@ -491,7 +491,7 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
                     >
                       {/* Vertical connector line */}
                       {idx !== trackingData.scan_details.length - 1 && (
-                        <div 
+                        <div
                           style={{
                             position: 'absolute',
                             left: '5px',
@@ -504,7 +504,7 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
                       )}
 
                       {/* Node point */}
-                      <div 
+                      <div
                         style={{
                           width: '12px',
                           height: '12px',
@@ -519,12 +519,12 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
                       />
 
                       {/* Card block */}
-                      <div 
-                        style={{ 
-                          flex: 1, 
-                          backgroundColor: '#f8fafc', 
-                          border: '1px solid #e2e8f0', 
-                          borderRadius: '16px', 
+                      <div
+                        style={{
+                          flex: 1,
+                          backgroundColor: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '16px',
                           padding: '18px 24px',
                           boxShadow: idx === 0 ? '0 8px 24px rgba(0, 0, 0, 0.02)' : 'none',
                           transition: 'all 0.25s'

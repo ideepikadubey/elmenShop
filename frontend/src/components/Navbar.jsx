@@ -163,7 +163,7 @@ export default function Navbar({
                   >
                     <div style={{ width: '40px', height: '40px', borderRadius: '4px', background: 'var(--bg-dark-700)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       {p.image ? (
-                        <img src={p.image.startsWith('http') ? p.image : `http://localhost:5000${p.image}`} alt={p.name} style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+                        <img src={p.image.startsWith('http') ? p.image : `${API_BASE_URL}${p.image}`} alt={p.name} style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
                       ) : (
                         <div className="jar-graphic" style={{ height: '30px', width: '24px', padding: '1px', borderRadius: '2px', transform: 'scale(0.8)' }}>
                           <div className="jar-lid" style={{ height: '2px', width: '16px' }}></div>
@@ -440,8 +440,8 @@ export default function Navbar({
               </a>
             </li>
             <li>
-              <a 
-                href="#track-order" 
+              <a
+                href="#track-order"
                 className={activeTab === 'track-order' ? 'active' : ''}
                 onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('elmen:openTrackOrder')); setIsMobileMenuOpen(false); }}
               >
@@ -523,11 +523,11 @@ export default function Navbar({
               </a>
             </li>
             <li>
-              <a 
-                href="#business-enquiry" 
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  window.dispatchEvent(new CustomEvent('elmen:openBusinessEnquiry')); 
+              <a
+                href="#business-enquiry"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.dispatchEvent(new CustomEvent('elmen:openBusinessEnquiry'));
                 }}
               >
                 BUSINESS ENQUIRY
@@ -551,7 +551,7 @@ export default function Navbar({
 
       {/* Mobile Navigation Drawer */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="mobile-drawer-menu"
           style={{
             position: 'fixed',
