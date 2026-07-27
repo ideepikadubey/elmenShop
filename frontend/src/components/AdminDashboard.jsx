@@ -71,14 +71,14 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       }
 
       // Fetch products
-      const prodRes = await axios.get('${API_BASE_URL}/api/products?limit=100');
+      const prodRes = await axios.get(`${API_BASE_URL}/api/products?limit=100`);
       const prodData = prodRes.data;
       if (prodData.success) {
         setProducts(prodData.products);
       }
 
       // Fetch orders
-      const orderRes = await axios.get('${API_BASE_URL}/api/orders?limit=100', {
+      const orderRes = await axios.get(`${API_BASE_URL}/api/orders?limit=100`, {
         headers: getHeaders()
       });
       const orderData = orderRes.data;
@@ -87,7 +87,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       }
 
       // Fetch enquiries
-      const enqRes = await axios.get('${API_BASE_URL}/api/enquiries', {
+      const enqRes = await axios.get(`${API_BASE_URL}/api/enquiries`, {
         headers: getHeaders()
       });
       const enqData = enqRes.data;
@@ -96,7 +96,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       }
 
       // Fetch offers
-      const offRes = await axios.get('${API_BASE_URL}/api/offers', {
+      const offRes = await axios.get(`${API_BASE_URL}/api/offers`, {
         headers: getHeaders()
       });
       const offData = offRes.data;
@@ -266,7 +266,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
 
       const url = editingProduct
         ? `${API_BASE_URL}/api/products/${editingProduct._id}`
-        : '${API_BASE_URL}/api/products';
+        : `${API_BASE_URL}/api/products`;
       const method = editingProduct ? 'PUT' : 'POST';
 
       const response = await axios({
@@ -1413,7 +1413,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     targetProducts: offerForm.targetProducts
                   };
 
-                  await axios.post('${API_BASE_URL}/api/offers', body, { headers: getHeaders() });
+                  await axios.post(`${API_BASE_URL}/api/offers`, body, { headers: getHeaders() });
                   showSuccess('Promotion Coupon created successfully!');
                   setIsOfferModalOpen(false);
                   fetchAdminData();

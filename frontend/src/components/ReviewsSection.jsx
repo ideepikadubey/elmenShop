@@ -50,7 +50,7 @@ export default function ReviewsSection({ user, productsList = [] }) {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('${API_BASE_URL}/api/reviews');
+      const res = await axios.get(`${API_BASE_URL}/api/reviews`);
       if (res.data.success) setReviews(res.data.reviews);
     } catch {
       // stay with empty array
@@ -78,7 +78,7 @@ export default function ReviewsSection({ user, productsList = [] }) {
     setFormError('');
     try {
       const token = localStorage.getItem('elmen_token');
-      await axios.post('${API_BASE_URL}/api/reviews', {
+      await axios.post(`${API_BASE_URL}/api/reviews`, {
         productId: formData.productId,
         rating: formData.rating,
         comment: formData.comment.trim(),

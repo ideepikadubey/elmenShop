@@ -46,7 +46,7 @@ export default function LeadPopupModal() {
 
     try {
       // Send lead to backend API or WhatsApp redirect
-      await axios.post('${API_BASE_URL}/api/offers', {
+      await axios.post(`${API_BASE_URL}/api/offers`, {
         code: 'WELCOME10',
         title: `Popup Lead: ${cleanPhone}`,
         discountType: 'percentage',

@@ -15,7 +15,7 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
 
   // Fetch available offers from backend
   useEffect(() => {
-    axios.get('${API_BASE_URL}/api/offers')
+    axios.get(`${API_BASE_URL}/api/offers`)
       .then(res => { if (res.data.success) setAvailableOffers(res.data.offers); })
       .catch(() => { });
   }, []);
@@ -43,7 +43,7 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
     setPromoLoading(true);
     setPromoError('');
     try {
-      const res = await axios.post('${API_BASE_URL}/api/offers/validate', { code });
+      const res = await axios.post(`${API_BASE_URL}/api/offers/validate`, { code });
       setAppliedPromo({
         code: res.data.offer.code,
         title: res.data.offer.title,

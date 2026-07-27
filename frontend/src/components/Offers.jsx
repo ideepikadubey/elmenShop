@@ -8,7 +8,7 @@ export default function Offers({ onGoBack, onShopClick }) {
   const [copiedCode, setCopiedCode] = useState('');
 
   useEffect(() => {
-    axios.get('${API_BASE_URL}/api/offers')
+    axios.get(`${API_BASE_URL}/api/offers`)
       .then(res => {
         if (res.data.success) setOffers(res.data.offers);
       })

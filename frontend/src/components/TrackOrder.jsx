@@ -29,7 +29,7 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
     setTrackingData(null);
 
     try {
-      const response = await axios.post('${API_BASE_URL}/api/orders/track', {
+      const response = await axios.post(`${API_BASE_URL}/api/orders/track`, {
         trackingNumber: trimmed
       });
 

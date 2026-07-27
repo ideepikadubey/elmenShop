@@ -17,7 +17,7 @@ export default function ContactSection() {
         ...formData,
         message: formData.isDealer ? `[DEALER ENQUIRY] ${formData.message}` : formData.message
       };
-      await axios.post('${API_BASE_URL}/api/enquiries', payload);
+      await axios.post(`${API_BASE_URL}/api/enquiries`, payload);
       setFormData({ name: '', email: '', message: '', isDealer: false });
       setIsOpen(false);
       alert('Your message has been sent successfully! Our team will get in touch with you shortly.');

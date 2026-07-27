@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { X, Lock, Mail, User, Phone, CheckCircle2, ShieldCheck, RefreshCw, ArrowLeft } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
   const [tab, setTab] = useState(promptMessage ? 'register' : 'login');
@@ -87,7 +88,7 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
     setIsSubmitting(true);
     setErrors({});
     try {
-      const response = await axios.post('${API_BASE_URL}/api/auth/login', loginData);
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, loginData);
       const data = response.data;
 
       if (data.requiresOtp) {
@@ -114,7 +115,7 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
     setIsSubmitting(true);
     setErrors({});
     try {
-      const response = await axios.post('${API_BASE_URL}/api/auth/verify-otp', {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/verify-otp`, {
         email: pendingEmail,
         otp,
       });
@@ -137,7 +138,7 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
   const handleResendOtp = async () => {
     if (resendCooldown > 0) return;
     try {
-      await axios.post('${API_BASE_URL}/api/auth/resend-otp', { email: pendingEmail });
+      await axios.post(`${API_BASE_URL}/api/auth/resend-otp`, { email: pendingEmail });
       setOtpDigits(['', '', '', '', '', '']);
       setResendCooldown(30);
       otpRefs[0].current?.focus();
@@ -154,7 +155,7 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
     setIsSubmitting(true);
     setErrors({});
     try {
-      const response = await axios.post('${API_BASE_URL}/api/auth/register', {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
         name: registerData.name,
         email: registerData.email,
         phone: registerData.phone,

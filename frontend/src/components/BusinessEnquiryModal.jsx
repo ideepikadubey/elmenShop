@@ -37,7 +37,7 @@ export default function BusinessEnquiryModal({ isOpen, onClose }) {
         isDealer: formData.isDealer
       };
 
-      await axios.post('${API_BASE_URL}/api/enquiries', payload);
+      await axios.post(`${API_BASE_URL}/api/enquiries`, payload);
       setIsSuccess(true);
     } catch (err) {
       setErrorMsg(err.response?.data?.message || err.message || 'Failed to submit enquiry. Please try again.');

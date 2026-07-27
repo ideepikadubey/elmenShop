@@ -100,7 +100,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
         country: 'India'
       };
 
-      const response = await axios.post('${API_BASE_URL}/api/orders', {
+      const response = await axios.post(`${API_BASE_URL}/api/orders`, {
         items: orderItems,
         shippingAddress,
         paymentMethod: paymentMethod === 'cod' ? 'cod' : 'razorpay',
@@ -121,7 +121,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
         return;
       }
 
-      const paymentRes = await axios.post('${API_BASE_URL}/api/payments/create-order', {
+      const paymentRes = await axios.post(`${API_BASE_URL}/api/payments/create-order`, {
         orderId: data.order._id
       }, {
         headers: {
@@ -135,7 +135,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
       }
 
       if (paymentData.mock) {
-        await axios.post('${API_BASE_URL}/api/payments/verify', {
+        await axios.post(`${API_BASE_URL}/api/payments/verify`, {
           orderId: data.order._id,
           razorpayOrderId: paymentData.razorpayOrderId,
           razorpayPaymentId: 'mock_payment_id',
@@ -162,7 +162,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
         handler: async function (response) {
           try {
             setIsProcessing(true);
-            const verifyRes = await axios.post('${API_BASE_URL}/api/payments/verify', {
+            const verifyRes = await axios.post(`${API_BASE_URL}/api/payments/verify`, {
               orderId: data.order._id,
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,

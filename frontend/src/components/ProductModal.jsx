@@ -45,7 +45,7 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
       }
 
       const pid = product._id || product.id;
-      const res = await axios.post('${API_BASE_URL}/api/reviews', {
+      const res = await axios.post(`${API_BASE_URL}/api/reviews`, {
         productId: pid,
         rating: newRating,
         comment: newComment
