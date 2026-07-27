@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, CheckCircle, ShieldAlert, Star } from 'lucide-react';
 import axios from 'axios';
+import { API_BASE_URL, getImageUrl } from "./config/api";
 
 export default function ProductModal({ product, onClose, onAddToCart }) {
   if (!product) return null;

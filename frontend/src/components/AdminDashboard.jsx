@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from "./config/api";
 import { ShoppingBag, Box, IndianRupee, AlertCircle, Plus, Edit2, Trash2, CheckCircle2, RotateCw, Filter, Eye, Truck, User } from 'lucide-react';
 
 const CATEGORIES = [

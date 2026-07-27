@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL, getImageUrl } from "./config/api";
 import { X, CreditCard, QrCode, Truck, Check, HelpCircle, FileText } from 'lucide-react';
 
 export default function CheckoutModal({ cartItems, priceDetails, onClose, onClearCart, user }) {

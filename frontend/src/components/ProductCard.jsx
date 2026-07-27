@@ -1,5 +1,6 @@
 import React from 'react';
 import { Eye, Plus, Heart } from 'lucide-react';
+import { API_BASE_URL, getImageUrl } from "./config/api";
 
 export default function ProductCard({
   product,

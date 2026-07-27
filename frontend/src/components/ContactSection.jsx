@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { API_BASE_URL, getImageUrl } from "./config/api";
 import { Send, X, MessageSquare, MapPin } from 'lucide-react';
 
 export default function ContactSection() {

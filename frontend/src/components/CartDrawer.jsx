@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL, getImageUrl } from "./config/api";
 import { X, Trash2, ArrowRight, Tag, LogIn, ChevronDown, ChevronUp, CheckCircle2, Percent, IndianRupee } from 'lucide-react';
 
 export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveItem, onCheckout, user, onRequireLogin }) {

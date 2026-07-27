@@ -32,7 +32,7 @@ export default function AuthenticityChecker() {
     if (!code.trim()) return;
 
     setStatus('checking');
-    
+
     setTimeout(() => {
       const normalizedCode = code.trim().toUpperCase();
       if (validCodes[normalizedCode]) {
@@ -70,17 +70,17 @@ export default function AuthenticityChecker() {
                 <div className="form-group">
                   <label>Scratch Code / Serial Number</label>
                   <div className="auth-form-row">
-                    <input 
-                      type="text" 
-                      placeholder="e.g. ELMEN-WHEY-2026" 
-                      className="form-input" 
-                      value={code} 
+                    <input
+                      type="text"
+                      placeholder="e.g. ELMEN-WHEY-2026"
+                      className="form-input"
+                      value={code}
                       onChange={(e) => setCode(e.target.value)}
                       style={{ textTransform: 'uppercase' }}
                       disabled={status === 'checking'}
                     />
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       className="btn btn-primary"
                       disabled={status === 'checking' || !code}
                     >
@@ -90,14 +90,7 @@ export default function AuthenticityChecker() {
                 </div>
               </form>
 
-              <div style={{ marginTop: '20px', fontSize: '0.8rem', color: 'var(--text-muted)', backgroundColor: 'var(--bg-dark-900)', padding: '12px', borderRadius: '6px', border: '1px solid var(--bg-dark-700)' }}>
-                <p style={{ fontWeight: 'bold', color: 'var(--primary-yellow)', marginBottom: '4px' }}>Demo verification codes:</p>
-                <ul style={{ listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                  <li><code>ELMEN-WHEY-2026</code></li>
-                  <li><code>ELMEN-GAIN-9988</code></li>
-                  <li><code>ELMEN-CREA-5544</code></li>
-                </ul>
-              </div>
+
             </div>
 
             <div className="auth-results">
@@ -122,7 +115,7 @@ export default function AuthenticityChecker() {
                   </div>
                   <h3 className="certificate-title">Certificate of Authenticity</h3>
                   <div className="certificate-subtitle">EL MEN Nutrition India</div>
-                  
+
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-gray)', margin: '16px 0 8px' }}>
                     This certifies that the product below is officially manufactured by EL MEN Nutrition under global GMP and ISO standards.
                   </p>
@@ -140,7 +133,7 @@ export default function AuthenticityChecker() {
                     <span>✓ GMP CERTIFIED</span>
                     <span>✓ FSSAI APPROVED</span>
                   </div>
-                  
+
                   {/* Decorative Seal */}
                   <div className="certificate-stamp">
                     <ShieldCheck size={80} color="var(--primary-yellow)" />
@@ -155,7 +148,7 @@ export default function AuthenticityChecker() {
                   </div>
                   <h3 className="certificate-title" style={{ color: 'var(--primary-red)' }}>Counterfeit Warning</h3>
                   <div className="certificate-subtitle">Safety & Integrity Alert</div>
-                  
+
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-gray)', margin: '16px 0 24px' }}>
                     {errorMsg}
                   </p>
@@ -182,8 +175,8 @@ export default function AuthenticityChecker() {
             </div>
 
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '4px' }}>
-              <a 
-                href="/LAB TEST REPORT.pdf" 
+              <a
+                href="/LAB TEST REPORT.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-primary"
@@ -191,7 +184,7 @@ export default function AuthenticityChecker() {
               >
                 👁️ Open Fullscreen Preview
               </a>
-              <button 
+              <button
                 onClick={() => setSubTab('check')}
                 className="btn btn-secondary"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}
@@ -208,16 +201,16 @@ export default function AuthenticityChecker() {
                 </span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>NABL Certificate of Analysis</span>
               </div>
-              <iframe 
-                src="/LAB TEST REPORT.pdf#toolbar=0" 
+              <iframe
+                src="/LAB TEST REPORT.pdf#toolbar=0"
                 title="EL MEN Nutrition Lab Report Certificate"
-                style={{ 
-                  width: '100%', 
-                  height: '650px', 
-                  border: '1px solid var(--bg-dark-600)', 
+                style={{
+                  width: '100%',
+                  height: '650px',
+                  border: '1px solid var(--bg-dark-600)',
                   borderRadius: '0 0 12px 12px',
                   backgroundColor: '#ffffff'
-                }} 
+                }}
               />
             </div>
           </div>

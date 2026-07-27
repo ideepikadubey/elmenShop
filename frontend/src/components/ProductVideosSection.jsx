@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Play, Pause, Volume2, VolumeX, Instagram, ExternalLink, Sparkles } from 'lucide-react';
-
+import { API_BASE_URL, getImageUrl } from "./config/api";
 const videoList = [
   {
     id: 'vid-1',
@@ -88,7 +88,7 @@ function VideoCard({ video }) {
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
         />
-        
+
         {/* Top Badges */}
         <div className="video-card-top-bar">
           <span className="video-badge">

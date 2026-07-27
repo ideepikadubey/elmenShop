@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, HelpCircle, AlertTriangle, ShieldCheck as VerifiedIcon, Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
-
+import { API_BASE_URL, getImageUrl } from "./config/api";
 export default function AuthenticityPage({ onGoBack }) {
   const [code, setCode] = useState('');
   const [status, setStatus] = useState('idle'); // idle, checking, success, error
@@ -20,7 +20,7 @@ export default function AuthenticityPage({ onGoBack }) {
     if (!code.trim()) return;
 
     setStatus('checking');
-    
+
     setTimeout(() => {
       const normalizedCode = code.trim().toUpperCase();
       if (validCodes[normalizedCode]) {
@@ -87,17 +87,17 @@ export default function AuthenticityPage({ onGoBack }) {
               <div className="form-group">
                 <label style={{ color: '#cbd5e1' }}>Scratch Code / Serial Number</label>
                 <div className="auth-form-row">
-                  <input 
-                    type="text" 
-                    placeholder="e.g. ELMEN-WHEY-2026" 
-                    className="form-input" 
-                    value={code} 
+                  <input
+                    type="text"
+                    placeholder="e.g. ELMEN-WHEY-2026"
+                    className="form-input"
+                    value={code}
                     onChange={(e) => setCode(e.target.value)}
                     style={{ textTransform: 'uppercase', background: '#111827', border: '1px solid #374151', color: '#ffffff' }}
                     disabled={status === 'checking'}
                   />
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="btn btn-primary"
                     disabled={status === 'checking' || !code}
                     style={{ background: 'var(--primary-yellow)', color: '#000000', fontWeight: 900 }}
@@ -140,7 +140,7 @@ export default function AuthenticityPage({ onGoBack }) {
                 </div>
                 <h3 className="certificate-title" style={{ color: '#ffffff' }}>Certificate of Authenticity</h3>
                 <div className="certificate-subtitle" style={{ color: 'var(--primary-yellow)' }}>EL MEN NUTRITION INDIA</div>
-                
+
                 <p style={{ fontSize: '0.88rem', color: '#cbd5e1', margin: '20px 0 12px' }}>
                   This certifies that the product below is officially manufactured by EL MEN Nutrition under global GMP and ISO standards.
                 </p>
@@ -168,7 +168,7 @@ export default function AuthenticityPage({ onGoBack }) {
                 </div>
                 <h3 className="certificate-title" style={{ color: 'var(--primary-red)' }}>Counterfeit Warning</h3>
                 <div className="certificate-subtitle">Safety & Integrity Alert</div>
-                
+
                 <p style={{ fontSize: '0.88rem', color: '#cbd5e1', margin: '20px 0 24px' }}>
                   {errorMsg}
                 </p>
