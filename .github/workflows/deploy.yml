@@ -50,7 +50,7 @@ jobs:
             cd /var/www/elmenShop
 
             git fetch origin
-            git reset --hard origin/main
+            git reset --hard origin/Main
 
             FRONTEND="${{ steps.filter.outputs.frontend }}"
             BACKEND="${{ steps.filter.outputs.backend }}"
