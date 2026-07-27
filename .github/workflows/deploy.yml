@@ -3,7 +3,7 @@ name: Deploy Elmen Shop
 on:
   push:
     branches:
-      - main
+      - Main
 
 concurrency:
   group: production
