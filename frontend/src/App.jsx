@@ -21,6 +21,7 @@ import TermsPolicyModal from './components/TermsPolicyModal';
 import TrackOrder from './components/TrackOrder';
 import LeadPopupModal from './components/LeadPopupModal';
 import BusinessEnquiryModal from './components/BusinessEnquiryModal';
+import UpcomingProductsModal from './components/UpcomingProductsModal';
 const staticProducts = [];
 import { Award, Compass, RefreshCw, Layers, Shield, LayoutGrid, Zap, Truck, FlaskConical, Gem, CheckCircle } from 'lucide-react';
 import AdminDashboard from './components/AdminDashboard';
@@ -92,6 +93,8 @@ export default function App() {
   const [legalActiveTab, setLegalActiveTab] = useState('terms');
   const [isReturnPolicyOpen, setIsReturnPolicyOpen] = useState(false);
   const [isBusinessEnquiryOpen, setIsBusinessEnquiryOpen] = useState(false);
+  const [isUpcomingOpen, setIsUpcomingOpen] = useState(false);
+  const [upcomingCategory, setUpcomingCategory] = useState('all');
   const [trackingAwb, setTrackingAwb] = useState('');
   const [tickerOffers, setTickerOffers] = useState([]);
 
@@ -198,6 +201,17 @@ export default function App() {
     };
     window.addEventListener('elmen:openOffers', handler);
     return () => window.removeEventListener('elmen:openOffers', handler);
+  }, []);
+
+  // Open upcoming products modal when triggered from Navbar or Footer
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail) setUpcomingCategory(e.detail);
+      else setUpcomingCategory('all');
+      setIsUpcomingOpen(true);
+    };
+    window.addEventListener('elmen:openUpcoming', handler);
+    return () => window.removeEventListener('elmen:openUpcoming', handler);
   }, []);
 
   // Handle authenticity and lab reports navigation events
@@ -1360,6 +1374,12 @@ export default function App() {
       <BusinessEnquiryModal
         isOpen={isBusinessEnquiryOpen}
         onClose={() => setIsBusinessEnquiryOpen(false)}
+      />
+
+      <UpcomingProductsModal
+        isOpen={isUpcomingOpen}
+        initialCategory={upcomingCategory}
+        onClose={() => setIsUpcomingOpen(false)}
       />
 
     </div>

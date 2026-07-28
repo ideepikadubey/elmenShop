@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, ArrowLeft, Download, ExternalLink, ShieldCheck } from 'lucide-react';
+import { FileText, ArrowLeft, ExternalLink, ShieldCheck } from 'lucide-react';
 
 export default function LabReportsPage({ onGoBack }) {
   return (
@@ -82,14 +82,6 @@ export default function LabReportsPage({ onGoBack }) {
               style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', background: 'var(--primary-yellow)', color: '#000000', fontWeight: 900, padding: '12px 24px', borderRadius: '30px' }}
             >
               <ExternalLink size={18} /> Open Fullscreen Report
-            </a>
-            <a 
-              href="/LAB TEST REPORT.pdf" 
-              download="ELMEN_LAB_TEST_REPORT.pdf"
-              className="btn btn-secondary"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', background: '#1f2937', color: '#ffffff', padding: '12px 24px', borderRadius: '30px' }}
-            >
-              <Download size={18} /> Download Official PDF
             </a>
           </div>
 

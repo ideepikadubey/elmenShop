@@ -8,7 +8,7 @@ const categories = [
   { key: 'gainers', label: 'Gainers', image: '/gainer.png', bg: '#e8f5e9', color: '#2e7d32' },
   { key: 'preworkouts', label: 'Pre Workout', image: '/preworkout.png', bg: '#fce4ec', color: '#c62828' },
   { key: 'ayurveda', label: 'Ayurveda', image: '/wellness.png', bg: '#f1f8e9', color: '#558b2f' },
-  { key: 'fitfoods', label: 'Fit Foods', image: '/fitfoods.png', bg: '#e3f2fd', color: '#1565c0' },
+  { key: 'fitfoods', label: 'Wellness', image: '/fitfoods.png', bg: '#e3f2fd', color: '#1565c0' },
   { key: 'accessories', label: 'Accessories', image: '/fitfoods.png', bg: '#f3e5f5', color: '#6a1b9a' },
 ];
 
@@ -373,7 +373,8 @@ export default function Navbar({
                   <button
                     onClick={() => {
                       setIsLaunchDropdownOpen(false);
-                      alert('🌸 Perfumes collection is launching soon! Stay tuned!');
+                      setIsMobileMenuOpen(false);
+                      window.dispatchEvent(new CustomEvent('elmen:openUpcoming', { detail: 'perfumes' }));
                     }}
                     style={{
                       display: 'flex',
@@ -404,7 +405,8 @@ export default function Navbar({
                   <button
                     onClick={() => {
                       setIsLaunchDropdownOpen(false);
-                      alert('🌿 Ayurveda collection is launching soon! Stay tuned!');
+                      setIsMobileMenuOpen(false);
+                      window.dispatchEvent(new CustomEvent('elmen:openUpcoming', { detail: 'ayurveda' }));
                     }}
                     style={{
                       display: 'flex',
@@ -435,7 +437,8 @@ export default function Navbar({
                   <button
                     onClick={() => {
                       setIsLaunchDropdownOpen(false);
-                      alert('👕 Clothing collection is launching soon! Stay tuned!');
+                      setIsMobileMenuOpen(false);
+                      window.dispatchEvent(new CustomEvent('elmen:openUpcoming', { detail: 'clothing' }));
                     }}
                     style={{
                       display: 'flex',
@@ -461,6 +464,7 @@ export default function Navbar({
                       <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Premium activewear</span>
                     </div>
                   </button>
+
 
                 </div>
               </div>
