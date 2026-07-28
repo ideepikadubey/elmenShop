@@ -30,12 +30,15 @@ jobs:
               - 'backend/**'
 
       - name: Deploy to VPS
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.PORT }}
+          timeout: 120s
+          command_timeout: 30m
+          debug: true
 
           script: |
             set -e
