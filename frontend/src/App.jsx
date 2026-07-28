@@ -51,7 +51,7 @@ export default function App() {
   useEffect(() => {
     const token = localStorage.getItem('elmen_token');
     if (token) {
-      axios.get('${API_BASE_URL}/api/auth/me', {
+      axios.get(`${API_BASE_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => {
@@ -111,7 +111,7 @@ export default function App() {
     try {
       const token = localStorage.getItem('elmen_token');
       if (!token) return;
-      const res = await axios.get('${API_BASE_URL}/api/orders/my', {
+      const res = await axios.get(`${API_BASE_URL}/api/orders/my`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) {
@@ -132,7 +132,7 @@ export default function App() {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('${API_BASE_URL}/api/products?limit=100');
+      const response = await axios.get(`${API_BASE_URL}/api/products?limit=100`);
       const data = response.data;
       if (data.success && data.products && data.products.length > 0) {
         setProductsList(data.products);
@@ -146,7 +146,7 @@ export default function App() {
 
   const fetchTickerOffers = async () => {
     try {
-      const res = await axios.get('${API_BASE_URL}/api/offers');
+      const res = await axios.get(`${API_BASE_URL}/api/offers`);
       if (res.data.success && Array.isArray(res.data.offers)) {
         const now = Date.now();
         const validOffers = res.data.offers.filter(o => {
