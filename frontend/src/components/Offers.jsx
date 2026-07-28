@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Tag, Percent, IndianRupee, Copy, Check, CalendarDays, Loader2, Gift, ArrowLeft, ShoppingBag, Sparkles, ShieldCheck } from 'lucide-react';
+import { API_BASE_URL } from "../config/api";
 
 export default function Offers({ onGoBack, onShopClick }) {
   const [offers, setOffers] = useState([]);

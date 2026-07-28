@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { X, Lock, Mail, User, Phone, CheckCircle2, ShieldCheck, RefreshCw, ArrowLeft } from 'lucide-react';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL } from "../config/api";
 
 export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
   const [tab, setTab] = useState(promptMessage ? 'register' : 'login');

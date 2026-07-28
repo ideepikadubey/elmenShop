@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { Play, Pause, Volume2, VolumeX, Instagram, ExternalLink, Sparkles } from 'lucide-react';
-import { API_BASE_URL, getImageUrl } from "./config/api";
 const videoList = [
   {
     id: 'vid-1',

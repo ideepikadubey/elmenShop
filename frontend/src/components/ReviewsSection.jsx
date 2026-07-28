@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Star, ChevronLeft, ChevronRight, Quote, PenLine, Send, X, Loader2, MessageSquare } from 'lucide-react';
+import { API_BASE_URL } from "../config/api";
 
 function StarRating({ rating, interactive = false, onRate }) {
   const [hovered, setHovered] = useState(0);

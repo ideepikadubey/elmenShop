@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Send, Building2, CheckCircle2, Phone, Mail, User } from 'lucide-react';
 import axios from 'axios';
-import { API_BASE_URL, getImageUrl } from "./config/api";
+import { API_BASE_URL } from "../config/api";
 
 export default function BusinessEnquiryModal({ isOpen, onClose }) {
   const [formData, setFormData] = useState({

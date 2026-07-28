@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingCart, Search, Menu, X, User, ChevronDown, Droplet, Heart, LayoutGrid } from 'lucide-react';
+import { API_BASE_URL } from "../config/api";
 
 const categories = [
   { key: 'all', label: 'All Categories', isGrid: true, bg: '#1a1a1a', color: '#ffbe00' },

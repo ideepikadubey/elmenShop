@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { ShieldCheck, HelpCircle, AlertTriangle, ShieldCheck as VerifiedIcon, Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
-import { API_BASE_URL, getImageUrl } from "./config/api";
 export default function AuthenticityPage({ onGoBack }) {
   const [code, setCode] = useState('');
   const [status, setStatus] = useState('idle'); // idle, checking, success, error

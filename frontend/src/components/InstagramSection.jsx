@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Heart, MessageCircle, ExternalLink } from 'lucide-react';
 
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL } from "../config/api";
 
 // Mock Instagram posts — fallback when API or DB has no items
 const defaultPosts = [
