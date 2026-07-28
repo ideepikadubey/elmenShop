@@ -221,6 +221,51 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
     setProductForm({ ...productForm, nutritionFactsInput: list });
   };
 
+  const compressImageFile = (file, maxWidth = 1400, quality = 0.82) => {
+    return new Promise((resolve) => {
+      if (!file || !file.type.startsWith('image/')) return resolve(file);
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxWidth || height > maxWidth) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxWidth) / height);
+              height = maxWidth;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) return resolve(file);
+              const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || 'product';
+              const compressedFile = new File([blob], `${baseName}.webp`, {
+                type: 'image/webp',
+                lastModified: Date.now()
+              });
+              resolve(compressedFile);
+            },
+            'image/webp',
+            quality
+          );
+        };
+        img.onerror = () => resolve(file);
+      };
+      reader.onerror = () => resolve(file);
+    });
+  };
+
   const handleProductSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -258,9 +303,10 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       formData.append('nutritionFacts', JSON.stringify(factsObj));
 
       if (selectedFiles && selectedFiles.length > 0) {
-        selectedFiles.forEach(file => {
-          formData.append('images', file);
-        });
+        for (const file of selectedFiles) {
+          const compressed = await compressImageFile(file);
+          formData.append('images', compressed);
+        }
       } else if (editingProduct && editingProduct.images) {
         formData.append('images', JSON.stringify(editingProduct.images));
       }

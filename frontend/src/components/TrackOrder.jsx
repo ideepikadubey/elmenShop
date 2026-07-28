@@ -52,14 +52,6 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
     fetchTracking(awb);
   };
 
-  const handleDemoClick = (codeVal) => {
-    setAwb(codeVal);
-    fetchTracking(codeVal);
-    navigator.clipboard.writeText(codeVal);
-    setCopiedCode(codeVal);
-    setTimeout(() => setCopiedCode(''), 2000);
-  };
-
   // iThink status mapping to standard milestones
   const getMilestoneIndex = (status) => {
     if (!status) return 0;
@@ -243,63 +235,6 @@ export default function TrackOrder({ initialAwb = '', onGoBack }) {
               )}
             </button>
           </form>
-
-          {/* Quick Demo Sandboxes */}
-          {!trackingData && !isLoading && (
-            <div style={{ marginTop: '32px', borderTop: '1px solid #f1f5f9', paddingTop: '28px' }}>
-              <span style={{ fontSize: '0.78rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 800, display: 'block', marginBottom: '14px', textAlign: 'center' }}>
-                Quick Test Sandbox (Click to Track)
-              </span>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
-                {[
-                  { code: '1369010033902', label: 'Delivered Shipment', status: 'Delivered' },
-                  { code: 'ELMEN-TRACK-DEMO', label: 'In Transit Shipment', status: 'In Transit' },
-                  { code: 'ELMEN-TRACK-CANCELLED', label: 'Cancelled Shipment', status: 'Cancelled' }
-                ].map((demo) => (
-                  <button
-                    key={demo.code}
-                    type="button"
-                    onClick={() => handleDemoClick(demo.code)}
-                    style={{
-                      background: '#ffffff',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '16px',
-                      padding: '14px 18px',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      transition: 'all 0.25s ease',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.01)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#fbbf24';
-                      e.currentTarget.style.transform = 'translateY(-1.5px)';
-                      e.currentTarget.style.boxShadow = '0 10px 20px rgba(251, 191, 36, 0.04)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#e2e8f0';
-                      e.currentTarget.style.transform = 'none';
-                      e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.01)';
-                    }}
-                  >
-                    <div>
-                      <span style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#0f172a' }}>{demo.label}</span>
-                      <code style={{ fontSize: '0.8rem', color: '#b45309', fontFamily: 'monospace', display: 'block', marginTop: '4px' }}>{demo.code}</code>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', color: '#cbd5e1' }}>
-                      {copiedCode === demo.code ? (
-                        <Check size={16} style={{ color: '#22c55e' }} />
-                      ) : (
-                        <Clipboard size={15} style={{ opacity: 0.5 }} />
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Loading State */}

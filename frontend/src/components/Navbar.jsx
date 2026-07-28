@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Search, Menu, X, User, ChevronDown, Droplet, Heart, LayoutGrid } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, User, ChevronDown, Droplet, Heart, LayoutGrid, Shirt } from 'lucide-react';
 import { API_BASE_URL } from "../config/api";
 
 const categories = [
@@ -428,6 +428,37 @@ export default function Navbar({
                     <div>
                       <span style={{ fontWeight: '800', display: 'block', fontSize: '0.82rem', color: '#0f172a' }}>Ayurveda</span>
                       <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Natural health remedies</span>
+                    </div>
+                  </button>
+
+                  {/* Clothing Option */}
+                  <button
+                    onClick={() => {
+                      setIsLaunchDropdownOpen(false);
+                      alert('👕 Clothing collection is launching soon! Stay tuned!');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '8px 10px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      width: '100%',
+                      borderRadius: '8px',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                  >
+                    <div style={{ width: '28px', height: '28px', background: 'rgba(59, 130, 246, 0.12)', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', flexShrink: 0 }}>
+                      <Shirt size={14} fill="currentColor" />
+                    </div>
+                    <div>
+                      <span style={{ fontWeight: '800', display: 'block', fontSize: '0.82rem', color: '#0f172a' }}>Clothing</span>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Premium activewear</span>
                     </div>
                   </button>
 

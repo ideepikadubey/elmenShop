@@ -239,146 +239,11 @@ const getOrderTracking = async (req, res) => {
     const token = process.env.ITHINK_ACCESS_TOKEN;
     const secret = process.env.ITHINK_SECRET_KEY;
 
-    const isDemo = trackingNumber.toUpperCase().includes('DEMO') || 
-                   trackingNumber === '1369010033902' ||
-                   !token || 
-                   token === 'your_ithink_access_token_here';
-
-    if (isDemo) {
-      // Return high-quality mock data for testing
-      const normalizedAwb = trackingNumber.toUpperCase();
-      let currentStatus = 'In Transit';
-      let currentStatusCode = 'UD';
-      let scans = [
-        {
-          status: "Manifested",
-          status_code: "UD",
-          scan_location: "HQ (Delhi)",
-          remark: "Consignment Manifested",
-          scan_date_time: "2026-07-20 11:05:57",
-          status_reason: ""
-        },
-        {
-          status: "Picked Up",
-          status_code: "UD",
-          scan_location: "Okhla Hub (Delhi)",
-          remark: "Shipment Picked Up from Client Location",
-          scan_date_time: "2026-07-20 18:11:26",
-          status_reason: ""
-        }
-      ];
-
-      if (normalizedAwb.includes('DELIVERED') || normalizedAwb === '1369010033902') {
-        currentStatus = 'Delivered';
-        currentStatusCode = 'DL';
-        scans.push(
-          {
-            status: "In Transit",
-            status_code: "UD",
-            scan_location: "Mumbai Gateway (Maharashtra)",
-            remark: "Shipment in transit to next hub",
-            scan_date_time: "2026-07-21 08:30:00",
-            status_reason: ""
-          },
-          {
-            status: "Out For Delivery",
-            status_code: "UD",
-            scan_location: "Bandra DC (Maharashtra)",
-            remark: "Dispatched for delivery to consignee",
-            scan_date_time: "2026-07-21 10:15:00",
-            status_reason: ""
-          },
-          {
-            status: "Delivered",
-            status_code: "DL",
-            scan_location: "Bandra DC (Maharashtra)",
-            remark: "Shipment Delivered successfully",
-            scan_date_time: "2026-07-21 14:45:00",
-            status_reason: ""
-          }
-        );
-      } else if (normalizedAwb.includes('CANCELLED')) {
-        currentStatus = 'Cancelled';
-        currentStatusCode = 'CN';
-        scans = [
-          {
-            status: "Manifested",
-            status_code: "UD",
-            scan_location: "HQ (Delhi)",
-            remark: "Consignment Manifested",
-            scan_date_time: "2026-07-20 11:05:57",
-            status_reason: ""
-          },
-          {
-            status: "Cancelled",
-            status_code: "CN",
-            scan_location: "HQ (Delhi)",
-            remark: "Cancelled by Shipper",
-            scan_date_time: "2026-07-20 14:00:00",
-            status_reason: ""
-          }
-        ];
-      } else {
-        // Standard "In Transit"
-        scans.push({
-          status: "In Transit",
-          status_code: "UD",
-          scan_location: "Jaipur Hub (Rajasthan)",
-          remark: "Shipment in transit to next hub",
-          scan_date_time: "2026-07-21 12:45:00",
-          status_reason: ""
-        });
-      }
-
-      const mockResponse = {
-        success: true,
-        source: 'mock',
-        tracking: {
-          message: "success",
-          awb_no: trackingNumber,
-          logistic: "Delhivery",
-          order_type: "forward",
-          cancel_status: currentStatus === 'Cancelled' ? 'Approved' : 'Pending',
-          current_status: currentStatus,
-          current_status_code: currentStatusCode,
-          ofd_count: currentStatus === 'Delivered' ? '1' : '0',
-          return_tracking_no: "",
-          expected_delivery_date: "2026-07-24",
-          promise_delivery_date: "2026-07-24",
-          last_scan_details: scans[scans.length - 1],
-          order_details: {
-            order_type: "Prepaid",
-            order_number: "10024",
-            sub_order_number: "10024",
-            order_sub_order_number: "10024-10024",
-            phy_weight: "1500.00",
-            net_payment: "1850.00",
-            ship_length: "20.00",
-            ship_width: "15.00",
-            ship_height: "10.00"
-          },
-          order_date_time: {
-            manifest_date_time: "2026-07-20 10:34:36",
-            pickup_date: "2026-07-20",
-            delivery_date: currentStatus === 'Delivered' ? "2026-07-21 14:45:00" : "",
-            rto_delivered_date: ""
-          },
-          customer_details: {
-            customer_name: "Rohan Sharma",
-            customer_address1: "Sector 62, Noida",
-            customer_address2: "",
-            customer_address3: "",
-            customer_city: "Noida",
-            customer_state: "Uttar Pradesh",
-            customer_country: "India",
-            customer_pincode: "201301",
-            customer_mobile: "9876543210",
-            customer_phone: ""
-          },
-          scan_details: scans
-        }
-      };
-      return res.json(mockResponse);
+    if (!token || !secret) {
+      return res.status(500).json({
+        success: false,
+        message: 'iThink Logistics API credentials are missing in server environment config.'
+      });
     }
 
     // Call real iThink Logistics API
@@ -400,7 +265,7 @@ const getOrderTracking = async (req, res) => {
       if (itlData && (itlData.status_code === 200 || itlData.status === 'success' || itlData.data)) {
         // iThink Logistics returns the data keyed by AWB number
         const trackingInfo = itlData.data?.[trackingNumber] || itlData.data;
-        if (trackingInfo) {
+        if (trackingInfo && (trackingInfo.awb_no || trackingInfo.current_status || trackingInfo.scan_details)) {
           return res.json({
             success: true,
             source: 'api',
@@ -411,7 +276,7 @@ const getOrderTracking = async (req, res) => {
       
       return res.status(400).json({ 
         success: false, 
-        message: itlData?.message || 'Could not retrieve tracking details from logistics provider.' 
+        message: itlData?.message || 'Could not retrieve tracking details from iThink Logistics provider.' 
       });
 
     } catch (apiError) {
@@ -421,6 +286,7 @@ const getOrderTracking = async (req, res) => {
         message: 'Logistics tracking API connection error. Please try again later.' 
       });
     }
+
   } catch (error) {
     console.error('Tracking endpoint error:', error);
     res.status(500).json({ success: false, message: 'Server error.' });
