@@ -9,7 +9,7 @@ const categories = [
   { key: 'preworkouts', label: 'Pre Workout', image: '/preworkout.png', bg: '#fce4ec', color: '#c62828' },
   { key: 'ayurveda', label: 'Ayurveda', image: '/wellness.png', bg: '#f1f8e9', color: '#558b2f' },
   { key: 'fitfoods', label: 'Wellness', image: '/fitfoods.png', bg: '#e3f2fd', color: '#1565c0' },
-  { key: 'accessories', label: 'Accessories', image: '/fitfoods.png', bg: '#f3e5f5', color: '#6a1b9a' },
+  { key: 'accessories', label: 'Accessories', image: '/shaker.png', bg: '#f3e5f5', color: '#6a1b9a' },
 ];
 
 export default function Navbar({

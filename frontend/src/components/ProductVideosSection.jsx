@@ -5,36 +5,36 @@ const videoList = [
     id: 'vid-1',
     title: 'Clean Whey Protein',
     subtitle: '100% Pure Whey Isolate & Concentrate Blend',
-    src: '/videos/product1.mp4',
+    src: '/banner.mp4',
     fallbackSrc: '/banner.mp4',
-    poster: '/a.png',
+    poster: '/protein (2).png',
     badge: 'Best Seller'
   },
   {
     id: 'vid-2',
     title: 'Hunter Pre-Workout',
     subtitle: 'Explosive Power, Extreme Focus & Intense Pump',
-    src: '/videos/product2.mp4',
+    src: '/p2.mp4',
     fallbackSrc: '/banner.mp4',
-    poster: '/b.png',
+    poster: '/DSC00799.jpg-Photoroom.png',
     badge: 'High Energy'
   },
   {
     id: 'vid-3',
     title: 'EL MEN Mass Gainer',
     subtitle: 'Maximum Muscle Building & High-Calorie Formula',
-    src: '/videos/product3.mp4',
+    src: '/p1.mp4',
     fallbackSrc: '/banner.mp4',
-    poster: '/c.png',
+    poster: '/gainer.png',
     badge: 'Mass Gain'
   },
   {
     id: 'vid-4',
     title: 'Daily Vitality & Recovery',
     subtitle: 'Essential Vitamins, Minerals & Joint Support',
-    src: '/videos/product4.mp4',
+    src: '/p3.mp4',
     fallbackSrc: '/banner.mp4',
-    poster: '/d.png',
+    poster: 'fitfoods.png',
     badge: 'Wellness'
   }
 ];
