@@ -1,48 +1,12 @@
-name: Deploy Elmen Shop
-
-on:
-  push:
-    branches:
-      - Main
-
-concurrency:
-  group: production
-  cancel-in-progress: true
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - name: Detect Changes
-        id: filter
-        uses: dorny/paths-filter@v3
-        with:
-          filters: |
-            frontend:
-              - 'frontend/**'
-
-            backend:
-              - 'backend/**'
-
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
-
-        
-with:
-  host: ${{ secrets.VPS_HOST }}
-  username: ${{ secrets.VPS_USER }}
-  key: ${{ secrets.VPS_SSH_KEY }}
-  port: ${{ secrets.PORT }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.PORT }}
 
           script: |
-
             set -e
 
             echo "============================"
