@@ -22,6 +22,7 @@ import TrackOrder from './components/TrackOrder';
 import LeadPopupModal from './components/LeadPopupModal';
 import BusinessEnquiryModal from './components/BusinessEnquiryModal';
 import UpcomingProductsModal from './components/UpcomingProductsModal';
+import FlavourSelectModal from './components/FlavourSelectModal';
 const staticProducts = [];
 import { Award, Compass, RefreshCw, Layers, Shield, LayoutGrid, Zap, Truck, FlaskConical, Gem, CheckCircle } from 'lucide-react';
 import AdminDashboard from './components/AdminDashboard';
@@ -45,6 +46,7 @@ export default function App() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutPriceDetails, setCheckoutPriceDetails] = useState(null);
   const [pendingCheckoutDetails, setPendingCheckoutDetails] = useState(null);
+  const [flavourSelectProduct, setFlavourSelectProduct] = useState(null);
 
   // Sync cart to localStorage
   useEffect(() => {
@@ -320,32 +322,60 @@ export default function App() {
   }, []);
 
   // Cart operations
-  const handleAddToCart = (product) => {
+  const handleAddToCart = (product, flavourOverride) => {
+    const selectedFlavour = flavourOverride || product.selectedFlavour;
+    const defaultCategoryFlavours = {
+      gainers: ['Malai Kulfi', 'Chocolate'],
+      proteins: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi']
+    };
+    const flavoursList = Array.isArray(product.flavours) && product.flavours.length > 0
+      ? product.flavours
+      : (defaultCategoryFlavours[product.category] || []);
+
+    // If product has flavours but no flavour was selected yet (e.g. direct click from homepage card):
+    if (flavoursList.length > 0 && !selectedFlavour) {
+      setFlavourSelectProduct(product);
+      return;
+    }
+
+    const itemFlavour = selectedFlavour || (flavoursList.length > 0 ? flavoursList[0] : '');
+    const productToAdd = { ...product, selectedFlavour: itemFlavour, flavour: itemFlavour };
+
     setCart((prevCart) => {
       const pid = getProductId(product);
-      const existingItem = prevCart.find((item) => getProductId(item) === pid);
-      if (existingItem) {
-        return prevCart.map((item) =>
-          getProductId(item) === pid ? { ...item, quantity: item.quantity + 1 } : item
+      const existingIndex = prevCart.findIndex(
+        (item) => getProductId(item) === pid && (item.selectedFlavour || item.flavour || '') === itemFlavour
+      );
+      if (existingIndex > -1) {
+        return prevCart.map((item, idx) =>
+          idx === existingIndex ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+      return [...prevCart, { ...productToAdd, quantity: 1 }];
     });
     setIsCartOpen(true);
   };
 
-  const handleUpdateQty = (productId, newQty) => {
+  const handleUpdateQty = (productId, newQty, flavour) => {
     if (newQty <= 0) {
-      handleRemoveItem(productId);
+      handleRemoveItem(productId, flavour);
       return;
     }
     setCart((prevCart) =>
-      prevCart.map((item) => (getProductId(item) === productId ? { ...item, quantity: newQty } : item))
+      prevCart.map((item) =>
+        (getProductId(item) === productId && (item.selectedFlavour || item.flavour || '') === (flavour || ''))
+          ? { ...item, quantity: newQty }
+          : item
+      )
     );
   };
 
-  const handleRemoveItem = (productId) => {
-    setCart((prevCart) => prevCart.filter((item) => getProductId(item) !== productId));
+  const handleRemoveItem = (productId, flavour) => {
+    setCart((prevCart) =>
+      prevCart.filter(
+        (item) => !(getProductId(item) === productId && (item.selectedFlavour || item.flavour || '') === (flavour || ''))
+      )
+    );
   };
 
   const handleOpenCheckout = (priceDetails) => {
@@ -608,87 +638,22 @@ export default function App() {
           </section>
 
           {/* Best Sellers Section */}
-          <section className="best-sellers-section reveal-slide-up" style={{ padding: '70px 0 30px', background: 'var(--bg-dark-950)' }}>
+          <section className="best-sellers-section reveal-slide-up" style={{ padding: '60px 0 30px', background: 'var(--bg-dark-950)' }}>
             <div className="container">
-              <div
-                className="best-sellers-header-card"
-                style={{
-                  background: 'linear-gradient(135deg, #18181c 0%, #0d0d10 100%)',
-                  border: '1px solid rgba(255, 190, 0, 0.35)',
-                  borderRadius: '24px',
-                  padding: '36px 24px 30px',
-                  marginBottom: '45px',
-                  textAlign: 'center',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  boxShadow: '0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center'
-                }}
-              >
+              <div className="best-sellers-header-card">
                 {/* Ambient Radial Glow */}
-                <div style={{
-                  position: 'absolute',
-                  top: '-40%',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '320px',
-                  height: '180px',
-                  background: 'radial-gradient(circle, rgba(255, 190, 0, 0.22) 0%, rgba(255, 190, 0, 0) 70%)',
-                  pointerEvents: 'none'
-                }} />
+                <div className="ambient-glow" />
 
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: 'linear-gradient(90deg, #ff4500, #ffbe00)',
-                    color: '#000000',
-                    padding: '6px 16px',
-                    borderRadius: '30px',
-                    fontSize: '0.75rem',
-                    fontWeight: '900',
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    boxShadow: '0 4px 15px rgba(255, 190, 0, 0.35)',
-                    marginBottom: '14px'
-                  }}
-                >
-                  <Flame size={14} fill="#000000" />
+                <div className="best-sellers-badge">
+                  <Flame size={14} />
                   TOP SELLING SQUAD
                 </div>
 
-                <h2
-                  style={{
-                    textTransform: 'uppercase',
-                    fontWeight: 900,
-                    fontSize: '2.4rem',
-                    margin: '0 0 10px 0',
-                    letterSpacing: '1px',
-                    color: '#ffffff',
-                    lineHeight: 1.15
-                  }}
-                >
-                  OUR <span style={{
-                    background: 'linear-gradient(135deg, #ffbe00 0%, #ff8c00 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    filter: 'drop-shadow(0 2px 10px rgba(255, 190, 0, 0.3))'
-                  }}>BEST SELLERS</span>
+                <h2 className="best-sellers-title">
+                  OUR <span className="best-sellers-title-accent">BEST SELLERS</span>
                 </h2>
 
-                <p
-                  style={{
-                    color: 'var(--text-gray)',
-                    maxWidth: '560px',
-                    margin: 0,
-                    fontSize: '0.95rem',
-                    lineHeight: 1.5,
-                    fontWeight: 500
-                  }}
-                >
+                <p className="best-sellers-subtitle">
                   The most popular formulas trusted by our elite fitness community.
                 </p>
               </div>
@@ -1068,6 +1033,16 @@ export default function App() {
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
           onAddToCart={handleAddToCart}
+        />
+      )}
+
+      {flavourSelectProduct && (
+        <FlavourSelectModal
+          product={flavourSelectProduct}
+          onClose={() => setFlavourSelectProduct(null)}
+          onConfirm={(prod, chosenFlavour) => {
+            handleAddToCart(prod, chosenFlavour);
+          }}
         />
       )}
 

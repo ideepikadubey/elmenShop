@@ -1,5 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Sparkles, Activity, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Shield, Sparkles, Activity, Heart, ChevronLeft, ChevronRight, FlaskConical } from 'lucide-react';
+
+const USFlagIcon = () => (
+  <svg width="32" height="22" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ borderRadius: '4px', boxShadow: '0 3px 8px rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.5)', display: 'inline-block' }}>
+    <rect width="28" height="20" fill="#B22234" rx="2" />
+    <rect y="2.2" width="28" height="2.2" fill="white" />
+    <rect y="6.6" width="28" height="2.2" fill="white" />
+    <rect y="11" width="28" height="2.2" fill="white" />
+    <rect y="15.4" width="28" height="2.2" fill="white" />
+    <rect width="12" height="11" fill="#3C3B6E" />
+    <circle cx="2.5" cy="2.5" r="0.75" fill="white" />
+    <circle cx="6" cy="2.5" r="0.75" fill="white" />
+    <circle cx="9.5" cy="2.5" r="0.75" fill="white" />
+    <circle cx="4.25" cy="5.5" r="0.75" fill="white" />
+    <circle cx="7.75" cy="5.5" r="0.75" fill="white" />
+    <circle cx="2.5" cy="8.5" r="0.75" fill="white" />
+    <circle cx="6" cy="8.5" r="0.75" fill="white" />
+    <circle cx="9.5" cy="8.5" r="0.75" fill="white" />
+  </svg>
+);
 
 export default function Hero({ onShopClick }) {
   const slides = [
@@ -29,44 +48,114 @@ export default function Hero({ onShopClick }) {
   };
 
   return (
-    <section className="hero-section" id="home">
-      {/* Edge-to-Edge Full Size Cover Slideshow Banner */}
-      <div className="hero-slideshow-full">
-        {slides.map((slide, idx) => (
-          <div 
-            className={`slideshow-slide ${idx === currentSlide ? 'active' : ''}`} 
-            key={idx}
-          >
-            <img 
-              src={slide.url} 
-              alt={slide.alt} 
-              className="slideshow-image" 
-              loading={idx === 0 ? "eager" : "lazy"}
-            />
-          </div>
-        ))}
+    <section className="hero-section" style={{ position: 'relative' }}>
+      {/* Interactive Hero Banner Carousel */}
+      <div className="hero-carousel-container" style={{ position: 'relative', overflow: 'hidden' }}>
+        <div
+          className="hero-slides-track"
+          style={{
+            display: 'flex',
+            transition: 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)',
+            transform: `translateX(-${currentSlide * 100}%)`,
+            width: '100%'
+          }}
+        >
+          {slides.map((slide, idx) => (
+            <div
+              key={idx}
+              className="hero-slide"
+              style={{
+                flex: '0 0 100%',
+                width: '100%',
+                cursor: 'pointer'
+              }}
+              onClick={onShopClick}
+            >
+              <img
+                src={slide.url}
+                alt={slide.alt}
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  display: 'block',
+                  maxHeight: '480px',
+                  objectFit: 'cover'
+                }}
+              />
+            </div>
+          ))}
+        </div>
 
-        <button 
-          className="slideshow-arrow left" 
-          onClick={handlePrev} 
+        {/* Carousel Prev/Next Controls */}
+        <button
+          className="carousel-btn prev-btn"
+          onClick={handlePrev}
           aria-label="Previous Slide"
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '16px',
+            transform: 'translateY(-50%)',
+            background: 'rgba(15, 23, 42, 0.65)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            color: '#fff',
+            borderRadius: '50%',
+            width: '42px',
+            height: '42px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 10,
+            backdropFilter: 'blur(4px)'
+          }}
         >
-          <ChevronLeft size={24} />
-        </button>
-        
-        <button 
-          className="slideshow-arrow right" 
-          onClick={handleNext} 
-          aria-label="Next Slide"
-        >
-          <ChevronRight size={24} />
+          <ChevronLeft size={22} />
         </button>
 
-        <div className="slideshow-dots">
+        <button
+          className="carousel-btn next-btn"
+          onClick={handleNext}
+          aria-label="Next Slide"
+          style={{
+            position: 'absolute',
+            top: '50%',
+            right: '16px',
+            transform: 'translateY(-50%)',
+            background: 'rgba(15, 23, 42, 0.65)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            color: '#fff',
+            borderRadius: '50%',
+            width: '42px',
+            height: '42px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 10,
+            backdropFilter: 'blur(4px)'
+          }}
+        >
+          <ChevronRight size={22} />
+        </button>
+
+        {/* Dots Pagination Indicator */}
+        <div
+          className="carousel-dots"
+          style={{
+            position: 'absolute',
+            bottom: '16px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            gap: '8px',
+            zIndex: 10
+          }}
+        >
           {slides.map((_, idx) => (
             <button
               key={idx}
-              className={`slideshow-dot ${idx === currentSlide ? 'active' : ''}`}
+              className={`dot ${idx === currentSlide ? 'active' : ''}`}
               onClick={() => setCurrentSlide(idx)}
               aria-label={`Go to slide ${idx + 1}`}
             />
@@ -74,28 +163,35 @@ export default function Hero({ onShopClick }) {
         </div>
       </div>
 
-      {/* Core Health Pillars showcase below the Slideshow Banner */}
+      {/* Core Health & Quality Pillars showcase below the Slideshow Banner */}
       <div className="container" style={{ marginTop: '30px' }}>
         <div className="pillars-list">
           <div className="pillar-card">
+            <div className="pillar-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '26px' }}>
+              <USFlagIcon />
+            </div>
+            <h3>USA Imported Raw Material</h3>
+            <p>100% pure imported Whey & actives from top USA labs</p>
+          </div>
+
+          <div className="pillar-card">
+            <div className="pillar-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '26px' }}>
+              <USFlagIcon />
+            </div>
+            <h3>US Formulation</h3>
+            <p>Scientifically engineered formulas built to elite US standards</p>
+          </div>
+
+          <div className="pillar-card">
             <Shield size={22} className="pillar-icon" />
             <h3>Boosts Immunity</h3>
-            <p>Strengthen natural defense</p>
+            <p>Strengthen natural defense & vital cellular health</p>
           </div>
-          <div className="pillar-card">
-            <Sparkles size={22} className="pillar-icon" />
-            <h3>Strong Bones</h3>
-            <p>Calcium & mineral support</p>
-          </div>
+
           <div className="pillar-card">
             <Activity size={22} className="pillar-icon" />
             <h3>Overall Wellness</h3>
-            <p>Daily stamina & health</p>
-          </div>
-          <div className="pillar-card">
-            <Heart size={22} className="pillar-icon" />
-            <h3>Nutritional Support</h3>
-            <p>Complete vitamin intake</p>
+            <p>Daily stamina, peak performance & muscle recovery</p>
           </div>
         </div>
       </div>

@@ -182,15 +182,15 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '20px', padding: '2px 8px', gap: '10px' }}>
-                      <button onClick={() => onUpdateQty(item.id || item._id, item.quantity - 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569', fontWeight: 'bold', fontSize: '1rem', padding: '0 4px' }}>-</button>
+                      <button onClick={() => onUpdateQty(item.id || item._id, item.quantity - 1, item.selectedFlavour || item.flavour)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569', fontWeight: 'bold', fontSize: '1rem', padding: '0 4px' }}>-</button>
                       <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0f172a' }}>{item.quantity}</span>
-                      <button onClick={() => onUpdateQty(item.id || item._id, item.quantity + 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569', fontWeight: 'bold', fontSize: '1rem', padding: '0 4px' }}>+</button>
+                      <button onClick={() => onUpdateQty(item.id || item._id, item.quantity + 1, item.selectedFlavour || item.flavour)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569', fontWeight: 'bold', fontSize: '1rem', padding: '0 4px' }}>+</button>
                     </div>
                     <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0f172a' }}>₹{formatPrice(item.price * item.quantity)}</div>
                   </div>
 
                   <button
-                    onClick={() => onRemoveItem(item.id || item._id)}
+                    onClick={() => onRemoveItem(item.id || item._id, item.selectedFlavour || item.flavour)}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '0.75rem', fontWeight: 700, padding: 0, alignSelf: 'flex-start', marginTop: '8px',
                       display: 'flex', alignItems: 'center', gap: '3px'

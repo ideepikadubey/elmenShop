@@ -299,9 +299,16 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
 
                 <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '12px' }}>
                   <p style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: '8px', color: '#0f172a' }}>Items Purchased:</p>
-                  {cartItems.map((item) => (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#475569', marginBottom: '4px' }} key={item.id || item._id}>
-                      <span>{item.name} <strong style={{ color: '#0f172a' }}>× {item.quantity}</strong></span>
+                  {cartItems.map((item, idx) => (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#475569', marginBottom: '8px' }} key={`${item.id || item._id}-${idx}`}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span>{item.name} <strong style={{ color: '#0f172a' }}>× {item.quantity}</strong></span>
+                        {(item.selectedFlavour || item.flavour) && (
+                          <span style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 800 }}>
+                            Flavour: {item.selectedFlavour || item.flavour}
+                          </span>
+                        )}
+                      </div>
                       <span style={{ fontWeight: 600, color: '#0f172a' }}>₹{formatPrice(item.price * item.quantity)}</span>
                     </div>
                   ))}
@@ -537,9 +544,16 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
                   </h3>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px', maxHeight: '180px', overflowY: 'auto', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
-                    {cartItems.map((item) => (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#475569' }} key={item.id || item._id}>
-                        <span>{item.name} <strong style={{ color: '#0f172a' }}>× {item.quantity}</strong></span>
+                    {cartItems.map((item, idx) => (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#475569' }} key={`${item.id || item._id}-${idx}`}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span>{item.name} <strong style={{ color: '#0f172a' }}>× {item.quantity}</strong></span>
+                          {(item.selectedFlavour || item.flavour) && (
+                            <span style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 800 }}>
+                              Flavour: {item.selectedFlavour || item.flavour}
+                            </span>
+                          )}
+                        </div>
                         <span style={{ fontWeight: 600, color: '#0f172a' }}>₹{formatPrice(item.price * item.quantity)}</span>
                       </div>
                     ))}

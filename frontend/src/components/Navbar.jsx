@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Search, Menu, X, User, ChevronDown, Droplet, Heart, LayoutGrid, Shirt } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, User, ChevronDown, Droplet, Heart, LayoutGrid, Shirt, Leaf } from 'lucide-react';
 import { API_BASE_URL } from "../config/api";
 
 const categories = [
@@ -397,6 +397,38 @@ export default function Navbar({
                     <div>
                       <span style={{ fontWeight: '800', display: 'block', fontSize: '0.82rem', color: '#0f172a' }}>Perfumes</span>
                       <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Premium fragrances</span>
+                    </div>
+                  </button>
+
+                  {/* Ayurveda Option */}
+                  <button
+                    onClick={() => {
+                      setIsLaunchDropdownOpen(false);
+                      setIsMobileMenuOpen(false);
+                      window.dispatchEvent(new CustomEvent('elmen:openUpcoming', { detail: 'ayurveda' }));
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '8px 10px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      width: '100%',
+                      borderRadius: '8px',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                  >
+                    <div style={{ width: '28px', height: '28px', background: 'rgba(34, 197, 94, 0.12)', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', flexShrink: 0 }}>
+                      <Leaf size={14} fill="currentColor" />
+                    </div>
+                    <div>
+                      <span style={{ fontWeight: '800', display: 'block', fontSize: '0.82rem', color: '#0f172a' }}>Ayurveda</span>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Herbal & Shilajit</span>
                     </div>
                   </button>
 
