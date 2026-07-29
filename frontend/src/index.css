@@ -252,13 +252,13 @@ header.scrolled .sub-nav-links a {
 }
 
 .logo img {
-  height: 72px;
+  height: 52px;
   object-fit: contain;
   transition: var(--transition-smooth);
 }
 
 header.scrolled .logo img {
-  height: 56px;
+  height: 42px;
 }
 
 .footer-brand .logo img {

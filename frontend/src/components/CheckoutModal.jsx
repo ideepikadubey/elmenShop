@@ -64,13 +64,18 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
     } else if (!/^\d{6}$/.test(formData.pincode.trim())) {
       newErrors.pincode = 'Enter a valid 6-digit pincode';
     }
-
+    console.log("Validation Errors:", newErrors);
+    console.log("Form Data:", formData);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
+    console.log("handleSubmit called");
+
     e.preventDefault();
+    const valid = validateForm();
+    console.log("Form valid:", valid);
     if (!validateForm()) return;
 
     setIsProcessing(true);
@@ -102,6 +107,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
         country: 'India'
       };
 
+      console.log("Creating order...");
       const response = await axios.post(`${API_BASE_URL}/api/orders`, {
         items: orderItems,
         shippingAddress,
@@ -112,6 +118,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
           'Authorization': `Bearer ${token}`
         }
       });
+      console.log(response.data);
 
       const data = response.data;
 
@@ -155,7 +162,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
       }
 
       const options = {
-        key: paymentData.keyId,
+        key: paymentData.key,
         amount: paymentData.amount,
         currency: 'INR',
         name: 'EL MEN Nutrition',
@@ -202,7 +209,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
           }
         }
       };
-
+      console.log("Razorpay Key:", paymentData.key);
       const rzp = new window.Razorpay(options);
       rzp.open();
 
