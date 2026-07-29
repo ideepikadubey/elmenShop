@@ -95,6 +95,15 @@ const createProduct = async (req, res) => {
       productData.features = JSON.parse(productData.features);
     }
 
+    // Parse flavours if sent as a JSON string or comma-separated string
+    if (typeof productData.flavours === 'string') {
+      try {
+        productData.flavours = JSON.parse(productData.flavours);
+      } catch {
+        productData.flavours = productData.flavours.split(',').map(s => s.trim()).filter(Boolean);
+      }
+    }
+
     const product = await Product.create(productData);
 
     res.status(201).json({
@@ -133,6 +142,14 @@ const updateProduct = async (req, res) => {
 
     if (typeof updateData.features === 'string') {
       updateData.features = JSON.parse(updateData.features);
+    }
+
+    if (typeof updateData.flavours === 'string') {
+      try {
+        updateData.flavours = JSON.parse(updateData.flavours);
+      } catch {
+        updateData.flavours = updateData.flavours.split(',').map(s => s.trim()).filter(Boolean);
+      }
     }
 
     const product = await Product.findByIdAndUpdate(

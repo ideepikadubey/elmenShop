@@ -174,6 +174,11 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
                 <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0f172a', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</h4>
                   <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 500 }}>{item.subtitle}</div>
+                  {(item.selectedFlavour || item.flavour) && (
+                    <div style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 800 }}>
+                      Flavour: {item.selectedFlavour || item.flavour}
+                    </div>
+                  )}
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '20px', padding: '2px 8px', gap: '10px' }}>
@@ -387,8 +392,9 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
               onMouseEnter={e => e.currentTarget.style.backgroundColor = '#ca8a04'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = '#eab308'}
               onClick={() => {
-                if (!user) { onRequireLogin(); return; }
-                onCheckout({ subtotal, discountAmount, deliveryCharges, finalTotal, appliedPromo });
+                const details = { subtotal, discountAmount, deliveryCharges, finalTotal, appliedPromo };
+                if (!user) { onRequireLogin(details); return; }
+                onCheckout(details);
               }}
             >
               {user

@@ -7,19 +7,9 @@ const CATEGORIES = [
   { key: 'proteins', label: 'Proteins' },
   { key: 'gainers', label: 'Gainers' },
   { key: 'preworkouts', label: 'Pre-Workout' },
-  { key: 'wellness', label: 'Wellness/Ayurveda' },
+  { key: 'wellness', label: 'Wellness' },
+  { key: 'accessories', label: 'Accessories' },
   { key: 'performance', label: 'Performance/Herbs' }
-];
-
-const THEME_PRESETS = [
-  { name: 'Dark Gray', value: 'linear-gradient(135deg, #2e2e2e, #1a1a1a)' },
-  { name: 'Pure Black', value: 'linear-gradient(135deg, #111, #333)' },
-  { name: 'Flame Red', value: 'linear-gradient(135deg, #c0392b, #1a0505)' },
-  { name: 'Rust Orange', value: 'linear-gradient(135deg, #d35400, #2c3e50)' },
-  { name: 'Ocean Blue', value: 'linear-gradient(135deg, #2980b9, #2c3e50)' },
-  { name: 'Forest Green', value: 'linear-gradient(135deg, #27ae60, #145a32)' },
-  { name: 'Royal Purple', value: 'linear-gradient(135deg, #8e44ad, #2c3e50)' },
-  { name: 'Sun Gold', value: 'linear-gradient(135deg, #f1c40f, #f39c12)' }
 ];
 
 export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoToStore }) {
@@ -44,7 +34,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const [productForm, setProductForm] = useState({
     name: '', subtitle: '', category: 'proteins', price: '', originalPrice: '',
     weight: '', servingSize: '', servingsCount: '', protein: '',
-    features: '', details: '', badge: '', themeColor: THEME_PRESETS[0].value, stock: '100',
+    features: '', flavours: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi'], details: '', badge: '', stock: '100',
     nutritionFactsInput: [{ key: '', value: '' }]
   });
 
@@ -167,7 +157,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
     setProductForm({
       name: '', subtitle: '', category: 'proteins', price: '', originalPrice: '',
       weight: '', servingSize: '', servingsCount: '', protein: '',
-      features: '', details: '', badge: '', themeColor: THEME_PRESETS[0].value, stock: '100',
+      features: '', flavours: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi'], details: '', badge: '', stock: '100',
       nutritionFactsInput: [{ key: 'Protein', value: '24g' }, { key: 'BCAAs', value: '5.5g' }]
     });
     setIsProductModalOpen(true);
@@ -182,6 +172,10 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       ? Object.entries(prod.nutritionFacts).map(([k, v]) => ({ key: k, value: v }))
       : [{ key: '', value: '' }];
 
+    const defaultFlavours = prod.category === 'gainers'
+      ? ['Malai Kulfi', 'Chocolate']
+      : (prod.category === 'proteins' ? ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi'] : []);
+
     setProductForm({
       name: prod.name,
       subtitle: prod.subtitle || '',
@@ -193,9 +187,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       servingsCount: prod.servingsCount ? prod.servingsCount.toString() : '0',
       protein: prod.protein || '',
       features: Array.isArray(prod.features) ? prod.features.join(', ') : '',
+      flavours: Array.isArray(prod.flavours) && prod.flavours.length > 0 ? prod.flavours : defaultFlavours,
       details: prod.details || '',
       badge: prod.badge || '',
-      themeColor: prod.themeColor || THEME_PRESETS[0].value,
       stock: prod.stock ? prod.stock.toString() : '0',
       nutritionFactsInput: factsArray.length > 0 ? factsArray : [{ key: '', value: '' }]
     });
@@ -296,9 +290,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       formData.append('servingsCount', Number(productForm.servingsCount || 0));
       formData.append('protein', productForm.protein);
       formData.append('features', JSON.stringify(featuresArray));
+      formData.append('flavours', JSON.stringify(productForm.flavours || []));
       formData.append('details', productForm.details);
       formData.append('badge', productForm.badge);
-      formData.append('themeColor', productForm.themeColor);
       formData.append('stock', Number(productForm.stock));
       formData.append('nutritionFacts', JSON.stringify(factsObj));
 
@@ -691,7 +685,6 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 <table className="admin-table">
                   <thead>
                     <tr>
-                      <th>Theme</th>
                       <th>Product Name</th>
                       <th>Category</th>
                       <th>Price</th>
@@ -703,12 +696,6 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                   <tbody>
                     {filteredProducts.map(p => (
                       <tr key={p._id}>
-                        <td>
-                          {/* Mini jar preview */}
-                          <div style={{ height: '35px', width: '25px', padding: '1px', borderRadius: '2px', border: '1px solid #ddd', background: p.themeColor || 'var(--bg-dark-700)' }}>
-                            <div style={{ height: '3px', background: '#333', width: '15px', margin: '0 auto' }}></div>
-                          </div>
-                        </td>
                         <td>
                           <div style={{ fontWeight: '800' }}>{p.name}</div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.subtitle}</div>
@@ -1229,21 +1216,72 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 </div>
               </div>
 
-              {/* Theme Jar Color Preset Pickers */}
-              <div className="form-group">
-                <label style={{ display: 'block', marginBottom: '8px' }}>Supplement Jar Color Theme</label>
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  {THEME_PRESETS.map((col, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      className={`preset-color-btn ${productForm.themeColor === col.value ? 'active' : ''}`}
-                      style={{ background: col.value }}
-                      onClick={() => setProductForm({ ...productForm, themeColor: col.value })}
-                      title={col.name}
-                    />
-                  ))}
-                </div>
+              {/* Product Flavours Selection */}
+              <div className="form-group" style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
+                <label style={{ display: 'block', fontWeight: 800, color: '#0f172a', marginBottom: '4px', fontSize: '0.88rem' }}>
+                  AVAILABLE PRODUCT FLAVOURS
+                </label>
+                <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 10px 0' }}>
+                  Click badges to toggle available flavours or edit flavours below (separated by commas).
+                </p>
+
+                {/* Category Preset Flavour Quick Toggles */}
+                {(() => {
+                  const categoryPresets = {
+                    gainers: ['Malai Kulfi', 'Chocolate'],
+                    proteins: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi']
+                  };
+                  const activeCategoryFlavours = categoryPresets[productForm.category] || ['Chocolate', 'Vanilla', 'Unflavored'];
+
+                  return (
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                      {activeCategoryFlavours.map((flv) => {
+                        const currentList = Array.isArray(productForm.flavours) ? productForm.flavours : [];
+                        const isSelected = currentList.includes(flv);
+                        return (
+                          <button
+                            key={flv}
+                            type="button"
+                            onClick={() => {
+                              const next = isSelected ? currentList.filter(f => f !== flv) : [...currentList, flv];
+                              setProductForm({ ...productForm, flavours: next });
+                            }}
+                            style={{
+                              padding: '6px 14px',
+                              borderRadius: '20px',
+                              fontSize: '0.8rem',
+                              fontWeight: 800,
+                              border: isSelected ? '1.5px solid #d97706' : '1px solid #cbd5e1',
+                              backgroundColor: isSelected ? '#fffbeb' : '#ffffff',
+                              color: isSelected ? '#b45309' : '#475569',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            {isSelected ? '✓ ' : '+ '} {flv}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+
+                {/* Custom Flavours Input */}
+                <input
+                  type="text"
+                  className="form-input"
+                  value={Array.isArray(productForm.flavours) ? productForm.flavours.join(', ') : (productForm.flavours || '')}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const parsed = val.split(',').map(s => s.trim()).filter(Boolean);
+                    setProductForm({ ...productForm, flavours: parsed });
+                  }}
+                  placeholder="e.g. Kesar Badam, Cookies & Cream, Chocolate, Malai Kulfi"
+                  style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
+                />
               </div>
 
               {/* Product Image File Selector */}

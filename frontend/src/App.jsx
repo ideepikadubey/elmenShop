@@ -26,12 +26,17 @@ const staticProducts = [];
 import { Award, Compass, RefreshCw, Layers, Shield, LayoutGrid, Zap, Truck, FlaskConical, Gem, CheckCircle } from 'lucide-react';
 import AdminDashboard from './components/AdminDashboard';
 import FAQSection from './components/FAQSection';
-import { Heart, Trash2, X, User, Mail, Phone, ShoppingBag, Calendar, Package, IndianRupee, LogOut, CheckCircle2, Clock, XCircle, Truck as TruckIcon } from 'lucide-react';
+import { Heart, Trash2, X, User, Mail, Phone, ShoppingBag, Calendar, Package, IndianRupee, LogOut, CheckCircle2, Clock, XCircle, Flame, Truck as TruckIcon } from 'lucide-react';
 
 export default function App() {
   const [productsList, setProductsList] = useState(staticProducts);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem('elmen_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [activeTab, setActiveTab] = useState('home');
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,6 +44,12 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutPriceDetails, setCheckoutPriceDetails] = useState(null);
+  const [pendingCheckoutDetails, setPendingCheckoutDetails] = useState(null);
+
+  // Sync cart to localStorage
+  useEffect(() => {
+    localStorage.setItem('elmen_cart', JSON.stringify(cart));
+  }, [cart]);
 
   // Authenticated user session state
   const [user, setUser] = useState(() => {
@@ -177,8 +188,8 @@ export default function App() {
       // map dropdown keys to product category values
       const catMap = {
         all: 'all', proteins: 'proteins', gainers: 'gainers',
-        preworkouts: 'preworkouts', ayurveda: 'wellness',
-        fitfoods: 'wellness', accessories: 'performance'
+        preworkouts: 'preworkouts', wellness: 'wellness',
+        fitfoods: 'wellness', accessories: 'accessories', performance: 'performance'
       };
       setActiveCategory(catMap[cat] || 'all');
     };
@@ -310,12 +321,6 @@ export default function App() {
 
   // Cart operations
   const handleAddToCart = (product) => {
-    // ── Auth guard: must be logged in to add to cart ──
-    if (!user) {
-      setAuthPrompt('Please sign in or create an account to add items to your cart.');
-      setIsAuthOpen(true);
-      return;
-    }
     setCart((prevCart) => {
       const pid = getProductId(product);
       const existingItem = prevCart.find((item) => getProductId(item) === pid);
@@ -351,6 +356,7 @@ export default function App() {
 
   const handleClearCart = () => {
     setCart([]);
+    localStorage.removeItem('elmen_cart');
   };
 
   const handleNavClick = (tab) => {
@@ -367,6 +373,13 @@ export default function App() {
     localStorage.setItem('elmen_user', JSON.stringify(userData));
     setIsAuthOpen(false);
     setAuthPrompt('');
+
+    if (pendingCheckoutDetails) {
+      setIsCartOpen(false);
+      setCheckoutPriceDetails(pendingCheckoutDetails);
+      setIsCheckoutOpen(true);
+      setPendingCheckoutDetails(null);
+    }
   };
 
   const handleLogout = () => {
@@ -540,6 +553,7 @@ export default function App() {
                   { key: 'gainers', label: 'Gainers', image: '/gainer.png' },
                   { key: 'preworkouts', label: 'Pre-Workout', image: '/preworkout.png' },
                   { key: 'wellness', label: 'Wellness', image: '/wellness.png' },
+                  { key: 'accessories', label: 'Accessories', image: '/shaker.png' },
                   { key: 'performance', label: 'Performance', image: '/fitfoods.png' },
                 ].map((cat) => {
                   const isActive = activeCategory === cat.key;
@@ -596,12 +610,87 @@ export default function App() {
           {/* Best Sellers Section */}
           <section className="best-sellers-section reveal-slide-up" style={{ padding: '70px 0 30px', background: 'var(--bg-dark-950)' }}>
             <div className="container">
-              <div className="section-header" style={{ marginBottom: '40px' }}>
-                <span style={{ color: 'var(--primary-red)', fontSize: '0.8rem', fontWeight: '800', letterSpacing: '3px', textTransform: 'uppercase' }}>Top Selling Squad</span>
-                <h2 style={{ textTransform: 'uppercase', fontWeight: 900, fontSize: '2.2rem', marginTop: '8px' }}>
-                  Our <span>Best Sellers</span>
+              <div
+                className="best-sellers-header-card"
+                style={{
+                  background: 'linear-gradient(135deg, #18181c 0%, #0d0d10 100%)',
+                  border: '1px solid rgba(255, 190, 0, 0.35)',
+                  borderRadius: '24px',
+                  padding: '36px 24px 30px',
+                  marginBottom: '45px',
+                  textAlign: 'center',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: '0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center'
+                }}
+              >
+                {/* Ambient Radial Glow */}
+                <div style={{
+                  position: 'absolute',
+                  top: '-40%',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '320px',
+                  height: '180px',
+                  background: 'radial-gradient(circle, rgba(255, 190, 0, 0.22) 0%, rgba(255, 190, 0, 0) 70%)',
+                  pointerEvents: 'none'
+                }} />
+
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'linear-gradient(90deg, #ff4500, #ffbe00)',
+                    color: '#000000',
+                    padding: '6px 16px',
+                    borderRadius: '30px',
+                    fontSize: '0.75rem',
+                    fontWeight: '900',
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    boxShadow: '0 4px 15px rgba(255, 190, 0, 0.35)',
+                    marginBottom: '14px'
+                  }}
+                >
+                  <Flame size={14} fill="#000000" />
+                  TOP SELLING SQUAD
+                </div>
+
+                <h2
+                  style={{
+                    textTransform: 'uppercase',
+                    fontWeight: 900,
+                    fontSize: '2.4rem',
+                    margin: '0 0 10px 0',
+                    letterSpacing: '1px',
+                    color: '#ffffff',
+                    lineHeight: 1.15
+                  }}
+                >
+                  OUR <span style={{
+                    background: 'linear-gradient(135deg, #ffbe00 0%, #ff8c00 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    filter: 'drop-shadow(0 2px 10px rgba(255, 190, 0, 0.3))'
+                  }}>BEST SELLERS</span>
                 </h2>
-                <p style={{ color: 'var(--text-gray)' }}>The most popular formulas trusted by our elite fitness community.</p>
+
+                <p
+                  style={{
+                    color: 'var(--text-gray)',
+                    maxWidth: '560px',
+                    margin: 0,
+                    fontSize: '0.95rem',
+                    lineHeight: 1.5,
+                    fontWeight: 500
+                  }}
+                >
+                  The most popular formulas trusted by our elite fitness community.
+                </p>
               </div>
 
               <div className="products-grid">
@@ -990,7 +1079,9 @@ export default function App() {
           onRemoveItem={handleRemoveItem}
           onCheckout={handleOpenCheckout}
           user={user}
-          onRequireLogin={() => {
+          onRequireLogin={(priceDetails) => {
+            setPendingCheckoutDetails(priceDetails);
+            setIsCartOpen(false);
             setAuthPrompt('Please sign in or create an account to proceed to checkout.');
             setIsAuthOpen(true);
           }}
@@ -1052,7 +1143,7 @@ export default function App() {
                           ) : (
                             <div className="jar-graphic" style={{ height: '45px', width: '35px', padding: '2px', borderRadius: '4px', transform: 'scale(0.8)' }}>
                               <div className="jar-lid" style={{ height: '3px', width: '25px' }}></div>
-                              <div className="jar-label" style={{ background: product.themeColor, marginTop: '2px' }}>
+                              <div className="jar-label" style={{ background: product.themeColor || 'var(--bg-dark-700)', marginTop: '2px' }}>
                                 <div style={{ fontSize: '0.35rem', color: '#fff', textAlign: 'center' }}>EL</div>
                               </div>
                             </div>

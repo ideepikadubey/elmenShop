@@ -87,6 +87,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
         name: item.name,
         price: item.price,
         quantity: item.quantity,
+        flavour: item.selectedFlavour || item.flavour || '',
         image: item.image || ''
       }));
 

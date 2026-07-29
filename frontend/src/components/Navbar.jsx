@@ -7,7 +7,6 @@ const categories = [
   { key: 'proteins', label: 'Proteins', image: '/protein (2).png', bg: '#fff3e0', color: '#e65100' },
   { key: 'gainers', label: 'Gainers', image: '/gainer.png', bg: '#e8f5e9', color: '#2e7d32' },
   { key: 'preworkouts', label: 'Pre Workout', image: '/preworkout.png', bg: '#fce4ec', color: '#c62828' },
-  { key: 'ayurveda', label: 'Ayurveda', image: '/wellness.png', bg: '#f1f8e9', color: '#558b2f' },
   { key: 'fitfoods', label: 'Wellness', image: '/fitfoods.png', bg: '#e3f2fd', color: '#1565c0' },
   { key: 'accessories', label: 'Accessories', image: '/shaker.png', bg: '#f3e5f5', color: '#6a1b9a' },
 ];
@@ -168,7 +167,7 @@ export default function Navbar({
                       ) : (
                         <div className="jar-graphic" style={{ height: '30px', width: '24px', padding: '1px', borderRadius: '2px', transform: 'scale(0.8)' }}>
                           <div className="jar-lid" style={{ height: '2px', width: '16px' }}></div>
-                          <div className="jar-label" style={{ background: p.themeColor, marginTop: '1px' }} />
+                          <div className="jar-label" style={{ background: p.themeColor || 'var(--bg-dark-700)', marginTop: '1px' }} />
                         </div>
                       )}
                     </div>
@@ -398,38 +397,6 @@ export default function Navbar({
                     <div>
                       <span style={{ fontWeight: '800', display: 'block', fontSize: '0.82rem', color: '#0f172a' }}>Perfumes</span>
                       <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Premium fragrances</span>
-                    </div>
-                  </button>
-
-                  {/* Ayurveda Option */}
-                  <button
-                    onClick={() => {
-                      setIsLaunchDropdownOpen(false);
-                      setIsMobileMenuOpen(false);
-                      window.dispatchEvent(new CustomEvent('elmen:openUpcoming', { detail: 'ayurveda' }));
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      padding: '8px 10px',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      width: '100%',
-                      borderRadius: '8px',
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-                  >
-                    <div style={{ width: '28px', height: '28px', background: 'rgba(39, 174, 96, 0.12)', color: '#27ae60', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', flexShrink: 0 }}>
-                      <Droplet size={14} fill="currentColor" />
-                    </div>
-                    <div>
-                      <span style={{ fontWeight: '800', display: 'block', fontSize: '0.82rem', color: '#0f172a' }}>Ayurveda</span>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Natural health remedies</span>
                     </div>
                   </button>
 

@@ -72,7 +72,7 @@ export default function AuthenticityChecker() {
                   <div className="auth-form-row">
                     <input
                       type="text"
-                      placeholder="e.g. ELMEN-WHEY-2026"
+                      placeholder="Enter scratch code..."
                       className="form-input"
                       value={code}
                       onChange={(e) => setCode(e.target.value)}

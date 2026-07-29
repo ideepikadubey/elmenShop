@@ -13,6 +13,7 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeImage, setActiveImage] = useState(product.image || '');
+  const [selectedFlavour, setSelectedFlavour] = useState('');
 
   const fetchReviews = async () => {
     try {
@@ -29,6 +30,10 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
   useEffect(() => {
     fetchReviews();
     setActiveImage(product.image || '');
+    const defaultFlvs = Array.isArray(product.flavours) && product.flavours.length > 0
+      ? product.flavours
+      : (product.category === 'gainers' ? ['Malai Kulfi', 'Chocolate'] : (product.category === 'proteins' ? ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi'] : []));
+    setSelectedFlavour(defaultFlvs[0] || '');
   }, [product]);
 
   const handleReviewSubmit = async (e) => {
@@ -138,7 +143,7 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
               ) : (
                 <div className="jar-graphic" style={{ height: '380px', width: '260px', padding: '20px 16px', margin: '0' }}>
                   <div className="jar-lid" style={{ height: '24px', width: '160px' }}></div>
-                  <div className="jar-label" style={{ background: product.themeColor, marginTop: '24px' }}>
+                  <div className="jar-label" style={{ background: product.themeColor || 'var(--bg-dark-700)', marginTop: '24px' }}>
                     <div className="jar-brand" style={{ fontSize: '1rem' }}>EL <span style={{ color: '#fff' }}>MEN</span></div>
                     <div className="jar-title" style={{ fontSize: '1.3rem', color: '#fff', fontWeight: 800 }}>{product.name}</div>
                     <div className="jar-stats" style={{ fontSize: '0.8rem', padding: '6px 10px' }}>
@@ -255,6 +260,46 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
                       </p>
                     </div>
 
+                    {/* Flavour Selector */}
+                    {(() => {
+                      const flavoursList = Array.isArray(product.flavours) && product.flavours.length > 0
+                        ? product.flavours
+                        : (product.category === 'gainers' ? ['Malai Kulfi', 'Chocolate'] : (product.category === 'proteins' ? ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi'] : []));
+                      if (flavoursList.length === 0) return null;
+                      return (
+                        <div style={{ marginTop: '16px', marginBottom: '8px' }}>
+                          <label style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', display: 'block', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                            Select Flavour: <span style={{ color: '#d97706', fontWeight: 900 }}>{selectedFlavour || flavoursList[0]}</span>
+                          </label>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {flavoursList.map((flv) => {
+                              const isSel = (selectedFlavour || flavoursList[0]) === flv;
+                              return (
+                                <button
+                                  key={flv}
+                                  type="button"
+                                  onClick={() => setSelectedFlavour(flv)}
+                                  style={{
+                                    padding: '6px 14px',
+                                    borderRadius: '20px',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 800,
+                                    border: isSel ? '1.5px solid #d97706' : '1px solid #cbd5e1',
+                                    backgroundColor: isSel ? '#fffbeb' : '#ffffff',
+                                    color: isSel ? '#b45309' : '#475569',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                  }}
+                                >
+                                  {flv}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     {/* Add to Cart Button */}
                     <button
                       className="btn btn-primary"
@@ -281,7 +326,11 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
                       onMouseLeave={e => !isOutOfStock && (e.currentTarget.style.backgroundColor = '#eab308')}
                       onClick={() => {
                         if (!isOutOfStock) {
-                          onAddToCart(product);
+                          const defaultFlvs = Array.isArray(product.flavours) && product.flavours.length > 0
+                            ? product.flavours
+                            : (product.category === 'gainers' ? ['Malai Kulfi', 'Chocolate'] : (product.category === 'proteins' ? ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi'] : []));
+                          const chosenFlavour = selectedFlavour || defaultFlvs[0] || '';
+                          onAddToCart({ ...product, selectedFlavour: chosenFlavour });
                           onClose();
                         }
                       }}

@@ -10,7 +10,7 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'Category is required'],
-    enum: ['proteins', 'gainers', 'preworkouts', 'wellness', 'performance'],
+    enum: ['proteins', 'gainers', 'preworkouts', 'wellness', 'performance', 'accessories'],
     lowercase: true
   },
   price: {
@@ -27,6 +27,7 @@ const productSchema = new mongoose.Schema({
   servingsCount: { type: Number, default: 0 },
   protein:       { type: String, default: '0g' },
   features:      [{ type: String }],
+  flavours:      [{ type: String }],
   details:       { type: String, default: '' },
   nutritionFacts: {
     type: Map,
