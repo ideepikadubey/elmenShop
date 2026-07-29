@@ -77,9 +77,7 @@ export default function Hero({ onShopClick }) {
                 style={{
                   width: '100%',
                   height: 'auto',
-                  display: 'block',
-                  maxHeight: '480px',
-                  objectFit: 'cover'
+                  display: 'block'
                 }}
               />
             </div>
