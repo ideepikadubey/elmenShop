@@ -202,14 +202,25 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
                 return (
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', margin: '8px 0' }}>
-                      <span style={{ fontSize: '2.2rem', fontWeight: 900, color: '#0f172a' }}>
-                        ₹{formatPrice(product.price)}/-
-                      </span>
-                      {product.originalPrice && (
-                        <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: '1.2rem', fontWeight: 500 }}>
-                          ₹{formatPrice(product.originalPrice)}
-                        </span>
-                      )}
+                      {(() => {
+                        const discountPrice = Number(product.price || 0);
+                        const originalMrp = Number(product.originalPrice || 0);
+                        const hasDiscount = discountPrice > 0 && originalMrp > 0 && discountPrice < originalMrp;
+                        const displayPrice = hasDiscount ? discountPrice : (originalMrp > 0 ? originalMrp : discountPrice);
+
+                        return (
+                          <>
+                            <span style={{ fontSize: '2.2rem', fontWeight: 900, color: '#0f172a' }}>
+                              ₹{formatPrice(displayPrice)}/-
+                            </span>
+                            {hasDiscount && (
+                              <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: '1.2rem', fontWeight: 500 }}>
+                                ₹{formatPrice(originalMrp)}
+                              </span>
+                            )}
+                          </>
+                        );
+                      })()}
                       {isOutOfStock && (
                         <span style={{ backgroundColor: '#dc2626', color: '#ffffff', fontSize: '0.75rem', fontWeight: 900, padding: '4px 10px', borderRadius: '20px', letterSpacing: '0.5px' }}>
                           OUT OF STOCK
@@ -219,57 +230,103 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
 
                     <p style={{ color: '#475569', fontSize: '0.92rem', lineHeight: '1.6', margin: 0 }}>{product.details}</p>
 
-                    {/* Nutrition Supplement Facts */}
-                    <div>
-                      <h4 style={{ textTransform: 'uppercase', fontSize: '0.85rem', fontWeight: 800, marginBottom: '12px', color: '#d97706', letterSpacing: '0.5px' }}>
-                        Supplement Facts
-                      </h4>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-                        <thead>
-                          <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left' }}>
-                            <th style={{ padding: '8px 12px', color: '#475569', fontWeight: 700 }}>Ingredient / Nutrient</th>
-                            <th style={{ padding: '8px 12px', color: '#475569', fontWeight: 700, textAlign: 'right' }}>Amt per serving</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {product.nutritionFacts && typeof product.nutritionFacts === 'object' && Object.entries(product.nutritionFacts).map(([key, value]) => (
-                            <tr key={key} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                              <td style={{ padding: '8px 12px', color: '#0f172a', fontWeight: 500 }}>{key}</td>
-                              <td style={{ padding: '8px 12px', color: '#0f172a', fontWeight: 700, textAlign: 'right' }}>{value}</td>
+                    {/* Product Specifications for Accessories or Supplement Facts for Supplements */}
+                    {product.category === 'accessories' ? (
+                      ((product.nutritionFacts && Object.keys(product.nutritionFacts).length > 0) || product.weight || product.servingSize) ? (
+                        <div>
+                          <h4 style={{ textTransform: 'uppercase', fontSize: '0.85rem', fontWeight: 800, marginBottom: '12px', color: '#d97706', letterSpacing: '0.5px' }}>
+                            Product Specifications
+                          </h4>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                            <thead>
+                              <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left' }}>
+                                <th style={{ padding: '8px 12px', color: '#475569', fontWeight: 700 }}>Specification / Feature</th>
+                                <th style={{ padding: '8px 12px', color: '#475569', fontWeight: 700, textAlign: 'right' }}>Details</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {product.nutritionFacts && typeof product.nutritionFacts === 'object' && Object.entries(product.nutritionFacts).map(([key, value]) => (
+                                <tr key={key} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                  <td style={{ padding: '8px 12px', color: '#0f172a', fontWeight: 500 }}>{key}</td>
+                                  <td style={{ padding: '8px 12px', color: '#0f172a', fontWeight: 700, textAlign: 'right' }}>{value}</td>
+                                </tr>
+                              ))}
+                              {product.servingSize && (
+                                <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                  <td style={{ padding: '8px 12px', color: '#64748b', fontWeight: 500 }}>Dimensions / Size</td>
+                                  <td style={{ padding: '8px 12px', color: '#0f172a', fontWeight: 700, textAlign: 'right' }}>{product.servingSize}</td>
+                                </tr>
+                              )}
+                              {product.weight && (
+                                <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                  <td style={{ padding: '8px 12px', color: '#64748b', fontWeight: 500 }}>Material / Weight</td>
+                                  <td style={{ padding: '8px 12px', color: '#0f172a', fontWeight: 700, textAlign: 'right' }}>{product.weight}</td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : null
+                    ) : (
+                      <div>
+                        <h4 style={{ textTransform: 'uppercase', fontSize: '0.85rem', fontWeight: 800, marginBottom: '12px', color: '#d97706', letterSpacing: '0.5px' }}>
+                          Supplement Facts
+                        </h4>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                          <thead>
+                            <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left' }}>
+                              <th style={{ padding: '8px 12px', color: '#475569', fontWeight: 700 }}>Ingredient / Nutrient</th>
+                              <th style={{ padding: '8px 12px', color: '#475569', fontWeight: 700, textAlign: 'right' }}>Amt per serving</th>
                             </tr>
-                          ))}
-                          <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                            <td style={{ padding: '8px 12px', color: '#64748b', fontWeight: 500 }}>Serving Size</td>
-                            <td style={{ padding: '8px 12px', color: '#0f172a', fontWeight: 700, textAlign: 'right' }}>{product.servingSize}</td>
-                          </tr>
-                          <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                            <td style={{ padding: '8px 12px', color: '#64748b', fontWeight: 500 }}>Total Weight</td>
-                            <td style={{ padding: '8px 12px', color: '#0f172a', fontWeight: 700, textAlign: 'right' }}>{product.weight}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody>
+                            {product.nutritionFacts && typeof product.nutritionFacts === 'object' && Object.entries(product.nutritionFacts).map(([key, value]) => (
+                              <tr key={key} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                <td style={{ padding: '8px 12px', color: '#0f172a', fontWeight: 500 }}>{key}</td>
+                                <td style={{ padding: '8px 12px', color: '#0f172a', fontWeight: 700, textAlign: 'right' }}>{value}</td>
+                              </tr>
+                            ))}
+                            {product.servingSize && (
+                              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                <td style={{ padding: '8px 12px', color: '#64748b', fontWeight: 500 }}>Serving Size</td>
+                                <td style={{ padding: '8px 12px', color: '#0f172a', fontWeight: 700, textAlign: 'right' }}>{product.servingSize}</td>
+                              </tr>
+                            )}
+                            {product.weight && (
+                              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                <td style={{ padding: '8px 12px', color: '#64748b', fontWeight: 500 }}>Total Weight</td>
+                                <td style={{ padding: '8px 12px', color: '#0f172a', fontWeight: 700, textAlign: 'right' }}>{product.weight}</td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
 
-                    {/* Directions */}
-                    <div>
-                      <h4 style={{ textTransform: 'uppercase', fontSize: '0.85rem', fontWeight: 800, marginBottom: '8px', color: '#d97706', letterSpacing: '0.5px' }}>
-                        Suggested Directions
-                      </h4>
-                      <p style={{ fontSize: '0.85rem', color: '#475569', margin: 0, lineHeight: '1.6' }}>
-                        {getDirections(product.category)}
-                      </p>
-                    </div>
+                    {/* Directions - Only for non-accessories */}
+                    {product.category !== 'accessories' && (
+                      <div>
+                        <h4 style={{ textTransform: 'uppercase', fontSize: '0.85rem', fontWeight: 800, marginBottom: '8px', color: '#d97706', letterSpacing: '0.5px' }}>
+                          Suggested Directions
+                        </h4>
+                        <p style={{ fontSize: '0.85rem', color: '#475569', margin: 0, lineHeight: '1.6' }}>
+                          {getDirections(product.category)}
+                        </p>
+                      </div>
+                    )}
 
-                    {/* Flavour Selector */}
+                    {/* Flavour or Color Selector */}
                     {(() => {
+                      const isAccessory = product.category === 'accessories';
+                      const defaultFlvs = isAccessory ? ['Navy Blue', 'Black', 'Grey'] : (product.category === 'gainers' ? ['Malai Kulfi', 'Chocolate'] : (product.category === 'proteins' ? ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi'] : []));
                       const flavoursList = Array.isArray(product.flavours) && product.flavours.length > 0
                         ? product.flavours
-                        : (product.category === 'gainers' ? ['Malai Kulfi', 'Chocolate'] : (product.category === 'proteins' ? ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi'] : []));
+                        : defaultFlvs;
                       if (flavoursList.length === 0) return null;
                       return (
                         <div style={{ marginTop: '16px', marginBottom: '8px' }}>
                           <label style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', display: 'block', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                            Select Flavour: <span style={{ color: '#d97706', fontWeight: 900 }}>{selectedFlavour || flavoursList[0]}</span>
+                            {isAccessory ? 'Select Color / Variant' : 'Select Flavour'}: <span style={{ color: '#d97706', fontWeight: 900 }}>{selectedFlavour || flavoursList[0]}</span>
                           </label>
                           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                             {flavoursList.map((flv) => {

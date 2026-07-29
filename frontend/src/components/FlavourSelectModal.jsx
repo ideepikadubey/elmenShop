@@ -5,14 +5,16 @@ import { API_BASE_URL } from '../config/api';
 export default function FlavourSelectModal({ product, onClose, onConfirm }) {
   if (!product) return null;
 
+  const isAccessory = product.category === 'accessories';
   const defaultCategoryFlavours = {
     gainers: ['Malai Kulfi', 'Chocolate'],
-    proteins: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi']
+    proteins: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi'],
+    accessories: ['Navy Blue', 'Black', 'Grey']
   };
 
   const availableFlavours = Array.isArray(product.flavours) && product.flavours.length > 0
     ? product.flavours
-    : (defaultCategoryFlavours[product.category] || ['Chocolate', 'Vanilla']);
+    : (defaultCategoryFlavours[product.category] || (isAccessory ? ['Navy Blue', 'Black', 'Grey'] : ['Chocolate', 'Vanilla']));
 
   const [selectedFlavour, setSelectedFlavour] = useState(availableFlavours[0] || '');
 
@@ -100,10 +102,10 @@ export default function FlavourSelectModal({ product, onClose, onConfirm }) {
           </div>
         </div>
 
-        {/* Flavour selection title */}
+        {/* Flavour / Color selection title */}
         <div style={{ marginBottom: '16px' }}>
           <label style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', display: 'block', marginBottom: '10px', letterSpacing: '0.5px' }}>
-            Select Preferred Flavour:
+            {isAccessory ? 'Select Preferred Color / Variant:' : 'Select Preferred Flavour:'}
           </label>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

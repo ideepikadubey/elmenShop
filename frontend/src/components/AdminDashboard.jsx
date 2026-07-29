@@ -279,12 +279,17 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
         ? productForm.features.split(',').map(f => f.trim()).filter(Boolean)
         : [];
 
+      const origPrice = Number(productForm.originalPrice || productForm.price || 0);
+      const discPrice = (productForm.price !== '' && productForm.price !== null && productForm.price !== undefined)
+        ? Number(productForm.price)
+        : origPrice;
+
       const formData = new FormData();
       formData.append('name', productForm.name);
       formData.append('subtitle', productForm.subtitle);
       formData.append('category', productForm.category);
-      formData.append('price', Number(productForm.price));
-      formData.append('originalPrice', Number(productForm.originalPrice || 0));
+      formData.append('price', discPrice);
+      formData.append('originalPrice', origPrice);
       formData.append('weight', productForm.weight);
       formData.append('servingSize', productForm.servingSize);
       formData.append('servingsCount', Number(productForm.servingsCount || 0));
@@ -1133,77 +1138,104 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
               {/* Row 3: Prices */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
-                  <label>Discounted Price (INR ₹) *</label>
+                  <label>Original MRP Price (INR ₹) *</label>
                   <input
                     type="number"
                     required
                     className="form-input"
-                    value={productForm.price}
-                    onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                    placeholder="e.g. 6499"
-                    min="0"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Original MRP Price (INR ₹)</label>
-                  <input
-                    type="number"
-                    className="form-input"
                     value={productForm.originalPrice}
                     onChange={(e) => setProductForm({ ...productForm, originalPrice: e.target.value })}
-                    placeholder="e.g. 7999"
+                    placeholder="e.g. 1299"
                     min="0"
                   />
                 </div>
-              </div>
-
-              {/* Row 4: Specs (Weight, Serving Size, Servings Count) */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
-                  <label>Total weight</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={productForm.weight}
-                    onChange={(e) => setProductForm({ ...productForm, weight: e.target.value })}
-                    placeholder="e.g. 2000g (2kg)"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Serving Size</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={productForm.servingSize}
-                    onChange={(e) => setProductForm({ ...productForm, servingSize: e.target.value })}
-                    placeholder="e.g. 1 Scoop (33g)"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Servings Count</label>
+                  <label>Discounted Price (INR ₹) <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>(Optional)</span></label>
                   <input
                     type="number"
                     className="form-input"
-                    value={productForm.servingsCount}
-                    onChange={(e) => setProductForm({ ...productForm, servingsCount: e.target.value })}
-                    placeholder="60"
+                    value={productForm.price}
+                    onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                    placeholder="e.g. 999 (Leave blank if no discount)"
                     min="0"
                   />
                 </div>
               </div>
 
-              {/* Row 5: Protein content and Badge */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group">
-                  <label>Protein per Serving</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={productForm.protein}
-                    onChange={(e) => setProductForm({ ...productForm, protein: e.target.value })}
-                    placeholder="e.g. 24g"
-                  />
+              {/* Row 4: Specs - Dynamic per category */}
+              {productForm.category === 'accessories' ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="form-group">
+                    <label>Weight / GSM</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={productForm.weight}
+                      onChange={(e) => setProductForm({ ...productForm, weight: e.target.value })}
+                      placeholder="e.g. 620 GSM / 350g"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Dimensions / Size</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={productForm.servingSize}
+                      onChange={(e) => setProductForm({ ...productForm, servingSize: e.target.value })}
+                      placeholder="e.g. 40cm x 60cm or Free Size"
+                    />
+                  </div>
                 </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                  <div className="form-group">
+                    <label>Total weight</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={productForm.weight}
+                      onChange={(e) => setProductForm({ ...productForm, weight: e.target.value })}
+                      placeholder="e.g. 2000g (2kg)"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Serving Size</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={productForm.servingSize}
+                      onChange={(e) => setProductForm({ ...productForm, servingSize: e.target.value })}
+                      placeholder="e.g. 1 Scoop (33g)"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Servings Count</label>
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={productForm.servingsCount}
+                      onChange={(e) => setProductForm({ ...productForm, servingsCount: e.target.value })}
+                      placeholder="60"
+                      min="0"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Row 5: Protein (Supplements only) and Promo Badge */}
+              <div style={{ display: 'grid', gridTemplateColumns: productForm.category === 'accessories' ? '1fr' : '1fr 1fr', gap: '16px' }}>
+                {productForm.category !== 'accessories' && (
+                  <div className="form-group">
+                    <label>Protein per Serving</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={productForm.protein}
+                      onChange={(e) => setProductForm({ ...productForm, protein: e.target.value })}
+                      placeholder="e.g. 24g"
+                    />
+                  </div>
+                )}
                 <div className="form-group">
                   <label>Promo Badge Text</label>
                   <input
@@ -1211,39 +1243,42 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     className="form-input"
                     value={productForm.badge}
                     onChange={(e) => setProductForm({ ...productForm, badge: e.target.value })}
-                    placeholder="e.g. Best Seller"
+                    placeholder="e.g. Best Seller / Premium Cotton"
                   />
                 </div>
               </div>
 
-              {/* Product Flavours Selection */}
+              {/* Product Flavours / Colors Selection */}
               <div className="form-group" style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
                 <label style={{ display: 'block', fontWeight: 800, color: '#0f172a', marginBottom: '4px', fontSize: '0.88rem' }}>
-                  AVAILABLE PRODUCT FLAVOURS
+                  {productForm.category === 'accessories' ? 'AVAILABLE PRODUCT COLORS / VARIANTS' : 'AVAILABLE PRODUCT FLAVOURS'}
                 </label>
                 <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 10px 0' }}>
-                  Click badges to toggle available flavours or edit flavours below (separated by commas).
+                  {productForm.category === 'accessories'
+                    ? 'Click badges to toggle available colors or edit colors below (separated by commas).'
+                    : 'Click badges to toggle available flavours or edit flavours below (separated by commas).'}
                 </p>
 
-                {/* Category Preset Flavour Quick Toggles */}
+                {/* Category Preset Flavour / Color Quick Toggles */}
                 {(() => {
                   const categoryPresets = {
                     gainers: ['Malai Kulfi', 'Chocolate'],
-                    proteins: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi']
+                    proteins: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi'],
+                    accessories: ['Navy Blue', 'Black', 'Grey', 'White', 'BlueBlack', 'Free Size']
                   };
-                  const activeCategoryFlavours = categoryPresets[productForm.category] || ['Chocolate', 'Vanilla', 'Unflavored'];
+                  const activeCategoryOptions = categoryPresets[productForm.category] || ['Navy Blue', 'Black', 'Grey', 'White'];
 
                   return (
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                      {activeCategoryFlavours.map((flv) => {
+                      {activeCategoryOptions.map((opt) => {
                         const currentList = Array.isArray(productForm.flavours) ? productForm.flavours : [];
-                        const isSelected = currentList.includes(flv);
+                        const isSelected = currentList.includes(opt);
                         return (
                           <button
-                            key={flv}
+                            key={opt}
                             type="button"
                             onClick={() => {
-                              const next = isSelected ? currentList.filter(f => f !== flv) : [...currentList, flv];
+                              const next = isSelected ? currentList.filter(f => f !== opt) : [...currentList, opt];
                               setProductForm({ ...productForm, flavours: next });
                             }}
                             style={{
@@ -1261,7 +1296,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                               gap: '4px'
                             }}
                           >
-                            {isSelected ? '✓ ' : '+ '} {flv}
+                            {isSelected ? '✓ ' : '+ '} {opt}
                           </button>
                         );
                       })}
@@ -1269,7 +1304,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                   );
                 })()}
 
-                {/* Custom Flavours Input */}
+                {/* Custom Flavours / Colors Input */}
                 <input
                   type="text"
                   className="form-input"
@@ -1279,7 +1314,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     const parsed = val.split(',').map(s => s.trim()).filter(Boolean);
                     setProductForm({ ...productForm, flavours: parsed });
                   }}
-                  placeholder="e.g. Kesar Badam, Cookies & Cream, Chocolate, Malai Kulfi"
+                  placeholder={productForm.category === 'accessories' ? 'e.g. Navy Blue, Black, Grey, White' : 'e.g. Kesar Badam, Cookies & Cream, Chocolate'}
                   style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
                 />
               </div>
@@ -1415,15 +1450,17 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 />
               </div>
 
-              {/* Nutrition Supplement Facts key values */}
+              {/* Product Specifications / Supplement Facts key values */}
               <div className="form-group">
-                <label style={{ display: 'block', marginBottom: '10px' }}>Supplement Facts (Nutrition values)</label>
+                <label style={{ display: 'block', marginBottom: '10px' }}>
+                  {productForm.category === 'accessories' ? 'Product Specifications (Details / Features)' : 'Supplement Facts (Nutrition values)'}
+                </label>
                 <div style={{ display: 'grid', gap: '10px' }}>
                   {productForm.nutritionFactsInput.map((fact, index) => (
                     <div key={index} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                       <input
                         type="text"
-                        placeholder="Nutrient (e.g. BCAAs)"
+                        placeholder={productForm.category === 'accessories' ? 'Feature (e.g. GSM / Material)' : 'Nutrient (e.g. BCAAs)'}
                         className="form-input"
                         value={fact.key}
                         onChange={(e) => handleNutritionFactChange(index, 'key', e.target.value)}
@@ -1431,7 +1468,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                       />
                       <input
                         type="text"
-                        placeholder="Amount (e.g. 5.5g)"
+                        placeholder={productForm.category === 'accessories' ? 'Value (e.g. 620 GSM / 100% Cotton)' : 'Amount (e.g. 5.5g)'}
                         className="form-input"
                         value={fact.value}
                         onChange={(e) => handleNutritionFactChange(index, 'value', e.target.value)}

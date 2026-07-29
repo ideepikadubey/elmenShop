@@ -2902,9 +2902,10 @@ footer {
     display: block !important;
   }
 
-  .logo img {
-    height: 40px !important;
-    max-height: 40px !important;
+  .logo img,
+  header.scrolled .logo img {
+    height: 28px !important;
+    max-height: 28px !important;
     width: auto !important;
   }
 }

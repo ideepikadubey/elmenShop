@@ -17,7 +17,7 @@ export default function LeadPopupModal() {
     if (!hasSeen) {
       timer = setTimeout(() => {
         setIsOpen(true);
-      }, 2500); // 2.5 seconds delay after visiting
+      }, 10000); // 10 seconds delay after visiting
     }
 
     const customHandler = () => setIsOpen(true);
@@ -29,9 +29,15 @@ export default function LeadPopupModal() {
     };
   }, []);
 
-  const handleClose = () => {
+  const handleClose = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setIsOpen(false);
-    sessionStorage.setItem('elmen_lead_popup_seen', 'true');
+    try {
+      sessionStorage.setItem('elmen_lead_popup_seen', 'true');
+    } catch (err) {}
   };
 
   const handleSubmit = async (e) => {
@@ -74,6 +80,9 @@ export default function LeadPopupModal() {
 
   return (
     <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose(e);
+      }}
       style={{
         position: 'fixed',
         inset: 0,
@@ -105,25 +114,29 @@ export default function LeadPopupModal() {
       >
         {/* Close Button */}
         <button
+          type="button"
           onClick={handleClose}
+          onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); handleClose(e); }}
+          onTouchStart={(e) => { e.stopPropagation(); handleClose(e); }}
           aria-label="Close popup"
           style={{
             position: 'absolute',
-            top: '14px',
-            right: '14px',
-            zIndex: 10,
-            width: '36px',
-            height: '36px',
+            top: '12px',
+            right: '12px',
+            zIndex: 100,
+            width: '38px',
+            height: '38px',
             borderRadius: '50%',
-            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            backgroundColor: '#0f172a',
             color: '#ffffff',
-            border: 'none',
+            border: '2px solid rgba(255, 255, 255, 0.3)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
-            backdropFilter: 'blur(4px)'
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+            pointerEvents: 'auto'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = 'var(--primary-yellow)';
@@ -131,12 +144,12 @@ export default function LeadPopupModal() {
             e.currentTarget.style.transform = 'rotate(90deg)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.65)';
+            e.currentTarget.style.backgroundColor = '#0f172a';
             e.currentTarget.style.color = '#ffffff';
             e.currentTarget.style.transform = 'none';
           }}
         >
-          <X size={18} />
+          <X size={20} strokeWidth={2.5} />
         </button>
 
         {/* Left Side: Uncropped Poster Image */}

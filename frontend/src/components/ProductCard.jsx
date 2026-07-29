@@ -93,12 +93,21 @@ export default function ProductCard({
         <h3 className="product-card-title">{product.name}</h3>
 
         <div className="product-card-specs">
-          <span className="spec-badge">{product.weight}</span>
-          <span className="spec-badge">Servings: {product.servingsCount}</span>
-          {parseInt(product.protein) > 0 && (
-            <span className="spec-badge" style={{ borderColor: 'var(--primary-yellow)', color: 'var(--primary-yellow)' }}>
-              Protein: {product.protein}
-            </span>
+          {product.category !== 'accessories' ? (
+            <>
+              {product.weight && <span className="spec-badge">{product.weight}</span>}
+              {product.servingsCount > 0 && <span className="spec-badge">Servings: {product.servingsCount}</span>}
+              {parseInt(product.protein) > 0 && (
+                <span className="spec-badge" style={{ borderColor: 'var(--primary-yellow)', color: 'var(--primary-yellow)' }}>
+                  Protein: {product.protein}
+                </span>
+              )}
+            </>
+          ) : (
+            <>
+              {product.weight && <span className="spec-badge">{product.weight}</span>}
+              {product.servingSize && <span className="spec-badge">{product.servingSize}</span>}
+            </>
           )}
         </div>
 
@@ -106,10 +115,21 @@ export default function ProductCard({
       </div>
 
       <div className="product-card-footer">
-        <div className="price-container">
-          <span className="price-original">₹{formatPrice(product.originalPrice)}</span>
-          <span className="price-actual">₹{formatPrice(product.price)}<span>/-</span></span>
-        </div>
+        {(() => {
+          const discountPrice = Number(product.price || 0);
+          const originalMrp = Number(product.originalPrice || 0);
+          const hasDiscount = discountPrice > 0 && originalMrp > 0 && discountPrice < originalMrp;
+          const displayPrice = hasDiscount ? discountPrice : (originalMrp > 0 ? originalMrp : discountPrice);
+
+          return (
+            <div className="price-container">
+              {hasDiscount && (
+                <span className="price-original">₹{formatPrice(originalMrp)}</span>
+              )}
+              <span className="price-actual">₹{formatPrice(displayPrice)}<span>/-</span></span>
+            </div>
+          );
+        })()}
 
         <div className="card-actions">
           <button

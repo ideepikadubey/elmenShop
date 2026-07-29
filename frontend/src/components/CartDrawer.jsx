@@ -176,7 +176,7 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
                   <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 500 }}>{item.subtitle}</div>
                   {(item.selectedFlavour || item.flavour) && (
                     <div style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 800 }}>
-                      Flavour: {item.selectedFlavour || item.flavour}
+                      {item.category === 'accessories' ? 'Color / Variant' : 'Flavour'}: {item.selectedFlavour || item.flavour}
                     </div>
                   )}
 
