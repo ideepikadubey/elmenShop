@@ -2901,6 +2901,12 @@ footer {
   .mobile-login-icon {
     display: block !important;
   }
+
+  .logo img {
+    height: 40px !important;
+    max-height: 40px !important;
+    width: auto !important;
+  }
 }
 
 .nav-login-btn {
