@@ -71,14 +71,14 @@ jobs:
               cd backend
               npm ci --omit=dev
               cd ..
-              pm2 restart elmenshop --update-env
+              pm2 restart elmenshop --update-env || pm2 start backend/server.js --name elmenshop
             fi
 
-            echo "Checking Backend..."
+            echo "Checking Backend Health..."
 
-            sleep 5
+            sleep 3
 
-            curl http://localhost:5000/api/health
+            curl -s --retry 5 --retry-connrefused --retry-delay 2 http://127.0.0.1:5000/api/health || curl -s --retry 5 --retry-connrefused --retry-delay 2 http://localhost:5000/api/health
 
             pm2 save
 
