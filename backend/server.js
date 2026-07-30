@@ -28,11 +28,22 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin:      [
-    process.env.CLIENT_URL || 'http://localhost:5174',
-    'http://localhost:5173',
-    'http://localhost:5174'
-  ],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    const clientUrl = process.env.CLIENT_URL;
+    if (
+      !process.env.NODE_ENV ||
+      process.env.NODE_ENV === 'development' ||
+      clientUrl === '*' ||
+      (clientUrl && origin === clientUrl) ||
+      origin.endsWith('.elmen.in') ||
+      origin === 'https://elmen.in' ||
+      origin === 'https://www.elmen.in'
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Allow configured cross-origin requests
+  },
   credentials: true
 }));
 
@@ -113,6 +124,6 @@ app.use((err, req, res, next) => {
 // ── Start Server ─────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`\n🚀 EL MEN Nutrition API running on http://localhost:${PORT}`);
-  console.log(`📋 Health check: http://localhost:${PORT}/api/health\n`);
+  console.log(`\n🚀 EL MEN Nutrition API running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+  console.log(`📋 Health check endpoint: /api/health\n`);
 });
