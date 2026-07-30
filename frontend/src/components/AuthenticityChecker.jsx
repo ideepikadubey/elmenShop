@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, HelpCircle, AlertTriangle, ShieldCheck as VerifiedIcon, Loader2, FileText } from 'lucide-react';
+import axios from 'axios';
+import { ShieldCheck, HelpCircle, AlertTriangle, ShieldCheck as VerifiedIcon, Loader2, FileText, AlertCircle } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 export default function AuthenticityChecker() {
   const [code, setCode] = useState('');
-  const [status, setStatus] = useState('idle'); // idle, checking, success, error
+  const [status, setStatus] = useState('idle'); // idle, checking, success, error, already_used
   const [errorMsg, setErrorMsg] = useState('');
-  const [verifiedProduct, setVerifiedProduct] = useState('');
+  const [verifyResult, setVerifyResult] = useState(null);
   const [subTab, setSubTab] = useState('check'); // check, reports
 
   useEffect(() => {
@@ -19,31 +21,42 @@ export default function AuthenticityChecker() {
     return () => window.removeEventListener('elmen:authenticity', handler);
   }, []);
 
-  // Pre-approved valid demo codes
-  const validCodes = {
-    'ELMEN-WHEY-2026': 'Clean Whey Protein - 2kg (Batch: EL-W09)',
-    'ELMEN-GAIN-9988': 'Pro Gain Advanced Mass Gainer - 3kg (Batch: EL-G04)',
-    'ELMEN-CREA-5544': 'Micronized Creatine Monohydrate - 240g (Batch: EL-C11)',
-    'ELMEN-TEST-1234': 'Testo One Natural Herbs - 60 Tab (Batch: EL-T02)',
-  };
-
-  const handleVerify = (e) => {
+  const handleVerify = async (e) => {
     e.preventDefault();
     if (!code.trim()) return;
 
     setStatus('checking');
+    setErrorMsg('');
+    setVerifyResult(null);
 
-    setTimeout(() => {
-      const normalizedCode = code.trim().toUpperCase();
-      if (validCodes[normalizedCode]) {
-        setVerifiedProduct(validCodes[normalizedCode]);
+    try {
+      const res = await axios.post(`${API_BASE_URL}/api/verification/verify`, {
+        code: code.trim()
+      });
+
+      if (res.data && res.data.success) {
+        setVerifyResult(res.data.record);
         setStatus('success');
-        setErrorMsg('');
       } else {
         setStatus('error');
-        setErrorMsg('Security code not recognized. Please check the spellings or scratch layer again.');
+        setErrorMsg(res.data.message || 'Verification failed. Please check the security code.');
       }
-    }, 1500);
+    } catch (err) {
+      if (err.response && err.response.data) {
+        const data = err.response.data;
+        if (data.isAlreadyUsed) {
+          setVerifyResult(data.record || null);
+          setStatus('already_used');
+          setErrorMsg(data.message);
+        } else {
+          setStatus('error');
+          setErrorMsg(data.message || 'Security code not recognized. Please check your scratch layer code.');
+        }
+      } else {
+        setStatus('error');
+        setErrorMsg('Unable to connect to verification server. Please try again.');
+      }
+    }
   };
 
   return (
@@ -104,7 +117,7 @@ export default function AuthenticityChecker() {
                 </div>
               )}
 
-              {status === 'success' && (
+              {status === 'success' && verifyResult && (
                 <div className="certificate">
                   <div className="certificate-verified-badge">
                     <VerifiedIcon size={14} /> 100% Genuine Product
@@ -113,15 +126,16 @@ export default function AuthenticityChecker() {
                   <div className="certificate-subtitle">EL MEN Nutrition India</div>
 
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-gray)', margin: '16px 0 8px' }}>
-                    This certifies that the product below is officially manufactured by EL MEN Nutrition under global GMP and ISO standards.
+                    This certifies that the serial number and code below match our official manufacturing database.
                   </p>
 
-                  <p style={{ color: 'var(--primary-yellow)', fontWeight: 'bold', fontSize: '0.95rem' }}>
-                    {verifiedProduct}
-                  </p>
-
-                  <div className="certificate-serial">
-                    Security Code: {code.trim().toUpperCase()}
+                  <div style={{ background: 'var(--bg-dark-900)', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--bg-dark-600)', margin: '12px 0' }}>
+                    <div style={{ color: 'var(--primary-yellow)', fontWeight: 'bold', fontSize: '0.95rem' }}>
+                      Serial Number: #{verifyResult.serialNum}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      Security Code: {verifyResult.code}
+                    </div>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '12px' }}>
@@ -134,6 +148,24 @@ export default function AuthenticityChecker() {
                   <div className="certificate-stamp">
                     <ShieldCheck size={80} color="var(--primary-yellow)" />
                   </div>
+                </div>
+              )}
+
+              {status === 'already_used' && (
+                <div className="certificate" style={{ borderColor: '#f97316', boxShadow: '0 0 20px rgba(249, 115, 22, 0.2)' }}>
+                  <div className="certificate-verified-badge" style={{ borderColor: '#f97316', color: '#f97316', backgroundColor: 'rgba(249, 115, 22, 0.1)' }}>
+                    <AlertCircle size={14} /> Security Code Already Used
+                  </div>
+                  <h3 className="certificate-title" style={{ color: '#f97316' }}>Verification Warning</h3>
+                  <div className="certificate-subtitle">Single-Use Code Conflict</div>
+
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-gray)', margin: '16px 0 24px', lineHeight: 1.5 }}>
+                    {errorMsg}
+                  </p>
+
+                  <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => setStatus('idle')}>
+                    Try Another Code
+                  </button>
                 </div>
               )}
 

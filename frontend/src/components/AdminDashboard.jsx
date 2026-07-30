@@ -18,6 +18,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const [orders, setOrders] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
   const [offers, setOffers] = useState([]);
+  const [excelFile, setExcelFile] = useState(null);
+  const [isUploadingExcel, setIsUploadingExcel] = useState(false);
+  const [verificationStats, setVerificationStats] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -95,10 +98,57 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
         setOffers(offData.offers);
       }
 
+      // Fetch verification stats
+      try {
+        const verRes = await axios.get(`${API_BASE_URL}/api/verification/stats`, {
+          headers: getHeaders()
+        });
+        if (verRes.data && verRes.data.success) {
+          setVerificationStats(verRes.data.stats);
+        }
+      } catch (e) {
+        console.warn('Verification stats fetch error:', e);
+      }
+
     } catch (err) {
       setErrorMsg(err.response?.data?.message || err.message || 'Failed to fetch admin dashboard records.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleExcelUpload = async (e) => {
+    e.preventDefault();
+    if (!excelFile) {
+      setErrorMsg('Please select an Excel file to upload.');
+      return;
+    }
+    setIsUploadingExcel(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    try {
+      const formData = new FormData();
+      formData.append('excelFile', excelFile);
+
+      const res = await axios.post(`${API_BASE_URL}/api/verification/upload-excel`, formData, {
+        headers: {
+          ...getHeaders(),
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (res.data && res.data.success) {
+        setSuccessMsg(res.data.message || 'Excel verification codes imported successfully!');
+        setExcelFile(null);
+        fetchAdminData();
+      } else {
+        setErrorMsg(res.data.message || 'Failed to process Excel upload.');
+      }
+    } catch (err) {
+      setErrorMsg(err.response?.data?.message || err.message || 'Failed to upload Excel file.');
+    } finally {
+      setIsUploadingExcel(false);
     }
   };
 
@@ -590,6 +640,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
           <button className={`admin-tab-btn ${subTab === 'offers' ? 'active' : ''}`} onClick={() => setSubTab('offers')}>
             PROMOTIONS & OFFERS ({offers.length})
           </button>
+          <button className={`admin-tab-btn ${subTab === 'verification' ? 'active' : ''}`} onClick={() => setSubTab('verification')}>
+            🛡️ CODES VERIFICATION ({verificationStats ? verificationStats.totalCount : 0})
+          </button>
         </div>
 
         {/* ── SUB TAB: OVERVIEW ── */}
@@ -691,50 +744,68 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     <tr>
                       <th>Product Name</th>
                       <th>Category</th>
-                      <th>Price</th>
-                      <th>Original Price</th>
+                      <th>Selling Price</th>
+                      <th>Original Price (MRP)</th>
+                      <th>Discount</th>
                       <th>Stock Quantity</th>
                       <th style={{ textAlign: 'right' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredProducts.map(p => (
-                      <tr key={p._id}>
-                        <td>
-                          <div style={{ fontWeight: '800' }}>{p.name}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.subtitle}</div>
-                        </td>
-                        <td style={{ textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 'bold' }}>{p.category}</td>
-                        <td style={{ fontWeight: 'bold' }}>₹{p.price.toLocaleString('en-IN')}</td>
-                        <td style={{ textDecoration: 'line-through', color: 'var(--text-muted)' }}>
-                          {p.originalPrice ? `₹${p.originalPrice.toLocaleString('en-IN')}` : '-'}
-                        </td>
-                        <td>
-                          {/* Inline Stock editing input */}
-                          <input
-                            type="number"
-                            defaultValue={p.stock}
-                            onBlur={(e) => handleUpdateStockInline(p._id, p.stock, e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleUpdateStockInline(p._id, p.stock, e.target.value);
-                            }}
-                            style={{ width: '70px', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--bg-dark-600)', background: 'var(--bg-dark-900)' }}
-                            min="0"
-                            title="Update stock (click enter or blur to save)"
-                          />
-                        </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                            <button className="btn-icon" onClick={() => handleOpenEditProduct(p)} title="Edit product info">
-                              <Edit2 size={14} />
-                            </button>
-                            <button className="btn-icon" onClick={() => handleDeleteProduct(p._id)} style={{ color: 'var(--primary-red)' }} title="Delete Product">
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    {filteredProducts.map(p => {
+                      const effectiveSellingPrice = (p.price && p.price > 0) ? p.price : (p.originalPrice || 0);
+                      const hasDiscount = p.originalPrice && p.originalPrice > effectiveSellingPrice;
+                      const discountPct = hasDiscount ? Math.round(((p.originalPrice - effectiveSellingPrice) / p.originalPrice) * 100) : 0;
+
+                      return (
+                        <tr key={p._id}>
+                          <td>
+                            <div style={{ fontWeight: '800' }}>{p.name}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.subtitle}</div>
+                          </td>
+                          <td style={{ textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 'bold' }}>{p.category}</td>
+                          <td style={{ fontWeight: '900', color: '#16a34a', fontSize: '0.92rem' }}>
+                            ₹{effectiveSellingPrice.toLocaleString('en-IN')}
+                          </td>
+                          <td style={{ textDecoration: hasDiscount ? 'line-through' : 'none', color: 'var(--text-muted)' }}>
+                            {p.originalPrice ? `₹${p.originalPrice.toLocaleString('en-IN')}` : '-'}
+                          </td>
+                          <td>
+                            {hasDiscount ? (
+                              <span style={{ background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                🔥 {discountPct}% OFF
+                              </span>
+                            ) : (
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>No Discount</span>
+                            )}
+                          </td>
+                          <td>
+                            {/* Inline Stock editing input */}
+                            <input
+                              type="number"
+                              defaultValue={p.stock}
+                              onBlur={(e) => handleUpdateStockInline(p._id, p.stock, e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleUpdateStockInline(p._id, p.stock, e.target.value);
+                              }}
+                              style={{ width: '70px', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--bg-dark-600)', background: 'var(--bg-dark-900)' }}
+                              min="0"
+                              title="Update stock (click enter or blur to save)"
+                            />
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                              <button className="btn-icon" onClick={() => handleOpenEditProduct(p)} title="Edit product info">
+                                <Edit2 size={14} />
+                              </button>
+                              <button className="btn-icon" onClick={() => handleDeleteProduct(p._id)} style={{ color: 'var(--primary-red)' }} title="Delete Product">
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1066,6 +1137,105 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     })}
                   </tbody>
                 </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── SUB TAB: PRODUCT VERIFICATION CODES ── */}
+        {subTab === 'verification' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div>
+                <h3 style={{ textTransform: 'uppercase', fontWeight: 900, margin: 0 }}>
+                  🛡️ Security Scratch Codes & Serial Numbers
+                </h3>
+                <p style={{ color: 'var(--text-gray)', fontSize: '0.85rem', marginTop: '4px' }}>
+                  Upload Excel files containing <code style={{ color: 'var(--primary-yellow)' }}>SerialNum</code> and <code style={{ color: 'var(--primary-yellow)' }}>Code</code> columns to populate backend authentication database.
+                </p>
+              </div>
+            </div>
+
+            {/* Verification Stats Row */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+              <div className="admin-stat-card">
+                <div>
+                  <span style={{ color: 'var(--text-gray)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Total Codes in Database</span>
+                  <div className="admin-stat-val">{verificationStats ? verificationStats.totalCount : 0}</div>
+                </div>
+              </div>
+              <div className="admin-stat-card">
+                <div>
+                  <span style={{ color: '#27ae60', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Claimed / Verified Codes</span>
+                  <div className="admin-stat-val" style={{ color: '#27ae60' }}>{verificationStats ? verificationStats.verifiedCount : 0}</div>
+                </div>
+              </div>
+              <div className="admin-stat-card">
+                <div>
+                  <span style={{ color: 'var(--primary-yellow)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Available Unverified</span>
+                  <div className="admin-stat-val" style={{ color: 'var(--primary-yellow)' }}>{verificationStats ? verificationStats.unverifiedCount : 0}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Excel Upload Card */}
+            <div style={{ background: 'var(--bg-dark-800)', border: '1px solid var(--bg-dark-600)', borderRadius: '16px', padding: '24px', marginBottom: '32px' }}>
+              <h4 style={{ textTransform: 'uppercase', fontWeight: 800, marginBottom: '8px' }}>📥 Import Codes from Excel (.xlsx / .csv)</h4>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-gray)', marginBottom: '16px' }}>
+                Select an Excel spreadsheet containing serial numbers and scratch codes. Columns named <strong>SerialNum</strong> and <strong>Code</strong> will be automatically mapped into MongoDB.
+              </p>
+
+              <form onSubmit={handleExcelUpload} style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <input
+                  type="file"
+                  accept=".xlsx, .xls, .csv"
+                  onChange={(e) => setExcelFile(e.target.files[0] || null)}
+                  style={{
+                    padding: '10px 14px',
+                    background: 'var(--bg-dark-700)',
+                    border: '1px solid var(--bg-dark-600)',
+                    borderRadius: '8px',
+                    color: 'var(--text-white)',
+                    fontSize: '0.85rem'
+                  }}
+                />
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={isUploadingExcel || !excelFile}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                >
+                  {isUploadingExcel ? 'Uploading & Processing...' : 'Upload & Import Excel Codes'}
+                </button>
+              </form>
+            </div>
+
+            {/* Recent Verifications Table */}
+            {verificationStats && verificationStats.recentVerifications && verificationStats.recentVerifications.length > 0 && (
+              <div>
+                <h4 style={{ textTransform: 'uppercase', fontWeight: 800, marginBottom: '14px' }}>📋 Recent Authenticated Claims</h4>
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Serial Number</th>
+                        <th>Security Code</th>
+                        <th>Verified Date</th>
+                        <th>Client IP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {verificationStats.recentVerifications.map(v => (
+                        <tr key={v._id}>
+                          <td><strong>#{v.serialNum}</strong></td>
+                          <td><code>{v.code}</code></td>
+                          <td>{new Date(v.verifiedAt).toLocaleString('en-IN')}</td>
+                          <td><small>{v.verifiedByIp || 'Local'}</small></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>

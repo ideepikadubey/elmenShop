@@ -2880,8 +2880,9 @@ footer {
   }
 
   .track-order-wrapper,
-  .offers-page-wrapper {
-    padding-top: 90px !important;
+  .offers-page-wrapper,
+  .authenticity-page-wrapper {
+    padding-top: 95px !important;
   }
 
   .nav-login-btn,
