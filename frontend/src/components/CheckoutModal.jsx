@@ -209,7 +209,7 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
           }
         }
       };
-      console.log("Razorpay Key:", paymentData.key);
+     // console.log("Razorpay Key:", paymentData.key);
       const rzp = new window.Razorpay(options);
       rzp.open();
 

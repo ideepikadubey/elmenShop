@@ -2884,7 +2884,8 @@ footer {
     padding-top: 90px !important;
   }
 
-  .nav-login-btn {
+  .nav-login-btn,
+  .nav-logout-btn {
     padding: 8px !important;
     width: 38px !important;
     height: 38px !important;
@@ -2894,8 +2895,22 @@ footer {
     align-items: center !important;
   }
 
-  .desktop-login-text {
+  .desktop-login-text,
+  .desktop-logout-text {
     display: none !important;
+  }
+
+  .nav-user-pill {
+    padding: 5px 8px !important;
+  }
+
+  .auth-form-row {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .auth-verify-btn {
+    width: 100% !important;
   }
 
   .mobile-login-icon {
@@ -2910,7 +2925,8 @@ footer {
   }
 }
 
-.nav-login-btn {
+.nav-login-btn,
+.nav-logout-btn {
   padding: 8px 16px;
   font-size: 0.8rem;
   border-radius: 20px;

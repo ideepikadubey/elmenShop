@@ -14,7 +14,8 @@ const paymentRoutes   = require('./routes/payments');
 const enquiryRoutes   = require('./routes/enquiries');
 const offerRoutes     = require('./routes/offers');
 const reviewRoutes    = require('./routes/reviews');
-const instagramRoutes = require('./routes/instagram');
+const instagramRoutes    = require('./routes/instagram');
+const verificationRoutes = require('./routes/verification');
 
 // Connect to MongoDB
 connectDB();
@@ -61,14 +62,15 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ── API Routes ───────────────────────────────────────────────
-app.use('/api/auth',      authRoutes);
-app.use('/api/products',  productRoutes);
-app.use('/api/orders',    orderRoutes);
-app.use('/api/payments',  paymentRoutes);
-app.use('/api/enquiries', enquiryRoutes);
-app.use('/api/offers',    offerRoutes);
-app.use('/api/reviews',   reviewRoutes);
-app.use('/api/instagram', instagramRoutes);
+app.use('/api/auth',         authRoutes);
+app.use('/api/products',     productRoutes);
+app.use('/api/orders',       orderRoutes);
+app.use('/api/payments',     paymentRoutes);
+app.use('/api/enquiries',    enquiryRoutes);
+app.use('/api/offers',       offerRoutes);
+app.use('/api/reviews',      reviewRoutes);
+app.use('/api/instagram',    instagramRoutes);
+app.use('/api/verification', verificationRoutes);
 
 // ── Health Check ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

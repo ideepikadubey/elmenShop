@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Search, Menu, X, User, ChevronDown, Droplet, Heart, LayoutGrid, Shirt, Leaf } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, User, ChevronDown, Droplet, Heart, LayoutGrid, Shirt, Leaf, LogOut } from 'lucide-react';
 import { API_BASE_URL } from "../config/api";
 
 const categories = [
@@ -221,11 +221,13 @@ export default function Navbar({
                 </span>
               </div>
               <button
-                className="btn btn-secondary"
-                style={{ padding: '6px 12px', fontSize: '0.75rem', borderRadius: '20px' }}
+                className="btn btn-secondary nav-logout-btn"
                 onClick={onLogoutClick}
+                title="Logout"
+                aria-label="Logout"
               >
-                Logout
+                <LogOut size={16} />
+                <span className="desktop-logout-text">Logout</span>
               </button>
             </div>
           ) : (
