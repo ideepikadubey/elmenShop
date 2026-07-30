@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { ShieldCheck, HelpCircle, AlertTriangle, ShieldCheck as VerifiedIcon, Loader2, FileText, AlertCircle } from 'lucide-react';
-import { API_BASE_URL } from '../config/api';
+import { ShieldCheck, HelpCircle, AlertTriangle, ShieldCheck as VerifiedIcon, Loader2, FileText } from 'lucide-react';
 
 export default function AuthenticityChecker() {
   const [code, setCode] = useState('');
-  const [status, setStatus] = useState('idle'); // idle, checking, success, error, already_used
+  const [status, setStatus] = useState('idle'); // idle, checking, success, error
   const [errorMsg, setErrorMsg] = useState('');
-  const [verifyResult, setVerifyResult] = useState(null);
+  const [verifiedProduct, setVerifiedProduct] = useState('');
   const [subTab, setSubTab] = useState('check'); // check, reports
 
   useEffect(() => {
@@ -21,62 +19,31 @@ export default function AuthenticityChecker() {
     return () => window.removeEventListener('elmen:authenticity', handler);
   }, []);
 
-  // Hardcoded fallback codes
-  const fallbackCodes = {
-    'ELMEN-WHEY-2026': { serialNum: '5001', productName: 'Clean Whey Protein - 2kg (Batch: EL-W09)' },
-    'ELMEN-GAIN-9988': { serialNum: '5002', productName: 'Pro Gain Advanced Mass Gainer - 3kg (Batch: EL-G04)' },
-    'ELMEN-CREA-5544': { serialNum: '5003', productName: 'Micronized Creatine Monohydrate - 240g (Batch: EL-C11)' },
-    'ELMEN-TEST-1234': { serialNum: '5004', productName: 'Testo One Natural Herbs - 60 Tab (Batch: EL-T02)' },
+  // Pre-approved valid demo codes
+  const validCodes = {
+    'ELMEN-WHEY-2026': 'Clean Whey Protein - 2kg (Batch: EL-W09)',
+    'ELMEN-GAIN-9988': 'Pro Gain Advanced Mass Gainer - 3kg (Batch: EL-G04)',
+    'ELMEN-CREA-5544': 'Micronized Creatine Monohydrate - 240g (Batch: EL-C11)',
+    'ELMEN-TEST-1234': 'Testo One Natural Herbs - 60 Tab (Batch: EL-T02)',
   };
 
-  const handleVerify = async (e) => {
+  const handleVerify = (e) => {
     e.preventDefault();
     if (!code.trim()) return;
 
     setStatus('checking');
-    setErrorMsg('');
-    setVerifyResult(null);
 
-    try {
-      const res = await axios.post(`${API_BASE_URL}/api/verification/verify`, {
-        code: code.trim()
-      });
-
-      if (res.data && res.data.success) {
-        setVerifyResult(res.data);
+    setTimeout(() => {
+      const normalizedCode = code.trim().toUpperCase();
+      if (validCodes[normalizedCode]) {
+        setVerifiedProduct(validCodes[normalizedCode]);
         setStatus('success');
+        setErrorMsg('');
       } else {
         setStatus('error');
-        setErrorMsg(res.data.message || 'Verification failed. Please check the security code.');
+        setErrorMsg('Security code not recognized. Please check the spellings or scratch layer again.');
       }
-    } catch (err) {
-      if (err.response && err.response.data) {
-        const data = err.response.data;
-        if (data.isAlreadyUsed) {
-          setVerifyResult(data);
-          setStatus('already_used');
-          setErrorMsg(data.message);
-        } else {
-          setStatus('error');
-          setErrorMsg(data.message || 'Security code not recognized. Please check your scratch layer code.');
-        }
-      } else {
-        // Fallback for offline local dev mode if API is unreachable
-        const normalized = code.trim().toUpperCase();
-        if (fallbackCodes[normalized]) {
-          setVerifyResult({
-            serialNum: fallbackCodes[normalized].serialNum,
-            code: normalized,
-            productName: fallbackCodes[normalized].productName,
-            batchNumber: 'EL-BATCH-2026'
-          });
-          setStatus('success');
-        } else {
-          setStatus('error');
-          setErrorMsg('Security code not recognized. Please check the code on your product container scratch layer.');
-        }
-      }
-    }
+    }, 1500);
   };
 
   return (
@@ -137,7 +104,7 @@ export default function AuthenticityChecker() {
                 </div>
               )}
 
-              {status === 'success' && verifyResult && (
+              {status === 'success' && (
                 <div className="certificate">
                   <div className="certificate-verified-badge">
                     <VerifiedIcon size={14} /> 100% Genuine Product
@@ -150,11 +117,11 @@ export default function AuthenticityChecker() {
                   </p>
 
                   <p style={{ color: 'var(--primary-yellow)', fontWeight: 'bold', fontSize: '0.95rem' }}>
-                    {verifyResult.productName}
+                    {verifiedProduct}
                   </p>
 
                   <div className="certificate-serial">
-                    Serial Number: #{verifyResult.serialNum} &nbsp;|&nbsp; Code: {verifyResult.code}
+                    Security Code: {code.trim().toUpperCase()}
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '12px' }}>
@@ -163,31 +130,10 @@ export default function AuthenticityChecker() {
                     <span>✓ FSSAI APPROVED</span>
                   </div>
 
+                  {/* Decorative Seal */}
                   <div className="certificate-stamp">
                     <ShieldCheck size={80} color="var(--primary-yellow)" />
                   </div>
-                </div>
-              )}
-
-              {status === 'already_used' && verifyResult && (
-                <div className="certificate" style={{ borderColor: 'var(--primary-red)', boxShadow: 'var(--shadow-glow-red)' }}>
-                  <div className="certificate-verified-badge" style={{ borderColor: 'var(--primary-red)', color: 'var(--primary-red)', backgroundColor: 'rgba(193,0,0,0.1)' }}>
-                    <AlertCircle size={14} /> Code Already Claimed
-                  </div>
-                  <h3 className="certificate-title" style={{ color: 'var(--primary-red)' }}>Single-Use Security Alert</h3>
-                  <div className="certificate-subtitle">Verification Warning</div>
-
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-gray)', margin: '14px 0' }}>
-                    {errorMsg}
-                  </p>
-
-                  <div className="certificate-serial" style={{ color: 'var(--primary-red)' }}>
-                    Serial #: {verifyResult.serialNum} | Code: {verifyResult.code}
-                  </div>
-
-                  <button className="btn btn-secondary" style={{ width: '100%', marginTop: '10px' }} onClick={() => setStatus('idle')}>
-                    Try Another Code
-                  </button>
                 </div>
               )}
 

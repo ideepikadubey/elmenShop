@@ -1,70 +1,37 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { ShieldCheck, HelpCircle, AlertTriangle, ShieldCheck as VerifiedIcon, Loader2, ArrowLeft, CheckCircle, Lock, AlertCircle } from 'lucide-react';
-import { API_BASE_URL } from '../config/api';
+import { ShieldCheck, HelpCircle, AlertTriangle, ShieldCheck as VerifiedIcon, Loader2, ArrowLeft, CheckCircle, Lock } from 'lucide-react';
 
 export default function AuthenticityPage({ onGoBack }) {
   const [code, setCode] = useState('');
-  const [status, setStatus] = useState('idle'); // idle, checking, success, error, already_used
+  const [status, setStatus] = useState('idle'); // idle, checking, success, error
   const [errorMsg, setErrorMsg] = useState('');
-  const [verifyResult, setVerifyResult] = useState(null);
+  const [verifiedProduct, setVerifiedProduct] = useState('');
 
-  // Hardcoded fallback codes for offline/demo testing
-  const fallbackCodes = {
-    'ELMEN-WHEY-2026': { serialNum: '5001', productName: 'Clean Whey Protein - 2kg (Batch: EL-W09)' },
-    'ELMEN-GAIN-9988': { serialNum: '5002', productName: 'Pro Gain Advanced Mass Gainer - 3kg (Batch: EL-G04)' },
-    'ELMEN-CREA-5544': { serialNum: '5003', productName: 'Micronized Creatine Monohydrate - 240g (Batch: EL-C11)' },
-    'ELMEN-TEST-1234': { serialNum: '5004', productName: 'Testo One Natural Herbs - 60 Tab (Batch: EL-T02)' },
+  // Valid codes mapping (kept internally for verification)
+  const validCodes = {
+    'ELMEN-WHEY-2026': 'Clean Whey Protein - 2kg (Batch: EL-W09)',
+    'ELMEN-GAIN-9988': 'Pro Gain Advanced Mass Gainer - 3kg (Batch: EL-G04)',
+    'ELMEN-CREA-5544': 'Micronized Creatine Monohydrate - 240g (Batch: EL-C11)',
+    'ELMEN-TEST-1234': 'Testo One Natural Herbs - 60 Tab (Batch: EL-T02)',
   };
 
-  const handleVerify = async (e) => {
+  const handleVerify = (e) => {
     e.preventDefault();
     if (!code.trim()) return;
 
     setStatus('checking');
-    setErrorMsg('');
-    setVerifyResult(null);
 
-    try {
-      const res = await axios.post(`${API_BASE_URL}/api/verification/verify`, {
-        code: code.trim()
-      });
-
-      if (res.data && res.data.success) {
-        setVerifyResult(res.data);
+    setTimeout(() => {
+      const normalizedCode = code.trim().toUpperCase();
+      if (validCodes[normalizedCode]) {
+        setVerifiedProduct(validCodes[normalizedCode]);
         setStatus('success');
+        setErrorMsg('');
       } else {
         setStatus('error');
-        setErrorMsg(res.data.message || 'Verification failed. Please check the security code.');
+        setErrorMsg('Security code not recognized. Please check the code on your product container scratch layer.');
       }
-    } catch (err) {
-      if (err.response && err.response.data) {
-        const data = err.response.data;
-        if (data.isAlreadyUsed) {
-          setVerifyResult(data);
-          setStatus('already_used');
-          setErrorMsg(data.message);
-        } else {
-          setStatus('error');
-          setErrorMsg(data.message || 'Security code not recognized. Please check your scratch layer code.');
-        }
-      } else {
-        // Fallback for offline local dev mode if API is unreachable
-        const normalized = code.trim().toUpperCase();
-        if (fallbackCodes[normalized]) {
-          setVerifyResult({
-            serialNum: fallbackCodes[normalized].serialNum,
-            code: normalized,
-            productName: fallbackCodes[normalized].productName,
-            batchNumber: 'EL-BATCH-2026'
-          });
-          setStatus('success');
-        } else {
-          setStatus('error');
-          setErrorMsg('Security code not recognized. Please check the code on your product container scratch layer.');
-        }
-      }
-    }
+    }, 1200);
   };
 
   return (
@@ -193,11 +160,11 @@ export default function AuthenticityPage({ onGoBack }) {
             {status === 'checking' && (
               <div style={{ textAlign: 'center', padding: '24px 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Loader2 className="loading-spinner" size={36} style={{ animation: 'spin 1s linear infinite', color: '#d97706', marginBottom: '12px' }} />
-                <p style={{ margin: 0, fontWeight: 800, fontSize: '0.92rem', color: '#d97706' }}>Verifying database authenticity & serial number...</p>
+                <p style={{ margin: 0, fontWeight: 800, fontSize: '0.92rem', color: '#d97706' }}>Verifying batch authenticity...</p>
               </div>
             )}
 
-            {status === 'success' && verifyResult && (
+            {status === 'success' && (
               <div style={{
                 marginTop: '20px',
                 padding: '20px',
@@ -210,55 +177,17 @@ export default function AuthenticityPage({ onGoBack }) {
                   <CheckCircle size={14} /> 100% GENUINE PRODUCT
                 </div>
                 <h4 style={{ margin: '4px 0', fontSize: '1.05rem', fontWeight: 900, color: '#14532d' }}>Certificate of Authenticity</h4>
-                
-                <div style={{ margin: '10px 0', padding: '10px 14px', background: '#ffffff', borderRadius: '10px', border: '1px solid #bbf7d0', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div style={{ fontSize: '0.9rem', color: '#15803d', fontWeight: 900 }}>
-                    {verifyResult.productName}
-                  </div>
-                  <div style={{ fontSize: '0.82rem', color: '#047857', fontWeight: 800, marginTop: '2px' }}>
-                    Serial Number: <span style={{ color: '#0f172a', background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px' }}>#{verifyResult.serialNum}</span>
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                    Code: {verifyResult.code}
-                  </div>
+                <p style={{ margin: '8px 0', fontSize: '0.88rem', color: '#15803d', fontWeight: 800, background: '#ffffff', padding: '8px 12px', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
+                  {verifiedProduct}
+                </p>
+                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '8px' }}>
+                  Serial: {code.trim().toUpperCase()}
                 </div>
-
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', fontSize: '0.72rem', fontWeight: 800, color: '#16a34a', marginTop: '12px' }}>
                   <span>✓ LAB TESTED</span>
                   <span>✓ GMP CERTIFIED</span>
                   <span>✓ FSSAI APPROVED</span>
                 </div>
-              </div>
-            )}
-
-            {status === 'already_used' && verifyResult && (
-              <div style={{
-                marginTop: '20px',
-                padding: '20px',
-                borderRadius: '14px',
-                background: '#fff7ed',
-                border: '1.5px solid #f97316',
-                textAlign: 'center'
-              }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f97316', color: '#ffffff', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 900, marginBottom: '10px' }}>
-                  <AlertCircle size={14} /> SECURITY CODE ALREADY USED
-                </div>
-                <h4 style={{ margin: '4px 0', fontSize: '1rem', fontWeight: 900, color: '#9a3412' }}>Verification Warning</h4>
-                
-                <p style={{ margin: '8px 0 12px', fontSize: '0.85rem', color: '#c2410c', fontWeight: 600, lineHeight: '1.5' }}>
-                  {errorMsg}
-                </p>
-
-                <div style={{ fontSize: '0.78rem', color: '#7c2d12', background: '#ffffff', padding: '8px 12px', borderRadius: '8px', border: '1px solid #ffedd5', fontWeight: 700 }}>
-                  Serial Number: #{verifyResult.serialNum} | Code: {verifyResult.code}
-                </div>
-
-                <button
-                  style={{ marginTop: '14px', background: '#9a3412', border: 'none', color: '#ffffff', padding: '8px 16px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}
-                  onClick={() => setStatus('idle')}
-                >
-                  Try Another Code
-                </button>
               </div>
             )}
 

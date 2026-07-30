@@ -14,8 +14,7 @@ const paymentRoutes   = require('./routes/payments');
 const enquiryRoutes   = require('./routes/enquiries');
 const offerRoutes     = require('./routes/offers');
 const reviewRoutes    = require('./routes/reviews');
-const instagramRoutes    = require('./routes/instagram');
-const verificationRoutes = require('./routes/verification');
+const instagramRoutes = require('./routes/instagram');
 
 // Connect to MongoDB
 connectDB();
@@ -28,22 +27,11 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    const clientUrl = process.env.CLIENT_URL;
-    if (
-      !process.env.NODE_ENV ||
-      process.env.NODE_ENV === 'development' ||
-      clientUrl === '*' ||
-      (clientUrl && origin === clientUrl) ||
-      origin.endsWith('.elmen.in') ||
-      origin === 'https://elmen.in' ||
-      origin === 'https://www.elmen.in'
-    ) {
-      return callback(null, true);
-    }
-    return callback(null, true); // Allow configured cross-origin requests
-  },
+  origin:      [
+    process.env.CLIENT_URL || 'http://localhost:5174',
+    'http://localhost:5173',
+    'http://localhost:5174'
+  ],
   credentials: true
 }));
 
@@ -73,15 +61,14 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ── API Routes ───────────────────────────────────────────────
-app.use('/api/auth',         authRoutes);
-app.use('/api/products',     productRoutes);
-app.use('/api/orders',       orderRoutes);
-app.use('/api/payments',     paymentRoutes);
-app.use('/api/enquiries',    enquiryRoutes);
-app.use('/api/offers',       offerRoutes);
-app.use('/api/reviews',      reviewRoutes);
-app.use('/api/instagram',    instagramRoutes);
-app.use('/api/verification', verificationRoutes);
+app.use('/api/auth',      authRoutes);
+app.use('/api/products',  productRoutes);
+app.use('/api/orders',    orderRoutes);
+app.use('/api/payments',  paymentRoutes);
+app.use('/api/enquiries', enquiryRoutes);
+app.use('/api/offers',    offerRoutes);
+app.use('/api/reviews',   reviewRoutes);
+app.use('/api/instagram', instagramRoutes);
 
 // ── Health Check ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
@@ -124,6 +111,6 @@ app.use((err, req, res, next) => {
 // ── Start Server ─────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`\n🚀 EL MEN Nutrition API running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
-  console.log(`📋 Health check endpoint: /api/health\n`);
+  console.log(`\n🚀 EL MEN Nutrition API running on http://localhost:${PORT}`);
+  console.log(`📋 Health check: http://localhost:${PORT}/api/health\n`);
 });

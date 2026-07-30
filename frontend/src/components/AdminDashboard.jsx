@@ -18,9 +18,6 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const [orders, setOrders] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
   const [offers, setOffers] = useState([]);
-  const [excelFile, setExcelFile] = useState(null);
-  const [isUploadingExcel, setIsUploadingExcel] = useState(false);
-  const [verificationStats, setVerificationStats] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -98,57 +95,10 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
         setOffers(offData.offers);
       }
 
-      // Fetch verification stats
-      try {
-        const verRes = await axios.get(`${API_BASE_URL}/api/verification/stats`, {
-          headers: getHeaders()
-        });
-        if (verRes.data && verRes.data.success) {
-          setVerificationStats(verRes.data.stats);
-        }
-      } catch (e) {
-        console.warn('Verification stats fetch error:', e);
-      }
-
     } catch (err) {
       setErrorMsg(err.response?.data?.message || err.message || 'Failed to fetch admin dashboard records.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleExcelUpload = async (e) => {
-    e.preventDefault();
-    if (!excelFile) {
-      setErrorMsg('Please select an Excel file to upload.');
-      return;
-    }
-    setIsUploadingExcel(true);
-    setErrorMsg('');
-    setSuccessMsg('');
-
-    try {
-      const formData = new FormData();
-      formData.append('excelFile', excelFile);
-
-      const res = await axios.post(`${API_BASE_URL}/api/verification/upload-excel`, formData, {
-        headers: {
-          ...getHeaders(),
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      if (res.data && res.data.success) {
-        setSuccessMsg(res.data.message || 'Excel verification codes imported successfully!');
-        setExcelFile(null);
-        fetchAdminData();
-      } else {
-        setErrorMsg(res.data.message || 'Failed to process Excel upload.');
-      }
-    } catch (err) {
-      setErrorMsg(err.response?.data?.message || err.message || 'Failed to upload Excel file.');
-    } finally {
-      setIsUploadingExcel(false);
     }
   };
 
@@ -640,9 +590,6 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
           <button className={`admin-tab-btn ${subTab === 'offers' ? 'active' : ''}`} onClick={() => setSubTab('offers')}>
             PROMOTIONS & OFFERS ({offers.length})
           </button>
-          <button className={`admin-tab-btn ${subTab === 'verification' ? 'active' : ''}`} onClick={() => setSubTab('verification')}>
-            🛡️ CODES VERIFICATION ({verificationStats ? verificationStats.totalCount : 0})
-          </button>
         </div>
 
         {/* ── SUB TAB: OVERVIEW ── */}
@@ -1119,107 +1066,6 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     })}
                   </tbody>
                 </table>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── SUB TAB: PRODUCT VERIFICATION CODES ── */}
-        {subTab === 'verification' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <div>
-                <h3 style={{ textTransform: 'uppercase', fontWeight: 900, margin: 0 }}>
-                  🛡️ Security Scratch Codes & Serial Numbers
-                </h3>
-                <p style={{ color: 'var(--text-gray)', fontSize: '0.85rem', marginTop: '4px' }}>
-                  Upload Excel files containing <code style={{ color: 'var(--primary-yellow)' }}>SerialNum</code> and <code style={{ color: 'var(--primary-yellow)' }}>Code</code> columns to populate backend authentication database.
-                </p>
-              </div>
-            </div>
-
-            {/* Verification Stats Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '32px' }}>
-              <div className="admin-stat-card">
-                <div>
-                  <span style={{ color: 'var(--text-gray)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Total Codes in Database</span>
-                  <div className="admin-stat-val">{verificationStats ? verificationStats.totalCount : 0}</div>
-                </div>
-              </div>
-              <div className="admin-stat-card">
-                <div>
-                  <span style={{ color: '#27ae60', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Claimed / Verified Codes</span>
-                  <div className="admin-stat-val" style={{ color: '#27ae60' }}>{verificationStats ? verificationStats.verifiedCount : 0}</div>
-                </div>
-              </div>
-              <div className="admin-stat-card">
-                <div>
-                  <span style={{ color: 'var(--primary-yellow)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Available Unverified</span>
-                  <div className="admin-stat-val" style={{ color: 'var(--primary-yellow)' }}>{verificationStats ? verificationStats.unverifiedCount : 0}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Excel Upload Card */}
-            <div style={{ background: 'var(--bg-dark-800)', border: '1px solid var(--bg-dark-600)', borderRadius: '16px', padding: '24px', marginBottom: '32px' }}>
-              <h4 style={{ textTransform: 'uppercase', fontWeight: 800, marginBottom: '8px' }}>📥 Import Codes from Excel (.xlsx / .csv)</h4>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-gray)', marginBottom: '16px' }}>
-                Select an Excel spreadsheet containing serial numbers and scratch codes. Columns named <strong>SerialNum</strong> and <strong>Code</strong> will be automatically mapped.
-              </p>
-
-              <form onSubmit={handleExcelUpload} style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <input
-                  type="file"
-                  accept=".xlsx, .xls, .csv"
-                  onChange={(e) => setExcelFile(e.target.files[0] || null)}
-                  style={{
-                    padding: '10px 14px',
-                    background: 'var(--bg-dark-700)',
-                    border: '1px solid var(--bg-dark-600)',
-                    borderRadius: '8px',
-                    color: 'var(--text-white)',
-                    fontSize: '0.85rem'
-                  }}
-                />
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={isUploadingExcel || !excelFile}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-                >
-                  {isUploadingExcel ? 'Uploading & Processing...' : 'Upload & Import Excel Codes'}
-                </button>
-              </form>
-            </div>
-
-            {/* Recent Verifications Table */}
-            {verificationStats && verificationStats.recentVerifications && verificationStats.recentVerifications.length > 0 && (
-              <div>
-                <h4 style={{ textTransform: 'uppercase', fontWeight: 800, marginBottom: '14px' }}>📋 Recent Authenticated Claims</h4>
-                <div style={{ overflowX: 'auto' }}>
-                  <table className="admin-table">
-                    <thead>
-                      <tr>
-                        <th>Serial Number</th>
-                        <th>Security Code</th>
-                        <th>Product Title</th>
-                        <th>Verified Date</th>
-                        <th>Client IP</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {verificationStats.recentVerifications.map(v => (
-                        <tr key={v._id}>
-                          <td><strong>#{v.serialNum}</strong></td>
-                          <td><code>{v.code}</code></td>
-                          <td>{v.productName}</td>
-                          <td>{new Date(v.verifiedAt).toLocaleString('en-IN')}</td>
-                          <td><small>{v.verifiedByIp || 'Local'}</small></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
               </div>
             )}
           </div>
