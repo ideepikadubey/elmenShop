@@ -18,6 +18,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const [orders, setOrders] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
   const [offers, setOffers] = useState([]);
+  const [users, setUsers] = useState([]);
   const [excelFile, setExcelFile] = useState(null);
   const [isUploadingExcel, setIsUploadingExcel] = useState(false);
   const [verificationStats, setVerificationStats] = useState(null);
@@ -26,6 +27,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const [successMsg, setSuccessMsg] = useState('');
 
   const [productSearch, setProductSearch] = useState('');
+  const [userSearch, setUserSearch] = useState('');
   const [productSortOrder, setProductSortOrder] = useState('custom'); // 'custom' | 'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'name_asc'
   const [isSavingOrder, setIsSavingOrder] = useState(false);
   const [draggedTableProductIndex, setDraggedTableProductIndex] = useState(null);
@@ -119,6 +121,18 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       const offData = offRes.data;
       if (offData.success) {
         setOffers(offData.offers);
+      }
+
+      // Fetch users
+      try {
+        const usersRes = await axios.get(`${API_BASE_URL}/api/auth/users`, {
+          headers: getHeaders()
+        });
+        if (usersRes.data && usersRes.data.success) {
+          setUsers(usersRes.data.users);
+        }
+      } catch (e) {
+        console.warn('Users fetch error:', e);
       }
 
       // Fetch verification stats
@@ -351,10 +365,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
         ? productForm.features.split(',').map(f => f.trim()).filter(Boolean)
         : [];
 
-      const origPrice = Number(productForm.originalPrice || productForm.price || 0);
-      const discPrice = (productForm.price !== '' && productForm.price !== null && productForm.price !== undefined)
-        ? Number(productForm.price)
-        : origPrice;
+      const origPrice = Number(productForm.originalPrice || 0);
+      const parsedPrice = Number(productForm.price || 0);
+      const discPrice = parsedPrice > 0 ? parsedPrice : (origPrice > 0 ? origPrice : 0);
 
       const formData = new FormData();
       formData.append('name', productForm.name);
@@ -464,9 +477,20 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   };
 
   // Stats Calculations
-  const totalRevenue = orders
+  // Realized revenue: money actually collected/paid
+  const netPaidRevenue = orders
+    .filter(o => o.paymentStatus === 'paid' && o.orderStatus !== 'cancelled')
+    .reduce((acc, o) => acc + (o.totalAmount || 0), 0);
+
+  // Gross booking value: total order value of placed orders (excluding cancelled)
+  const grossOrderValue = orders
     .filter(o => o.orderStatus !== 'cancelled')
-    .reduce((acc, o) => acc + o.totalAmount, 0);
+    .reduce((acc, o) => acc + (o.totalAmount || 0), 0);
+
+  // Pending collection (unpaid / COD orders pending delivery)
+  const pendingCollection = orders
+    .filter(o => o.paymentStatus !== 'paid' && o.orderStatus !== 'cancelled')
+    .reduce((acc, o) => acc + (o.totalAmount || 0), 0);
 
   const outOfStockCount = products.filter(p => p.stock <= 0).length;
 
@@ -726,6 +750,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
           <button className={`admin-tab-btn ${subTab === 'orders' ? 'active' : ''}`} onClick={() => setSubTab('orders')}>
             ORDERS JOURNAL ({orders.length})
           </button>
+          <button className={`admin-tab-btn ${subTab === 'users' ? 'active' : ''}`} onClick={() => setSubTab('users')}>
+            👥 CUSTOMER ACCOUNTS ({users.length})
+          </button>
           <button className={`admin-tab-btn ${subTab === 'queries' ? 'active' : ''}`} onClick={() => setSubTab('queries')}>
             BUSINESS ENQUIRIES ({enquiries.length})
           </button>
@@ -740,47 +767,67 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
         {/* ── SUB TAB: OVERVIEW ── */}
         {subTab === 'overview' && (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '40px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '40px' }}>
               <div className="admin-stat-card">
-                <div className="admin-stat-icon">
+                <div className="admin-stat-icon" style={{ color: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.12)' }}>
                   <IndianRupee size={24} />
                 </div>
                 <div>
-                  <span style={{ color: 'var(--text-gray)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Gross Sales</span>
-                  <div className="admin-stat-val">₹{totalRevenue.toLocaleString('en-IN')}</div>
+                  <span style={{ color: 'var(--text-gray)', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Realized Revenue (Paid)</span>
+                  <div className="admin-stat-val" style={{ color: '#22c55e' }}>₹{netPaidRevenue.toLocaleString('en-IN')}</div>
                 </div>
               </div>
 
               <div className="admin-stat-card">
-                <div className="admin-stat-icon" style={{ color: '#27ae60', backgroundColor: 'rgba(39, 174, 96, 0.1)' }}>
+                <div className="admin-stat-icon" style={{ color: 'var(--primary-yellow)', backgroundColor: 'rgba(255, 190, 0, 0.12)' }}>
+                  <IndianRupee size={24} />
+                </div>
+                <div>
+                  <span style={{ color: 'var(--text-gray)', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Gross Order Booking</span>
+                  <div className="admin-stat-val">₹{grossOrderValue.toLocaleString('en-IN')}</div>
+                </div>
+              </div>
+
+              <div className="admin-stat-card">
+                <div className="admin-stat-icon" style={{ color: '#f97316', backgroundColor: 'rgba(249, 115, 22, 0.12)' }}>
+                  <IndianRupee size={24} />
+                </div>
+                <div>
+                  <span style={{ color: 'var(--text-gray)', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Pending Collection (COD)</span>
+                  <div className="admin-stat-val" style={{ color: '#f97316' }}>₹{pendingCollection.toLocaleString('en-IN')}</div>
+                </div>
+              </div>
+
+              <div className="admin-stat-card">
+                <div className="admin-stat-icon" style={{ color: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.12)' }}>
                   <ShoppingBag size={24} />
                 </div>
                 <div>
-                  <span style={{ color: 'var(--text-gray)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Total Orders</span>
+                  <span style={{ color: 'var(--text-gray)', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Total Orders</span>
                   <div className="admin-stat-val">{orders.length}</div>
                 </div>
               </div>
 
               <div className="admin-stat-card">
-                <div className="admin-stat-icon" style={{ color: '#1565c0', backgroundColor: 'rgba(21, 101, 192, 0.1)' }}>
+                <div className="admin-stat-icon" style={{ color: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.12)' }}>
                   <Box size={24} />
                 </div>
                 <div>
-                  <span style={{ color: 'var(--text-gray)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Active Catalog Items</span>
+                  <span style={{ color: 'var(--text-gray)', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Active Catalog Items</span>
                   <div className="admin-stat-val">{products.length}</div>
                 </div>
               </div>
 
-              <div className="admin-stat-card" style={{ border: outOfStockCount > 0 ? '1px solid rgba(193, 0, 0, 0.25)' : '1px solid var(--bg-dark-600)' }}>
+              <div className="admin-stat-card" style={{ border: outOfStockCount > 0 ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid var(--bg-dark-600)' }}>
                 <div className="admin-stat-icon" style={{
-                  color: outOfStockCount > 0 ? 'var(--primary-red)' : 'var(--text-gray)',
-                  backgroundColor: outOfStockCount > 0 ? 'rgba(193, 0, 0, 0.1)' : 'var(--bg-dark-700)'
+                  color: outOfStockCount > 0 ? '#ef4444' : 'var(--text-gray)',
+                  backgroundColor: outOfStockCount > 0 ? 'rgba(239, 68, 68, 0.12)' : 'var(--bg-dark-700)'
                 }}>
                   <AlertCircle size={24} />
                 </div>
                 <div>
-                  <span style={{ color: 'var(--text-gray)', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>Out of Stock Warnings</span>
-                  <div className="admin-stat-val" style={{ color: outOfStockCount > 0 ? 'var(--primary-red)' : 'inherit' }}>{outOfStockCount}</div>
+                  <span style={{ color: 'var(--text-gray)', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Out of Stock Warnings</span>
+                  <div className="admin-stat-val" style={{ color: outOfStockCount > 0 ? '#ef4444' : 'inherit' }}>{outOfStockCount}</div>
                 </div>
               </div>
             </div>
@@ -1478,6 +1525,133 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     </tbody>
                   </table>
                 </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── SUB TAB: CUSTOMER ACCOUNTS ── */}
+        {subTab === 'users' && (
+          <div>
+            {/* Header & Search Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+              <div>
+                <h3 style={{ textTransform: 'uppercase', fontWeight: 900, margin: 0 }}>
+                  👥 Registered Customer Accounts ({users.length})
+                </h3>
+                <p style={{ color: 'var(--text-gray)', fontSize: '0.85rem', marginTop: '4px', margin: 0 }}>
+                  Manage customer profiles, saved delivery addresses, and account registration details.
+                </p>
+              </div>
+
+              <div style={{ position: 'relative', width: '320px' }}>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Search name, email, phone, city..."
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                  style={{ paddingLeft: '36px', height: '40px', fontSize: '0.85rem' }}
+                />
+                <Filter size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-muted)' }} />
+              </div>
+            </div>
+
+            {/* Users Table */}
+            {users.length === 0 ? (
+              <p style={{ color: 'var(--text-gray)', textAlign: 'center', padding: '40px' }}>No registered user accounts found.</p>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Customer Profile</th>
+                      <th>Phone</th>
+                      <th>Saved Address</th>
+                      <th>Orders Placed</th>
+                      <th>Account Role</th>
+                      <th>Joined Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users
+                      .filter(u => {
+                        const q = userSearch.toLowerCase().trim();
+                        if (!q) return true;
+                        const nameMatch = (u.name || '').toLowerCase().includes(q);
+                        const emailMatch = (u.email || '').toLowerCase().includes(q);
+                        const phoneMatch = (u.phone || '').toLowerCase().includes(q);
+                        const cityMatch = (u.address?.city || '').toLowerCase().includes(q);
+                        return nameMatch || emailMatch || phoneMatch || cityMatch;
+                      })
+                      .map(u => {
+                        const userOrderCount = orders.filter(o => {
+                          const oUserId = typeof o.user === 'object' ? o.user?._id : o.user;
+                          return String(oUserId) === String(u._id);
+                        }).length;
+
+                        const initial = (u.name || u.email || 'U').charAt(0).toUpperCase();
+
+                        return (
+                          <tr key={u._id}>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{
+                                  width: '38px', height: '38px', borderRadius: '50%',
+                                  background: u.role === 'admin' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                                  color: '#fff', fontWeight: 900, fontSize: '1rem',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                                }}>
+                                  {initial}
+                                </div>
+                                <div>
+                                  <strong style={{ fontSize: '0.9rem', display: 'block', color: '#fff' }}>{u.name}</strong>
+                                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{u.email}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                              {u.phone ? u.phone : <span style={{ color: 'var(--text-muted)' }}>Not provided</span>}
+                            </td>
+                            <td style={{ fontSize: '0.78rem', maxWidth: '240px' }}>
+                              {u.address && (u.address.street || u.address.city) ? (
+                                <div>
+                                  <div>{u.address.street}</div>
+                                  <div style={{ color: 'var(--text-muted)' }}>
+                                    {[u.address.city, u.address.state, u.address.pincode].filter(Boolean).join(', ')}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span style={{ color: 'var(--text-muted)' }}>No saved address</span>
+                              )}
+                            </td>
+                            <td>
+                              <span style={{
+                                padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 900,
+                                background: userOrderCount > 0 ? 'rgba(34, 197, 94, 0.15)' : 'var(--bg-dark-700)',
+                                color: userOrderCount > 0 ? '#22c55e' : 'var(--text-muted)'
+                              }}>
+                                {userOrderCount} Order{userOrderCount === 1 ? '' : 's'}
+                              </span>
+                            </td>
+                            <td>
+                              <span style={{
+                                padding: '4px 10px', borderRadius: '12px', fontSize: '0.72rem', fontWeight: 900, textTransform: 'uppercase',
+                                background: u.role === 'admin' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(59, 130, 246, 0.15)',
+                                color: u.role === 'admin' ? 'var(--primary-yellow)' : '#60a5fa',
+                                border: `1px solid ${u.role === 'admin' ? 'rgba(245, 158, 11, 0.4)' : 'rgba(59, 130, 246, 0.3)'}`
+                              }}>
+                                {u.role === 'admin' ? '👑 Admin' : '👤 Customer'}
+                              </span>
+                            </td>
+                            <td style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                              {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

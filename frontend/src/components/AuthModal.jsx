@@ -1,18 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { X, Lock, Mail, User, Phone, CheckCircle2, ShieldCheck, RefreshCw, ArrowLeft } from 'lucide-react';
+import { X, Lock, Mail, User, Phone, CheckCircle2, ShieldCheck, RefreshCw, ArrowLeft, KeyRound } from 'lucide-react';
 import { API_BASE_URL } from "../config/api";
 
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/;
+
 export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
-  const [tab, setTab] = useState(promptMessage ? 'register' : 'login');
+  const [tab, setTab] = useState(promptMessage ? 'register' : 'login'); // 'login' | 'register' | 'forgot'
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [registerData, setRegisterData] = useState({ name: '', email: '', phone: '', password: '' });
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   // OTP flow state
   const [otpStep, setOtpStep] = useState(false);   // true = show OTP screen
+  const [otpMode, setOtpMode] = useState('register'); // 'register' | 'forgot'
   const [pendingEmail, setPendingEmail] = useState('');
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -61,7 +67,7 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
   const validateLogin = () => {
     const newErrors = {};
     if (!loginData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(loginData.email)) newErrors.email = 'Invalid email';
+    else if (!/\S+@\S+\.\S+/.test(loginData.email)) newErrors.email = 'Invalid email address';
     if (!loginData.password) newErrors.password = 'Password is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -71,16 +77,40 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
     const newErrors = {};
     if (!registerData.name.trim()) newErrors.name = 'Full name is required';
     if (!registerData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(registerData.email)) newErrors.email = 'Invalid email';
+    else if (!/\S+@\S+\.\S+/.test(registerData.email)) newErrors.email = 'Invalid email address';
     if (!registerData.phone.trim()) newErrors.phone = 'Phone number is required';
-    else if (!/^\d{10}$/.test(registerData.phone.trim())) newErrors.phone = 'Enter a 10-digit number';
-    if (!registerData.password) newErrors.password = 'Password is required';
-    else if (registerData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    else if (!/^\d{10}$/.test(registerData.phone.trim())) newErrors.phone = 'Enter a valid 10-digit phone number';
+    
+    if (!registerData.password) {
+      newErrors.password = 'Password is required';
+    } else if (!PASSWORD_REGEX.test(registerData.password)) {
+      newErrors.password = 'Must be at least 6 characters & include both letters and numbers';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // ── Step 1: Submit login credentials → trigger OTP ──────────────────────
+  const validateForgotEmail = () => {
+    const newErrors = {};
+    if (!forgotEmail.trim()) newErrors.forgotEmail = 'Registered email address is required';
+    else if (!/\S+@\S+\.\S+/.test(forgotEmail)) newErrors.forgotEmail = 'Invalid email address';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateNewPassword = () => {
+    const newErrors = {};
+    if (!newPassword) {
+      newErrors.newPassword = 'New password is required';
+    } else if (!PASSWORD_REGEX.test(newPassword)) {
+      newErrors.newPassword = 'Must be at least 6 characters & include both letters and numbers';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // ── Step 1: Direct Password Login ───────────────────────────────────────
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     if (!validateLogin()) return;
@@ -91,19 +121,76 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
       const response = await axios.post(`${API_BASE_URL}/api/auth/login`, loginData);
       const data = response.data;
 
+      if (data.success && data.token) {
+        localStorage.setItem('elmen_token', data.token);
+        if (data.user) localStorage.setItem('elmen_user', JSON.stringify(data.user));
+        setSuccessMessage('Logged in successfully!');
+        setTimeout(() => {
+          setIsSubmitting(false);
+          onAuthSuccess(data.user);
+          onClose();
+        }, 1000);
+      }
+    } catch (error) {
+      setIsSubmitting(false);
+      setErrors({ submit: error.response?.data?.message || 'Login failed. Please check credentials.' });
+    }
+  };
+
+  // ── Step 1: Submit Registration details -> Send Verification OTP ─────────
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateRegister()) return;
+
+    setIsSubmitting(true);
+    setErrors({});
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/register-otp`, {
+        name: registerData.name,
+        email: registerData.email,
+        phone: registerData.phone,
+        password: registerData.password,
+      });
+      const data = response.data;
       if (data.requiresOtp) {
         setPendingEmail(data.email);
         setOtpDigits(['', '', '', '', '', '']);
+        setOtpMode('register');
         setOtpStep(true);
       }
     } catch (error) {
-      setErrors({ submit: error.response?.data?.message || 'Login failed. Please check credentials.' });
+      setErrors({ submit: error.response?.data?.message || 'Registration failed.' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ── Step 2: Verify OTP ───────────────────────────────────────────────────
+  // ── Step 1: Request Forgot Password OTP ─────────────────────────────────
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForgotEmail()) return;
+
+    setIsSubmitting(true);
+    setErrors({});
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/forgot-password`, {
+        email: forgotEmail
+      });
+      const data = response.data;
+      if (data.requiresOtp) {
+        setPendingEmail(data.email);
+        setOtpDigits(['', '', '', '', '', '']);
+        setOtpMode('forgot');
+        setOtpStep(true);
+      }
+    } catch (error) {
+      setErrors({ submit: error.response?.data?.message || 'Could not process password reset request.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ── OTP Submission Handler (Handles Register OR Forgot Password) ────────
   const handleOtpSubmit = async (e) => {
     e.preventDefault();
     const otp = otpDigits.join('');
@@ -112,25 +199,47 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
       return;
     }
 
+    if (otpMode === 'forgot' && !validateNewPassword()) {
+      return;
+    }
+
     setIsSubmitting(true);
     setErrors({});
+
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/verify-otp`, {
-        email: pendingEmail,
-        otp,
-      });
-      const data = response.data;
-      localStorage.setItem('elmen_token', data.token);
-      if (data.user) localStorage.setItem('elmen_user', JSON.stringify(data.user));
-      setSuccessMessage('Logged in successfully!');
-      setTimeout(() => {
-        setIsSubmitting(false);
-        onAuthSuccess(data.user);
-        onClose();
-      }, 1200);
+      if (otpMode === 'register') {
+        const response = await axios.post(`${API_BASE_URL}/api/auth/register-verify`, {
+          email: pendingEmail,
+          otp,
+        });
+        const data = response.data;
+        localStorage.setItem('elmen_token', data.token);
+        if (data.user) localStorage.setItem('elmen_user', JSON.stringify(data.user));
+        setSuccessMessage('Account verified and created successfully!');
+        setTimeout(() => {
+          setIsSubmitting(false);
+          onAuthSuccess(data.user);
+          onClose();
+        }, 1200);
+      } else if (otpMode === 'forgot') {
+        const response = await axios.post(`${API_BASE_URL}/api/auth/reset-password`, {
+          email: pendingEmail,
+          otp,
+          newPassword
+        });
+        const data = response.data;
+        setSuccessMessage('Password reset successfully!');
+        setTimeout(() => {
+          setIsSubmitting(false);
+          setOtpStep(false);
+          setTab('login');
+          setLoginData({ email: pendingEmail, password: '' });
+          setSuccessMessage('');
+        }, 1500);
+      }
     } catch (error) {
       setIsSubmitting(false);
-      setErrors({ otp: error.response?.data?.message || 'Invalid OTP. Please try again.' });
+      setErrors({ otp: error.response?.data?.message || 'Invalid or expired OTP. Please try again.' });
     }
   };
 
@@ -138,7 +247,10 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
   const handleResendOtp = async () => {
     if (resendCooldown > 0) return;
     try {
-      await axios.post(`${API_BASE_URL}/api/auth/resend-otp`, { email: pendingEmail });
+      await axios.post(`${API_BASE_URL}/api/auth/resend-otp`, {
+        email: pendingEmail,
+        type: otpMode
+      });
       setOtpDigits(['', '', '', '', '', '']);
       setResendCooldown(30);
       otpRefs[0].current?.focus();
@@ -147,36 +259,6 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
     }
   };
 
-  // ── Register ─────────────────────────────────────────────────────────────
-  const handleRegisterSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateRegister()) return;
-
-    setIsSubmitting(true);
-    setErrors({});
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
-        name: registerData.name,
-        email: registerData.email,
-        phone: registerData.phone,
-        password: registerData.password,
-      });
-      const data = response.data;
-      localStorage.setItem('elmen_token', data.token);
-      if (data.user) localStorage.setItem('elmen_user', JSON.stringify(data.user));
-      setSuccessMessage('Account created successfully!');
-      setTimeout(() => {
-        setIsSubmitting(false);
-        onAuthSuccess(data.user);
-        onClose();
-      }, 1000);
-    } catch (error) {
-      setIsSubmitting(false);
-      setErrors({ submit: error.response?.data?.message || 'Registration failed.' });
-    }
-  };
-
-  // ── Shared styles ────────────────────────────────────────────────────────
   const inputIconStyle = { position: 'absolute', left: '14px', top: '15px', color: '#64748b' };
 
   return (
@@ -211,7 +293,7 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
               <CheckCircle2 size={40} style={{ color: '#22c55e' }} />
             </div>
             <h3 style={{ textTransform: 'uppercase', fontWeight: 900, margin: 0, color: '#0f172a', fontSize: '1.2rem', letterSpacing: '0.25px' }}>{successMessage}</h3>
-            <p style={{ color: '#64748b', margin: 0, fontWeight: 500 }}>Welcome back to EL MEN Nutrition!</p>
+            <p style={{ color: '#64748b', margin: 0, fontWeight: 500 }}>Welcome to EL MEN Nutrition!</p>
           </div>
 
           /* ── OTP Verification Screen ── */
@@ -259,7 +341,9 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                   <ShieldCheck size={26} style={{ color: '#d97706' }} />
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', margin: 0, color: '#0f172a', letterSpacing: '0.25px' }}>Verify Your Identity</h2>
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', margin: 0, color: '#0f172a', letterSpacing: '0.25px' }}>
+                    {otpMode === 'forgot' ? 'Reset Password Verification' : 'Verify Email Address'}
+                  </h2>
                   <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '6px 0 0', fontWeight: 500 }}>
                     OTP sent to <strong style={{ color: '#0f172a' }}>{pendingEmail}</strong>
                   </p>
@@ -270,7 +354,7 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
             {/* Body */}
             <form onSubmit={handleOtpSubmit} style={{ padding: '28px 32px 32px', background: '#ffffff' }}>
               <p style={{ fontSize: '0.85rem', color: '#64748b', textAlign: 'center', marginBottom: '24px', lineHeight: 1.6, fontWeight: 500 }}>
-                Enter the 6-digit code we sent to your email. It's valid for <strong style={{ color: '#b45309' }}>10 minutes</strong>.
+                Enter the 6-digit verification code sent to your email. Valid for <strong style={{ color: '#b45309' }}>10 minutes</strong>.
               </p>
 
               {/* 6-box OTP input */}
@@ -299,6 +383,32 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                 ))}
               </div>
 
+              {/* If Resetting Password, ask for New Password */}
+              {otpMode === 'forgot' && (
+                <div className="form-group" style={{ marginBottom: '20px' }}>
+                  <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', display: 'block', marginBottom: '8px' }}>
+                    Enter New Password
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <Lock size={16} style={inputIconStyle} />
+                    <input
+                      type="password"
+                      placeholder="Min 6 chars (letters & numbers)"
+                      className="form-input"
+                      style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  {errors.newPassword && (
+                    <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>
+                      {errors.newPassword}
+                    </span>
+                  )}
+                </div>
+              )}
+
               {errors.otp && (
                 <div style={{ color: '#991b1b', fontSize: '0.85rem', textAlign: 'center', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '12px', marginBottom: '20px', fontWeight: 500 }}>
                   {errors.otp}
@@ -316,7 +426,9 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = '#eab308'}
                 disabled={isSubmitting || otpDigits.some(d => !d)}
               >
-                {isSubmitting ? 'Verifying…' : 'Verify & Sign In'}
+                {isSubmitting
+                  ? 'Verifying…'
+                  : (otpMode === 'forgot' ? 'Reset Password' : 'Verify OTP & Create Account')}
               </button>
 
               {/* Resend */}
@@ -340,7 +452,7 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
             </form>
           </div>
 
-          /* ── Login / Register Forms ── */
+          /* ── Main Forms: Login / Register / Forgot ── */
         ) : (
           <div style={{ background: '#ffffff' }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '20px 20px 0' }}>
@@ -378,26 +490,45 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
               )}
 
               {/* Tabs */}
-              <div style={{ display: 'flex', borderBottom: '1px solid #f1f5f9', marginBottom: '28px' }}>
-                {['login', 'register'].map((t) => (
+              {tab !== 'forgot' ? (
+                <div style={{ display: 'flex', borderBottom: '1px solid #f1f5f9', marginBottom: '28px' }}>
+                  {['login', 'register'].map((t) => (
+                    <button
+                      key={t}
+                      style={{
+                        flex: 1, border: 'none', background: 'none', padding: '14px',
+                        fontWeight: 900, cursor: 'pointer', fontSize: '0.9rem', textTransform: 'uppercase',
+                        color: tab === t ? '#d97706' : '#64748b',
+                        borderBottom: tab === t ? '3px solid #eab308' : '3px solid transparent',
+                        transition: 'all 0.2s',
+                        letterSpacing: '0.5px'
+                      }}
+                      onClick={() => { setTab(t); setErrors({}); }}
+                    >
+                      {t === 'login' ? 'Login' : 'Register'}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
                   <button
-                    key={t}
+                    onClick={() => { setTab('login'); setErrors({}); }}
                     style={{
-                      flex: 1, border: 'none', background: 'none', padding: '14px',
-                      fontWeight: 900, cursor: 'pointer', fontSize: '0.9rem', textTransform: 'uppercase',
-                      color: tab === t ? '#d97706' : '#64748b',
-                      borderBottom: tab === t ? '3px solid #eab308' : '3px solid transparent',
-                      transition: 'all 0.2s',
-                      letterSpacing: '0.5px'
+                      background: '#f1f5f9', border: 'none', borderRadius: '50%',
+                      width: '32px', height: '32px', display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', cursor: 'pointer', color: '#475569'
                     }}
-                    onClick={() => { setTab(t); setErrors({}); }}
                   >
-                    {t === 'login' ? 'Login' : 'Register'}
+                    <ArrowLeft size={16} />
                   </button>
-                ))}
-              </div>
+                  <h3 style={{ textTransform: 'uppercase', fontWeight: 900, margin: 0, fontSize: '1.1rem', color: '#0f172a' }}>
+                    Reset Password
+                  </h3>
+                </div>
+              )}
 
-              {tab === 'login' ? (
+              {/* ── TAB: LOGIN ── */}
+              {tab === 'login' && (
                 <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <div className="form-group">
                     <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', display: 'block', marginBottom: '8px' }}>Email Address</label>
@@ -418,7 +549,16 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                   </div>
 
                   <div className="form-group">
-                    <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', display: 'block', marginBottom: '8px' }}>Password</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', margin: 0 }}>Password</label>
+                      <button
+                        type="button"
+                        onClick={() => { setTab('forgot'); setErrors({}); }}
+                        style={{ background: 'none', border: 'none', color: '#d97706', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer', padding: 0 }}
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
                     <div style={{ position: 'relative' }}>
                       <Lock size={16} style={inputIconStyle} />
                       <input
@@ -441,10 +581,6 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                     </div>
                   )}
 
-                  <p style={{ fontSize: '0.75rem', color: '#64748b', textAlign: 'center', margin: 0, fontWeight: 500 }}>
-                    🔒 An OTP verification link will be sent to your email to complete login.
-                  </p>
-
                   <button
                     type="submit"
                     className="btn btn-primary"
@@ -456,10 +592,13 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = '#eab308'}
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? 'Sending OTP…' : 'Send OTP & Sign In'}
+                    {isSubmitting ? 'Signing In…' : 'Sign In'}
                   </button>
                 </form>
-              ) : (
+              )}
+
+              {/* ── TAB: REGISTER ── */}
+              {tab === 'register' && (
                 <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <div className="form-group">
                     <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', display: 'block', marginBottom: '8px' }}>Full Name</label>
@@ -516,13 +655,13 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                   </div>
 
                   <div className="form-group">
-                    <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', display: 'block', marginBottom: '8px' }}>Password</label>
+                    <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', display: 'block', marginBottom: '8px' }}>Create New Password</label>
                     <div style={{ position: 'relative' }}>
                       <Lock size={16} style={inputIconStyle} />
                       <input
                         type="password"
                         name="password"
-                        placeholder="Min 6 characters"
+                        placeholder="Min 6 chars (letters & numbers)"
                         className="form-input"
                         style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
                         value={registerData.password}
@@ -530,6 +669,9 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                         disabled={isSubmitting}
                       />
                     </div>
+                    <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginTop: '4px', fontWeight: 500 }}>
+                      Password must be at least 6 characters long and include letters &amp; numbers.
+                    </span>
                     {errors.password && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.password}</span>}
                   </div>
 
@@ -550,10 +692,57 @@ export default function AuthModal({ onClose, onAuthSuccess, promptMessage }) {
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = '#eab308'}
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? 'Creating account…' : 'Create Account'}
+                    {isSubmitting ? 'Sending Verification OTP…' : 'Verify with OTP & Register'}
                   </button>
                 </form>
               )}
+
+              {/* ── TAB: FORGOT PASSWORD ── */}
+              {tab === 'forgot' && (
+                <form onSubmit={handleForgotSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <p style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: 1.5, margin: 0, fontWeight: 500 }}>
+                    Enter your registered email address below. We will send a 6-digit OTP code to verify and reset your password.
+                  </p>
+
+                  <div className="form-group">
+                    <label style={{ color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.75px', display: 'block', marginBottom: '8px' }}>Registered Email Address</label>
+                    <div style={{ position: 'relative' }}>
+                      <Mail size={16} style={inputIconStyle} />
+                      <input
+                        type="email"
+                        placeholder="yourname@gmail.com"
+                        className="form-input"
+                        style={{ paddingLeft: '44px', paddingRight: '20px', height: '48px', background: '#f8fafc', border: '1.5px solid #cbd5e1', color: '#0f172a', outline: 'none', borderRadius: '12px', width: '100%', fontSize: '0.9rem', fontWeight: 500 }}
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                    {errors.forgotEmail && <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500, display: 'block', marginTop: '4px' }}>{errors.forgotEmail}</span>}
+                  </div>
+
+                  {errors.submit && (
+                    <div style={{ color: '#991b1b', fontSize: '0.85rem', textAlign: 'center', background: '#fef2f2', padding: '12px', borderRadius: '12px', border: '1px solid #fecaca', fontWeight: 500 }}>
+                      {errors.submit}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{
+                      width: '100%', padding: '14px 20px', borderRadius: '30px', fontWeight: 800, textTransform: 'uppercase',
+                      boxShadow: '0 4px 10px rgba(234, 179, 8, 0.2)', border: 'none', cursor: 'pointer', backgroundColor: '#eab308', color: '#0f172a'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = '#ca8a04'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = '#eab308'}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Sending OTP…' : 'Send Password Reset OTP'}
+                  </button>
+                </form>
+              )}
+
             </div>
           </div>
         )}

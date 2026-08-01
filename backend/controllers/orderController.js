@@ -2,6 +2,7 @@ const Order  = require('../models/Order');
 const Product = require('../models/Product');
 const Offer = require('../models/Offer');
 const axios = require('axios');
+const mongoose = require('mongoose');
 
 
 // Valid coupon codes
@@ -39,11 +40,15 @@ const placeOrder = async (req, res) => {
         });
       }
 
-      subtotal += product.price * item.quantity;
+      const pPrice = Number(product.price || 0);
+      const pOrig = Number(product.originalPrice || 0);
+      const itemPrice = pPrice > 0 ? pPrice : (pOrig > 0 ? pOrig : 0);
+
+      subtotal += itemPrice * item.quantity;
       orderItems.push({
         product:  product._id,
         name:     product.name,
-        price:    product.price,
+        price:    itemPrice,
         quantity: item.quantity,
         image:    product.image
       });
@@ -67,7 +72,8 @@ const placeOrder = async (req, res) => {
           const targetStrIds = offer.targetProducts.map(id => id.toString());
           let qualifyingSubtotal = 0;
           for (const item of orderItems) {
-            if (targetStrIds.includes(item.productId.toString())) {
+            const itemProdId = (item.product || item.productId || '').toString();
+            if (targetStrIds.includes(itemProdId)) {
               qualifyingSubtotal += item.price * item.quantity;
             }
           }
@@ -103,6 +109,9 @@ const placeOrder = async (req, res) => {
     const shippingFee = existingOrdersCount === 0 ? 0 : 49;
     const totalAmount = subtotal - discount + shippingFee;
 
+    // Normalize payment method to enum: 'razorpay' | 'cod' | 'upi'
+    const validPaymentMethod = paymentMethod === 'cod' ? 'cod' : (paymentMethod === 'upi' ? 'upi' : 'razorpay');
+
     // Create the order
     const order = await Order.create({
       user:            req.user._id,
@@ -113,18 +122,27 @@ const placeOrder = async (req, res) => {
       couponApplied,
       shippingFee,
       totalAmount,
-      paymentMethod:   paymentMethod || 'cod',
-      paymentStatus:   paymentMethod === 'cod' ? 'pending' : 'pending',
+      paymentMethod:   validPaymentMethod,
+      paymentStatus:   'pending',
       orderStatus:     'processing',
       notes:           notes || ''
     });
 
     // Deduct stock
     for (const item of items) {
-      await Product.findByIdAndUpdate(item.productId, {
-        $inc: { stock: -item.quantity }
-      });
+      if (item.productId) {
+        await Product.findByIdAndUpdate(item.productId, {
+          $inc: { stock: -item.quantity }
+        });
+      }
     }
+
+    // Direct Automated Order Push to iThink Logistics (Async Non-Blocking)
+    setTimeout(() => {
+      pushOrderToIThink(order, req.user).catch(err => {
+        console.error('Background iThink order push error:', err?.message || err);
+      });
+    }, 0);
 
     res.status(201).json({
       success: true,
@@ -132,8 +150,87 @@ const placeOrder = async (req, res) => {
       order
     });
   } catch (error) {
-    console.error('Place order error:', error);
-    res.status(500).json({ success: false, message: 'Server error.' });
+    console.error('Place order error details:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error placing order.' });
+  }
+};
+
+// Helper: Automated Order Push to iThink Logistics API
+const pushOrderToIThink = async (order, reqUser) => {
+  try {
+    const token = process.env.ITHINK_ACCESS_TOKEN;
+    const secret = process.env.ITHINK_SECRET_KEY;
+    if (!token || !secret) {
+      console.warn('iThink credentials missing in environment config, skipping automated order push.');
+      return;
+    }
+
+    const isProduction = process.env.NODE_ENV === 'production';
+    const apiUrl = isProduction
+      ? 'https://api.ithinklogistics.com/api_v3/order/add.json'
+      : 'https://pre-alpha.ithinklogistics.com/api_v3/order/add.json';
+
+    const orderDate = new Date(order.createdAt || Date.now());
+    const day = String(orderDate.getDate()).padStart(2, '0');
+    const month = String(orderDate.getMonth() + 1).padStart(2, '0');
+    const year = orderDate.getFullYear();
+    const formattedDate = `${day}-${month}-${year}`;
+
+    const sa = order.shippingAddress || {};
+    const orderKey = String(order._id);
+
+    const payload = {
+      data: {
+        shipments: [
+          {
+            waybill: '',
+            order: orderKey,
+            sub_order: '',
+            order_date: formattedDate,
+            total_amount: String(order.totalAmount),
+            name: sa.fullName || reqUser?.name || 'Customer',
+            company_name: 'EL MEN Shop',
+            add: sa.street || '',
+            pin: sa.pincode || '',
+            city: sa.city || '',
+            state: sa.state || '',
+            country: sa.country || 'India',
+            phone: sa.phone || reqUser?.phone || '',
+            email: sa.email || reqUser?.email || '',
+            payment_mode: (order.paymentMethod || 'cod').toLowerCase() === 'cod' ? 'COD' : 'Prepaid',
+            products: (order.items || []).map(item => ({
+              product_name: item.name,
+              product_sku: item.name,
+              product_quantity: String(item.quantity),
+              product_price: String(item.price),
+              product_tax_rate: '0',
+              product_hsn_code: '',
+              product_discount: '0'
+            }))
+          }
+        ],
+        access_token: token,
+        secret_key: secret
+      }
+    };
+
+    const response = await axios.post(apiUrl, payload);
+    const resData = response.data;
+    if (resData && (resData.status_code === 200 || resData.status === 'success' || resData.data)) {
+      const shipmentData = resData.data?.[orderKey] || (Array.isArray(resData.data) ? resData.data[0] : resData.data);
+      const awbNumber = shipmentData?.waybill || shipmentData?.awb_number || shipmentData?.awb_no;
+      if (awbNumber) {
+        await Order.findByIdAndUpdate(order._id, {
+          trackingNumber: awbNumber,
+          orderStatus: 'confirmed'
+        });
+        console.log(`Order ${order._id} automatically pushed to iThink Logistics! AWB: ${awbNumber}`);
+      }
+    } else {
+      console.warn('iThink order push response:', resData?.message || resData);
+    }
+  } catch (err) {
+    console.error('Automated iThink order push error:', err.response?.data || err.message);
   }
 };
 
@@ -297,4 +394,67 @@ const getOrderTracking = async (req, res) => {
   }
 };
 
-module.exports = { placeOrder, getMyOrders, getOrder, getAllOrders, updateOrderStatus, getOrderTracking };
+// @desc    Webhook receiver for iThink Logistics real-time status updates
+// @route   POST /api/orders/webhook/ithink
+// @access  Public
+const ithinkWebhook = async (req, res) => {
+  try {
+    const payload = req.body || {};
+    console.log('iThink Webhook Payload received:', JSON.stringify(payload));
+
+    const waybill = payload.waybill || payload.awb || payload.awb_number || payload.awb_no || payload.data?.waybill || payload.data?.awb_no;
+    const orderId = payload.order || payload.order_id || payload.data?.order;
+    const statusText = (payload.current_status || payload.status || payload.status_name || payload.data?.current_status || '').toLowerCase();
+    const statusCode = (payload.current_status_code || payload.status_code || payload.code || '').toUpperCase();
+
+    if (!waybill && !orderId) {
+      return res.status(400).json({ success: false, message: 'Missing waybill or order ID in webhook payload.' });
+    }
+
+    // Find order by MongoDB ID or trackingNumber
+    let order = null;
+    if (orderId && mongoose.Types.ObjectId.isValid(orderId)) {
+      order = await Order.findById(orderId);
+    }
+    if (!order && waybill) {
+      order = await Order.findOne({ trackingNumber: waybill });
+    }
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found in database.' });
+    }
+
+    // Update AWB tracking number if missing
+    if (waybill && !order.trackingNumber) {
+      order.trackingNumber = waybill;
+    }
+
+    // Determine status mapping
+    if (statusText.includes('deliver') || statusCode === 'DL' || statusCode === 'DLVD') {
+      order.orderStatus = 'delivered';
+      order.paymentStatus = 'paid';
+    } else if (
+      statusText.includes('transit') ||
+      statusText.includes('shipped') ||
+      statusText.includes('picked') ||
+      statusText.includes('out for delivery') ||
+      statusCode === 'IT' || statusCode === 'PP' || statusCode === 'OD'
+    ) {
+      order.orderStatus = 'shipped';
+    } else if (statusText.includes('cancel') || statusText.includes('rto') || statusText.includes('return')) {
+      order.orderStatus = 'cancelled';
+    } else if (order.orderStatus === 'processing') {
+      order.orderStatus = 'confirmed';
+    }
+
+    await order.save();
+    console.log(`Order ${order._id} status updated to ${order.orderStatus} via iThink Webhook.`);
+
+    res.status(200).json({ success: true, message: 'Webhook processed successfully.', orderId: order._id, status: order.orderStatus });
+  } catch (error) {
+    console.error('iThink Webhook processing error:', error);
+    res.status(500).json({ success: false, message: 'Server error processing webhook.' });
+  }
+};
+
+module.exports = { placeOrder, getMyOrders, getOrder, getAllOrders, updateOrderStatus, getOrderTracking, pushOrderToIThink, ithinkWebhook };

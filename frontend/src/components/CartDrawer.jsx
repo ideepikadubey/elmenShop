@@ -22,7 +22,12 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
   }, []);
 
   // Calculate totals
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const subtotal = cartItems.reduce((acc, item) => {
+    const pPrice = Number(item.price || 0);
+    const pOrig = Number(item.originalPrice || 0);
+    const itemPrice = pPrice > 0 ? pPrice : (pOrig > 0 ? pOrig : 0);
+    return acc + (itemPrice * item.quantity);
+  }, 0);
 
   const discountAmount = (() => {
     if (!appliedPromo) return 0;

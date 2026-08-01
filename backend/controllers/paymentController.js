@@ -25,7 +25,8 @@ const createPaymentOrder = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found.' });
     }
 
-    if (order.user.toString() !== req.user._id.toString()) {
+    const orderUserId = (order.user._id || order.user).toString();
+    if (orderUserId !== req.user._id.toString()) {
       return res.status(403).json({ success: false, message: 'Access denied.' });
     }
 
@@ -58,16 +59,25 @@ const createPaymentOrder = async (req, res) => {
 
     // REAL Razorpay payment order
     const options = {
-      amount:   order.totalAmount * 100, // amount in paise
+      amount:   Math.round(order.totalAmount * 100), // amount in paise
       currency: 'INR',
       receipt:  `order_rcpt_${order._id}`,
       notes: {
         orderId:  order._id.toString(),
-        customer: req.user.name
+        customer: req.user.name || 'Customer'
       }
     };
 
-    const razorpayOrder = await razorpay.orders.create(options);
+    let razorpayOrder;
+    try {
+      razorpayOrder = await razorpay.orders.create(options);
+    } catch (rzpErr) {
+      console.error('Razorpay API order creation failed:', rzpErr);
+      return res.status(400).json({
+        success: false,
+        message: rzpErr?.description || rzpErr?.message || 'Razorpay payment creation failed. Please check payment keys.'
+      });
+    }
 
     await Order.findByIdAndUpdate(orderId, { razorpayOrderId: razorpayOrder.id });
 
@@ -87,8 +97,8 @@ const createPaymentOrder = async (req, res) => {
       key:             process.env.RAZORPAY_KEY_ID
     });
   } catch (error) {
-    console.error('Create payment order error:', error);
-    res.status(500).json({ success: false, message: 'Server error.' });
+    console.error('Create payment order error details:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error creating payment order.' });
   }
 };
 

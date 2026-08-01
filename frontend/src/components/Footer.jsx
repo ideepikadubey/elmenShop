@@ -204,7 +204,7 @@ export default function Footer({ onNavClick }) {
         }}>
           <p style={{ margin: 0 }}>© 2026 EL MEN Nutrition. All Rights Reserved. Designed with athletic energy.</p>
           <div style={{ display: 'flex', gap: '8px' }}>
-            {['UPI', 'Cards', 'NetBanking', 'COD'].map(badge => (
+            {['UPI', 'Cards', 'NetBanking'].map(badge => (
               <span key={badge} style={{
                 background: '#141414',
                 border: '1px solid #222',

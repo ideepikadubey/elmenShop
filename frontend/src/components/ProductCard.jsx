@@ -1,5 +1,5 @@
-import React from 'react';
-import { Eye, Plus, Heart } from 'lucide-react';
+import React, { useRef } from 'react';
+import { Plus, Heart } from 'lucide-react';
 import { API_BASE_URL } from "../config/api";
 
 export default function ProductCard({
@@ -9,6 +9,8 @@ export default function ProductCard({
   onAddToCart,
   onQuickView
 }) {
+  const hoverTimerRef = useRef(null);
+
   // Format price helper
   const formatPrice = (amount) => {
     return amount.toLocaleString('en-IN');
@@ -16,8 +18,36 @@ export default function ProductCard({
 
   const isOutOfStock = product.stock !== undefined && Number(product.stock) <= 0;
 
+  const handleMouseEnter = () => {
+    if (onQuickView) {
+      hoverTimerRef.current = setTimeout(() => {
+        onQuickView(product);
+      }, 350); // Automatically open product modal after brief hover
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+  };
+
+  const handleCardClick = (e) => {
+    // If user clicked heart or add button, don't trigger card click modal
+    if (e.target.closest('button')) return;
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    if (onQuickView) onQuickView(product);
+  };
+
   return (
-    <div className="product-card animate-fade-in" style={{ position: 'relative', opacity: isOutOfStock ? 0.85 : 1 }}>
+    <div
+      className="product-card animate-fade-in"
+      style={{ position: 'relative', opacity: isOutOfStock ? 0.85 : 1, cursor: 'pointer' }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleCardClick}
+    >
       {isOutOfStock ? (
         <div
           className="product-badge"
@@ -40,6 +70,7 @@ export default function ProductCard({
         <button
           onClick={(e) => {
             e.stopPropagation();
+            if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
             onToggleWishlist(product.id || product._id);
           }}
           style={{
@@ -111,6 +142,73 @@ export default function ProductCard({
           )}
         </div>
 
+        {/* Flavours / Colors Badge Bar */}
+        {(() => {
+          const defaultCategoryFlavours = {
+            gainers: ['Malai Kulfi', 'Chocolate'],
+            proteins: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi']
+          };
+          const availableFlavours = Array.isArray(product.flavours) && product.flavours.length > 0
+            ? product.flavours
+            : (defaultCategoryFlavours[product.category] || []);
+
+          if (availableFlavours.length === 0) return null;
+
+          const isAccessory = product.category === 'accessories';
+
+          return (
+            <div style={{ marginTop: '10px', marginBottom: '8px' }}>
+              <span style={{
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                color: 'var(--text-gray)',
+                letterSpacing: '0.5px',
+                display: 'block',
+                marginBottom: '6px'
+              }}>
+                {isAccessory ? '🎨 Colors / Options:' : '🍦 Flavours:'}
+              </span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {availableFlavours.slice(0, 3).map((flv, idx) => (
+                  <span
+                    key={idx}
+                    style={{
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      padding: '3px 8px',
+                      borderRadius: '12px',
+                      background: 'var(--bg-dark-700)',
+                      color: 'var(--primary-yellow)',
+                      border: '1px solid rgba(255, 190, 0, 0.25)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    {flv}
+                  </span>
+                ))}
+                {availableFlavours.length > 3 && (
+                  <span
+                    style={{
+                      fontSize: '0.68rem',
+                      fontWeight: 800,
+                      padding: '3px 8px',
+                      borderRadius: '12px',
+                      background: 'var(--bg-dark-800)',
+                      color: 'var(--text-muted)',
+                      border: '1px solid var(--bg-dark-600)'
+                    }}
+                  >
+                    +{availableFlavours.length - 3} More
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
         <p className="product-card-desc">{product.details}</p>
       </div>
 
@@ -131,19 +229,12 @@ export default function ProductCard({
           );
         })()}
 
-        <div className="card-actions">
-          <button
-            className="btn-icon"
-            onClick={() => onQuickView(product)}
-            title="Quick View"
-            aria-label="Quick View"
-          >
-            <Eye size={18} />
-          </button>
+        <div className="card-actions" style={{ width: '100%' }}>
           <button
             className="btn btn-primary"
             disabled={isOutOfStock}
             style={{
+              width: '100%',
               padding: '10px 14px',
               fontSize: '0.78rem',
               backgroundColor: isOutOfStock ? '#64748b' : undefined,
@@ -152,9 +243,13 @@ export default function ProductCard({
               cursor: isOutOfStock ? 'not-allowed' : 'pointer',
               opacity: isOutOfStock ? 0.8 : 1
             }}
-            onClick={() => !isOutOfStock && onAddToCart(product)}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+              if (!isOutOfStock) onAddToCart(product);
+            }}
           >
-            {isOutOfStock ? 'OUT OF STOCK' : <><Plus size={16} /> Add</>}
+            {isOutOfStock ? 'OUT OF STOCK' : <><Plus size={16} /> Add to Cart</>}
           </button>
         </div>
       </div>

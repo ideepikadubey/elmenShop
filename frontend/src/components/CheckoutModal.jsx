@@ -467,58 +467,22 @@ export default function CheckoutModal({ cartItems, priceDetails, onClose, onClea
                   </div>
 
                   <h3 style={{ fontSize: '1rem', textTransform: 'uppercase', margin: '24px 0 4px', color: '#d97706', fontWeight: 800, letterSpacing: '0.5px' }}>
-                    Payment Options
+                    Payment Method
                   </h3>
 
-                  <div className="payment-options" style={{ display: 'flex', gap: '16px' }}>
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('online')}
-                      style={{
-                        flex: 1, height: '64px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.2s',
-                        background: paymentMethod === 'online' ? '#fffbeb' : '#f8fafc',
-                        border: paymentMethod === 'online' ? '2.5px solid #eab308' : '1.5px solid #cbd5e1',
-                        color: paymentMethod === 'online' ? '#b45309' : '#475569',
-                        fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase'
-                      }}
-                    >
-                      <CreditCard size={20} />
-                      <span>Pay Online</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('cod')}
-                      style={{
-                        flex: 1, height: '64px', borderRadius: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.2s',
-                        background: paymentMethod === 'cod' ? '#fffbeb' : '#f8fafc',
-                        border: paymentMethod === 'cod' ? '2.5px solid #eab308' : '1.5px solid #cbd5e1',
-                        color: paymentMethod === 'cod' ? '#b45309' : '#475569',
-                        fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase'
-                      }}
-                    >
-                      <Truck size={20} />
-                      <span>COD</span>
-                    </button>
+                  <div style={{ padding: '18px 20px', backgroundColor: '#fffbeb', border: '2px solid #fde68a', borderRadius: '16px', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <CreditCard size={22} style={{ color: '#d97706' }} />
+                    </div>
+                    <div>
+                      <p style={{ color: '#0f172a', fontSize: '0.88rem', fontWeight: 900, margin: 0, textTransform: 'uppercase', letterSpacing: '0.25px' }}>
+                        Secured Online Payment (Razorpay)
+                      </p>
+                      <p style={{ color: '#92400e', fontSize: '0.78rem', lineHeight: '1.4', margin: '3px 0 0', fontWeight: 500 }}>
+                        Supports instant UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, NetBanking &amp; Wallets.
+                      </p>
+                    </div>
                   </div>
-
-                  {paymentMethod === 'online' && (
-                    <div style={{ padding: '16px', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '12px', marginTop: '8px' }}>
-                      <p style={{ color: '#0f172a', fontSize: '0.85rem', fontWeight: 800, marginBottom: '6px' }}>
-                        Secured Checkout via Razorpay
-                      </p>
-                      <p style={{ color: '#475569', fontSize: '0.8rem', lineHeight: '1.5', margin: 0 }}>
-                        Supports all major credit/debit cards, Net Banking, instant UPI transfers, and mobile wallets.
-                      </p>
-                    </div>
-                  )}
-
-                  {paymentMethod === 'cod' && (
-                    <div style={{ padding: '16px', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '12px', marginTop: '8px' }}>
-                      <p style={{ color: '#475569', fontSize: '0.8rem', lineHeight: '1.5', margin: 0 }}>
-                        Please pay the exact amount of <strong>₹{formatPrice(priceDetails.finalTotal)}</strong> in cash at the time of delivery.
-                      </p>
-                    </div>
-                  )}
 
                   {errors.submit && (
                     <div style={{ color: '#991b1b', fontSize: '0.85rem', textAlign: 'center', backgroundColor: '#fef2f2', padding: '12px', borderRadius: '12px', border: '1px solid #fecaca', marginTop: '8px', fontWeight: 500 }}>

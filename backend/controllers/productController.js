@@ -14,11 +14,18 @@ const getProducts = async (req, res) => {
     if (category) query.category = category.toLowerCase();
 
     if (search) {
-      query.$or = [
-        { name:     { $regex: search, $options: 'i' } },
-        { subtitle: { $regex: search, $options: 'i' } },
-        { details:  { $regex: search, $options: 'i' } }
-      ];
+      const tokens = search.trim().split(/\s+/).filter(Boolean);
+      if (tokens.length > 0) {
+        query.$and = tokens.map(token => ({
+          $or: [
+            { name:     { $regex: token, $options: 'i' } },
+            { subtitle: { $regex: token, $options: 'i' } },
+            { category: { $regex: token, $options: 'i' } },
+            { details:  { $regex: token, $options: 'i' } },
+            { flavours: { $regex: token, $options: 'i' } }
+          ]
+        }));
+      }
     }
 
     if (minPrice || maxPrice) {

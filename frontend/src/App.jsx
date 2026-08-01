@@ -53,6 +53,30 @@ export default function App() {
     localStorage.setItem('elmen_cart', JSON.stringify(cart));
   }, [cart]);
 
+  // Auto-heal cached cart items in localStorage if any item has 0 price
+  useEffect(() => {
+    if (cart && cart.length > 0 && productsList && productsList.length > 0) {
+      let updated = false;
+      const newCart = cart.map(item => {
+        const pPrice = Number(item.price || 0);
+        if (pPrice === 0) {
+          const matchingProd = productsList.find(p => String(p._id || p.id) === String(item._id || item.id || item.productId));
+          if (matchingProd) {
+            const correctPrice = Number(matchingProd.price || matchingProd.originalPrice || 0);
+            if (correctPrice > 0) {
+              updated = true;
+              return { ...item, price: correctPrice, originalPrice: Number(matchingProd.originalPrice || 0) };
+            }
+          }
+        }
+        return item;
+      });
+      if (updated) {
+        setCart(newCart);
+      }
+    }
+  }, [productsList]);
+
   // Authenticated user session state
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('elmen_user');
@@ -340,8 +364,10 @@ export default function App() {
     }
 
     const itemFlavour = selectedFlavour || (flavoursList.length > 0 ? flavoursList[0] : '');
-    const effectivePrice = (product.price && Number(product.price) > 0) ? Number(product.price) : Number(product.originalPrice || 0);
-    const productToAdd = { ...product, price: effectivePrice, selectedFlavour: itemFlavour, flavour: itemFlavour };
+    const pPrice = Number(product.price || 0);
+    const pOrig = Number(product.originalPrice || 0);
+    const effectivePrice = pPrice > 0 ? pPrice : (pOrig > 0 ? pOrig : 0);
+    const productToAdd = { ...product, price: effectivePrice, originalPrice: pOrig, selectedFlavour: itemFlavour, flavour: itemFlavour };
 
     setCart((prevCart) => {
       const pid = getProductId(product);
@@ -431,10 +457,33 @@ export default function App() {
   const filteredProducts = [...productsList]
     .filter((product) => {
       const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
-      const matchesSearch =
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.subtitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.details.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const defaultCategoryFlavours = {
+        gainers: ['Malai Kulfi', 'Chocolate'],
+        proteins: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi']
+      };
+
+      const availableFlavours = Array.isArray(product.flavours) && product.flavours.length > 0
+        ? product.flavours
+        : (defaultCategoryFlavours[product.category] || []);
+
+      const query = searchTerm.toLowerCase().trim();
+      if (!query) return matchesCategory;
+
+      const tokens = query.split(/\s+/).filter(Boolean);
+
+      const searchableText = [
+        product.name || '',
+        product.subtitle || '',
+        product.category || '',
+        product.details || '',
+        product.weight || '',
+        product.badge || '',
+        ...availableFlavours
+      ].join(' ').toLowerCase();
+
+      const matchesSearch = tokens.every(token => searchableText.includes(token));
+
       return matchesCategory && matchesSearch;
     })
     .sort((a, b) => {

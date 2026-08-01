@@ -12,11 +12,11 @@ const videoList = [
   },
   {
     id: 'vid-2',
-    title: 'Hunter Pre-Workout',
-    subtitle: 'Explosive Power, Extreme Focus & Intense Pump',
+    title: 'Wingman Pre-Workout',
+    subtitle: 'Explosive Power, Extreme Strength & Muscle Pump',
     src: '/p2.mp4',
     fallbackSrc: '/banner.mp4',
-    poster: '/DSC00799.jpg-Photoroom.png',
+    poster: '/preworkout.png',
     badge: 'High Energy'
   },
   {
