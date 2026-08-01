@@ -97,7 +97,7 @@ export default function FlavourSelectModal({ product, onClose, onConfirm }) {
               {product.subtitle}
             </p>
             <div style={{ marginTop: '4px', fontSize: '0.95rem', fontWeight: 900, color: '#d97706' }}>
-              ₹{formatPrice(product.price)}
+              ₹{formatPrice((product.price && Number(product.price) > 0) ? Number(product.price) : Number(product.originalPrice || 0))}
             </div>
           </div>
         </div>

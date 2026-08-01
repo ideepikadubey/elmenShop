@@ -176,7 +176,7 @@ export default function Navbar({
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{p.category}</div>
                     </div>
                     <div style={{ fontSize: '0.9rem', color: 'var(--primary-yellow-hover)', fontWeight: '900' }}>
-                      ₹{p.price.toLocaleString('en-IN')}
+                      ₹{((p.price && p.price > 0) ? p.price : (p.originalPrice || 0)).toLocaleString('en-IN')}
                     </div>
                   </div>
                 ))

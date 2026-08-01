@@ -339,7 +339,8 @@ export default function App() {
     }
 
     const itemFlavour = selectedFlavour || (flavoursList.length > 0 ? flavoursList[0] : '');
-    const productToAdd = { ...product, selectedFlavour: itemFlavour, flavour: itemFlavour };
+    const effectivePrice = (product.price && Number(product.price) > 0) ? Number(product.price) : Number(product.originalPrice || 0);
+    const productToAdd = { ...product, price: effectivePrice, selectedFlavour: itemFlavour, flavour: itemFlavour };
 
     setCart((prevCart) => {
       const pid = getProductId(product);
@@ -1220,7 +1221,7 @@ export default function App() {
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <h4 style={{ fontSize: '0.9rem', color: 'var(--text-white)', fontWeight: 'bold', margin: '0 0 4px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</h4>
-                          <div style={{ fontSize: '0.85rem', color: 'var(--primary-yellow-hover)', fontWeight: 'bold' }}>₹{product.price.toLocaleString('en-IN')}</div>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--primary-yellow-hover)', fontWeight: 'bold' }}>₹{((product.price && Number(product.price) > 0) ? Number(product.price) : Number(product.originalPrice || 0)).toLocaleString('en-IN')}</div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           <button

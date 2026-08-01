@@ -16,18 +16,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - name: Detect Changes
-        id: filter
-        uses: dorny/paths-filter@v3
-        with:
-          filters: |
-            frontend:
-              - 'frontend/**'
-            backend:
-              - 'backend/**'
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1
@@ -53,34 +41,23 @@ jobs:
             git fetch origin
             git reset --hard origin/Main
 
-            FRONTEND="${{ steps.filter.outputs.frontend }}"
-            BACKEND="${{ steps.filter.outputs.backend }}"
+            echo "Building Frontend..."
+            cd frontend
+            npm ci
+            npm run build
+            cd ..
 
-            echo "Frontend Changed: $FRONTEND"
-            echo "Backend Changed: $BACKEND"
-
-            if [ "$FRONTEND" = "true" ]; then
-              echo "Building Frontend..."
-              cd frontend
-              npm ci
-              npm run build
-              cd ..
-            fi
-
-            if [ "$BACKEND" = "true" ]; then
-              echo "Installing Backend..."
-              cd backend
-              npm ci --omit=dev
-              cd ..
-              pm2 restart elmenshop --update-env || pm2 start backend/server.js --name elmenshop
-            fi
+            echo "Installing & Restarting Backend..."
+            cd backend
+            npm ci --omit=dev
+            cd ..
+            pm2 restart elmenshop --update-env || pm2 start backend/server.js --name elmenshop
 
             echo "Checking Backend Health..."
-
             sleep 3
-
             curl -s --retry 5 --retry-connrefused --retry-delay 2 http://127.0.0.1:5000/api/health || curl -s --retry 5 --retry-connrefused --retry-delay 2 http://localhost:5000/api/health
 
             pm2 save
 
             echo "Deployment Completed Successfully"
+            echo "======END======"
