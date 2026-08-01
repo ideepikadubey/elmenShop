@@ -1456,6 +1456,8 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
               </div>
             )}
           </div>
+        )}
+
         {/* ── SUB TAB: POPUP LEADS ── */}
         {subTab === 'leads' && (
           <div>
