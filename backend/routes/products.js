@@ -2,7 +2,7 @@ const express = require('express');
 const { body } = require('express-validator');
 const {
   getProducts, getProduct, createProduct,
-  updateProduct, deleteProduct, updateStock
+  updateProduct, deleteProduct, updateStock, reorderProducts
 } = require('../controllers/productController');
 const { protect } = require('../middleware/auth');
 const { adminOnly } = require('../middleware/adminAuth');
@@ -19,9 +19,10 @@ const productValidation = [
 
 // Public
 router.get('/',    getProducts);
-router.get('/:id', getProduct);
 
 // Admin only
+router.put('/reorder',   protect, adminOnly, reorderProducts);
+router.get('/:id',       getProduct);
 router.post('/',          protect, adminOnly, upload.array('images', 8), productValidation, createProduct);
 router.put('/:id',        protect, adminOnly, upload.array('images', 8), updateProduct);
 router.delete('/:id',     protect, adminOnly, deleteProduct);

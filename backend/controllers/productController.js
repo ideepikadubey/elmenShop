@@ -30,8 +30,10 @@ const getProducts = async (req, res) => {
     let sortOption = {};
     if (sort === 'price_asc')       sortOption = { price: 1 };
     else if (sort === 'price_desc') sortOption = { price: -1 };
+    else if (sort === 'newest')     sortOption = { createdAt: -1, _id: -1 };
     else if (sort === 'oldest')     sortOption = { createdAt: 1, _id: 1 };
-    else                            sortOption = { createdAt: -1, _id: -1 };
+    else if (sort === 'name_asc')   sortOption = { name: 1 };
+    else                            sortOption = { displayOrder: 1, createdAt: -1, _id: -1 };
 
     const skip  = (Number(page) - 1) * Number(limit);
     const total = await Product.countDocuments(query);
@@ -220,4 +222,32 @@ const updateStock = async (req, res) => {
   }
 };
 
-module.exports = { getProducts, getProduct, createProduct, updateProduct, deleteProduct, updateStock };
+// @route  PUT /api/products/reorder
+// @access Admin
+const reorderProducts = async (req, res) => {
+  try {
+    const { productOrders } = req.body; // Array of { id, displayOrder }
+    if (!Array.isArray(productOrders) || productOrders.length === 0) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid productOrders array.' });
+    }
+
+    const bulkOps = productOrders.map((item) => ({
+      updateOne: {
+        filter: { _id: item.id },
+        update: { displayOrder: Number(item.displayOrder) }
+      }
+    }));
+
+    await Product.bulkWrite(bulkOps);
+
+    res.json({
+      success: true,
+      message: 'Product display sequence saved successfully.'
+    });
+  } catch (error) {
+    console.error('Reorder products error:', error);
+    res.status(500).json({ success: false, message: 'Server error while saving product order.' });
+  }
+};
+
+module.exports = { getProducts, getProduct, createProduct, updateProduct, deleteProduct, updateStock, reorderProducts };

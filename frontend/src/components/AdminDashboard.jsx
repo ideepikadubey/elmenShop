@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from "../config/api";
-import { ShoppingBag, Box, IndianRupee, AlertCircle, Plus, Edit2, Trash2, CheckCircle2, RotateCw, Filter, Eye, Truck, User } from 'lucide-react';
+import { ShoppingBag, Box, IndianRupee, AlertCircle, Plus, Edit2, Trash2, CheckCircle2, RotateCw, Filter, Eye, Truck, User, ArrowUp, ArrowDown, GripVertical, Save } from 'lucide-react';
 
 const CATEGORIES = [
   { key: 'proteins', label: 'Proteins' },
@@ -25,9 +25,10 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Search and Filter states
   const [productSearch, setProductSearch] = useState('');
-  const [productSortOrder, setProductSortOrder] = useState('newest'); // 'newest' | 'oldest'
+  const [productSortOrder, setProductSortOrder] = useState('custom'); // 'custom' | 'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'name_asc'
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const [draggedTableProductIndex, setDraggedTableProductIndex] = useState(null);
   const [orderFilter, setOrderFilter] = useState('all');
 
   // Product Add/Edit Modal state
@@ -448,13 +449,62 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
 
   const outOfStockCount = products.filter(p => p.stock <= 0).length;
 
+  // Reorder product functions
+  const handleMoveProduct = (fromIndex, toIndex) => {
+    if (toIndex < 0 || toIndex >= products.length) return;
+    const updated = [...products];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+    const reorderedWithSeq = updated.map((item, idx) => ({
+      ...item,
+      displayOrder: idx + 1
+    }));
+    setProducts(reorderedWithSeq);
+  };
+
+  const handleSaveProductOrder = async () => {
+    setIsSavingOrder(true);
+    try {
+      const productOrders = products.map((p, index) => ({
+        id: p._id || p.id,
+        displayOrder: index + 1
+      }));
+
+      const res = await axios.put(`${API_BASE_URL}/api/products/reorder`, { productOrders }, {
+        headers: getHeaders()
+      });
+
+      if (res.data.success) {
+        showSuccess('Product display sequence saved successfully! Storefront updated.');
+        fetchAdminData();
+        if (onRefreshStoreProducts) onRefreshStoreProducts();
+      }
+    } catch (err) {
+      setErrorMsg(err.response?.data?.message || 'Failed to save product display sequence.');
+    } finally {
+      setIsSavingOrder(false);
+    }
+  };
+
   // Filtered lists
-  const filteredProducts = products
+  const filteredProducts = [...products]
     .filter(p =>
       p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
       p.category.toLowerCase().includes(productSearch.toLowerCase())
     )
     .sort((a, b) => {
+      if (productSortOrder === 'custom') {
+        const orderA = a.displayOrder !== undefined ? a.displayOrder : 9999;
+        const orderB = b.displayOrder !== undefined ? b.displayOrder : 9999;
+        if (orderA !== orderB) return orderA - orderB;
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      }
+      if (productSortOrder === 'price_asc') return (a.price || 0) - (b.price || 0);
+      if (productSortOrder === 'price_desc') return (b.price || 0) - (a.price || 0);
+      if (productSortOrder === 'name_asc') return a.name.localeCompare(b.name);
+
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       if (dateA !== dateB) {
@@ -733,8 +783,8 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
         {subTab === 'products' && (
           <div>
             <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', gap: '16px', flex: 1, maxWidth: '600px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <div className="search-bar" style={{ flex: 1, minWidth: '220px', backgroundColor: 'var(--bg-dark-800)', border: '1px solid var(--bg-dark-600)' }}>
+              <div style={{ display: 'flex', gap: '12px', flex: 1, maxWidth: '780px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="search-bar" style={{ flex: 1, minWidth: '200px', backgroundColor: 'var(--bg-dark-800)', border: '1px solid var(--bg-dark-600)' }}>
                   <input
                     type="text"
                     placeholder="Search by name or category..."
@@ -760,11 +810,39 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                       outline: 'none'
                     }}
                   >
+                    <option value="custom">🎯 Custom Homepage Sequence</option>
                     <option value="newest">✨ Newest First</option>
                     <option value="oldest">⏳ Oldest First</option>
+                    <option value="price_asc">💵 Price: Low to High</option>
+                    <option value="price_desc">💎 Price: High to Low</option>
+                    <option value="name_asc">🔤 Name: A to Z</option>
                   </select>
                 </div>
+
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleSaveProductOrder}
+                  disabled={isSavingOrder}
+                  style={{
+                    display: 'flex',
+                    gap: '6px',
+                    alignItems: 'center',
+                    backgroundColor: 'var(--primary-yellow)',
+                    color: '#000',
+                    fontWeight: '900',
+                    padding: '8px 16px',
+                    fontSize: '0.85rem',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: isSavingOrder ? 'not-allowed' : 'pointer'
+                  }}
+                  title="Save current product sequence to reflect on Homepage"
+                >
+                  <Save size={16} />
+                  {isSavingOrder ? 'Saving...' : 'Save Order to Homepage'}
+                </button>
               </div>
+
               <button className="btn btn-primary" style={{ display: 'flex', gap: '8px', alignItems: 'center' }} onClick={handleOpenAddProduct}>
                 <Plus size={16} /> Add Supplement
               </button>
@@ -777,6 +855,8 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 <table className="admin-table">
                   <thead>
                     <tr>
+                      <th style={{ width: '60px', textAlign: 'center' }}>Pos</th>
+                      <th style={{ width: '90px', textAlign: 'center' }}>Arrange</th>
                       <th>Product Name</th>
                       <th>Category</th>
                       <th>Selling Price</th>
@@ -787,13 +867,73 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredProducts.map(p => {
+                    {filteredProducts.map((p, idx) => {
+                      const actualIdx = products.findIndex(prod => (prod._id || prod.id) === (p._id || p.id));
                       const effectiveSellingPrice = (p.price && p.price > 0) ? p.price : (p.originalPrice || 0);
                       const hasDiscount = p.originalPrice && p.originalPrice > effectiveSellingPrice;
                       const discountPct = hasDiscount ? Math.round(((p.originalPrice - effectiveSellingPrice) / p.originalPrice) * 100) : 0;
 
                       return (
-                        <tr key={p._id}>
+                        <tr
+                          key={p._id || p.id || idx}
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('text/plain', actualIdx);
+                            setDraggedTableProductIndex(actualIdx);
+                          }}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                            if (!isNaN(fromIdx) && fromIdx !== actualIdx) {
+                              handleMoveProduct(fromIdx, actualIdx);
+                            }
+                            setDraggedTableProductIndex(null);
+                          }}
+                          style={{
+                            opacity: draggedTableProductIndex === actualIdx ? 0.4 : 1,
+                            backgroundColor: draggedTableProductIndex === actualIdx ? 'rgba(255, 184, 0, 0.1)' : 'transparent',
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <td style={{ textAlign: 'center' }}>
+                            <span
+                              style={{
+                                background: 'var(--bg-dark-700)',
+                                color: 'var(--primary-yellow)',
+                                padding: '4px 10px',
+                                borderRadius: '12px',
+                                fontSize: '0.78rem',
+                                fontWeight: 900,
+                                border: '1px solid rgba(255, 184, 0, 0.2)'
+                              }}
+                            >
+                              #{actualIdx + 1}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <div style={{ display: 'inline-flex', gap: '4px', alignItems: 'center' }}>
+                              <GripVertical size={16} color="var(--text-muted)" style={{ cursor: 'grab', marginRight: '4px' }} title="Drag to reorder" />
+                              <button
+                                className="btn-icon"
+                                disabled={actualIdx === 0}
+                                onClick={() => handleMoveProduct(actualIdx, actualIdx - 1)}
+                                style={{ opacity: actualIdx === 0 ? 0.3 : 1, padding: '4px' }}
+                                title="Move product up"
+                              >
+                                <ArrowUp size={14} />
+                              </button>
+                              <button
+                                className="btn-icon"
+                                disabled={actualIdx === products.length - 1}
+                                onClick={() => handleMoveProduct(actualIdx, actualIdx + 1)}
+                                style={{ opacity: actualIdx === products.length - 1 ? 0.3 : 1, padding: '4px' }}
+                                title="Move product down"
+                              >
+                                <ArrowDown size={14} />
+                              </button>
+                            </div>
+                          </td>
                           <td>
                             <div style={{ fontWeight: '800' }}>{p.name}</div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.subtitle}</div>

@@ -44,6 +44,10 @@ const productSchema = new mongoose.Schema({
     min: [0, 'Stock cannot be negative'],
     default: 100
   },
+  displayOrder: {
+    type: Number,
+    default: 0
+  },
   isActive: {
     type: Boolean,
     default: true

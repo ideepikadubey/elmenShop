@@ -423,15 +423,46 @@ export default function App() {
     }
   };
 
-  // Filters logic
-  const filteredProducts = productsList.filter((product) => {
-    const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.subtitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.details.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const [sortBy, setSortBy] = useState('default'); // 'default' (admin custom order), 'newest', 'price-low', 'price-high', 'name', 'discount'
+
+  // Filters and Sorting logic
+  const filteredProducts = [...productsList]
+    .filter((product) => {
+      const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
+      const matchesSearch =
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.subtitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.details.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'price-low') {
+        return (a.price || 0) - (b.price || 0);
+      }
+      if (sortBy === 'price-high') {
+        return (b.price || 0) - (a.price || 0);
+      }
+      if (sortBy === 'newest') {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      }
+      if (sortBy === 'name') {
+        return a.name.localeCompare(b.name);
+      }
+      if (sortBy === 'discount') {
+        const discA = (a.originalPrice && a.originalPrice > a.price) ? (a.originalPrice - a.price) / a.originalPrice : 0;
+        const discB = (b.originalPrice && b.originalPrice > b.price) ? (b.originalPrice - b.price) / b.originalPrice : 0;
+        return discB - discA;
+      }
+      // 'default' (custom order set by Admin):
+      const orderA = a.displayOrder !== undefined ? a.displayOrder : 9999;
+      const orderB = b.displayOrder !== undefined ? b.displayOrder : 9999;
+      if (orderA !== orderB) return orderA - orderB;
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
 
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -614,6 +645,68 @@ export default function App() {
                     </button>
                   );
                 })}
+              </div>
+
+              {/* Homepage Product Sort & Arrange Controls Bar */}
+              <div
+                className="homepage-sort-bar"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '16px',
+                  margin: '32px 0 28px',
+                  padding: '14px 20px',
+                  backgroundColor: 'rgba(26, 26, 26, 0.7)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid var(--bg-dark-600)',
+                  borderRadius: '16px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 900, color: 'var(--primary-yellow)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {filteredProducts.length} Product{filteredProducts.length !== 1 ? 's' : ''} Available
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Arrange By:
+                  </span>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {[
+                      { id: 'default', label: '🎯 Featured' },
+                      { id: 'newest', label: '✨ Newest' },
+                      { id: 'price-low', label: '💵 Price: Low to High' },
+                      { id: 'price-high', label: '💎 Price: High to Low' },
+                      { id: 'name', label: '🔤 Name A-Z' },
+                      { id: 'discount', label: '🔥 Top Offer' },
+                    ].map((opt) => {
+                      const isSelected = sortBy === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          onClick={() => setSortBy(opt.id)}
+                          style={{
+                            backgroundColor: isSelected ? 'var(--primary-yellow)' : 'var(--bg-dark-800)',
+                            color: isSelected ? '#000' : 'var(--text-white)',
+                            border: isSelected ? '1px solid var(--primary-yellow)' : '1px solid var(--bg-dark-600)',
+                            borderRadius: '20px',
+                            padding: '6px 14px',
+                            fontSize: '0.78rem',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: isSelected ? '0 0 12px rgba(255, 184, 0, 0.3)' : 'none'
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               {filteredProducts.length === 0 ? (
