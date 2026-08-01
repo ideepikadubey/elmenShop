@@ -39,6 +39,11 @@ const offerSchema = new mongoose.Schema({
     type: Date,
     required: [true, 'End date is required']
   },
+  customerType: {
+    type: String,
+    enum: ['online', 'offline'],
+    default: 'online'
+  },
   isActive: {
     type: Boolean,
     default: true

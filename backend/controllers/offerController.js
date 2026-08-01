@@ -5,7 +5,7 @@ const Offer = require('../models/Offer');
 // @access  Private/Admin
 exports.createOffer = async (req, res) => {
   try {
-    const { title, description, code, discountType, discountValue, targetProducts, startDate, endDate } = req.body;
+    const { title, description, code, discountType, discountValue, targetProducts, startDate, endDate, customerType } = req.body;
     
     if (!title || !code || discountValue === undefined || !startDate || !endDate) {
       return res.status(400).json({ success: false, message: 'Required fields missing: title, code, discountValue, startDate, endDate' });
@@ -23,6 +23,7 @@ exports.createOffer = async (req, res) => {
       code: code.toUpperCase(),
       discountType,
       discountValue,
+      customerType: customerType || 'online',
       targetProducts: targetProducts || [],
       startDate: new Date(startDate),
       endDate: new Date(endDate)
@@ -34,12 +35,12 @@ exports.createOffer = async (req, res) => {
   }
 };
 
-// @desc    Get all offers (Admins get all, public gets active ones)
+// @desc    Get all offers (Admins get all, public gets active online ones)
 // @route   GET /api/offers
 // @access  Public / Private/Admin
 exports.getOffers = async (req, res) => {
   try {
-    // If the request has authorization and role is admin, show all. Otherwise, only show active.
+    // If the request has authorization and role is admin, show all. Otherwise, only show active online offers.
     let query = {};
     if (req.user && req.user.role === 'admin') {
       query = {};
@@ -49,6 +50,7 @@ exports.getOffers = async (req, res) => {
       const startDateMax = new Date(now.getTime() + 24 * 60 * 60 * 1000);
       query = {
         isActive: true,
+        customerType: 'online',
         startDate: { $lte: startDateMax },
         endDate: { $gte: now }
       };

@@ -47,6 +47,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
   const [offerForm, setOfferForm] = useState({
     title: '', description: '', code: '', discountType: 'percentage', discountValue: '',
+    customerType: 'online',
     startDate: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
     endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
     targetProducts: []
@@ -1208,6 +1209,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 onClick={() => {
                   setOfferForm({
                     title: '', description: '', code: '', discountType: 'percentage', discountValue: '',
+                    customerType: 'online',
                     startDate: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
                     endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
                     targetProducts: []
@@ -1228,8 +1230,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     <tr>
                       <th>Coupon Code</th>
                       <th>Campaign Title</th>
-                      <th>Discount details</th>
-                      <th>Duration validity period</th>
+                      <th>Target Audience</th>
+                      <th>Discount Details</th>
+                      <th>Duration Validity</th>
                       <th>Applies To</th>
                       <th>Status</th>
                       <th style={{ textAlign: 'right' }}>Actions</th>
@@ -1260,6 +1263,21 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                           <td>
                             <strong style={{ fontSize: '0.85rem', display: 'block' }}>{off.title}</strong>
                             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{off.description}</span>
+                          </td>
+                          <td>
+                            <span
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '12px',
+                                fontSize: '0.72rem',
+                                fontWeight: 800,
+                                background: off.customerType === 'offline' ? 'rgba(148, 163, 184, 0.15)' : 'rgba(34, 197, 94, 0.15)',
+                                color: off.customerType === 'offline' ? '#94a3b8' : '#22c55e',
+                                border: `1px solid ${off.customerType === 'offline' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(34, 197, 94, 0.3)'}`
+                              }}
+                            >
+                              {off.customerType === 'offline' ? '🔒 Offline (Private)' : '🌐 Online (Public)'}
+                            </span>
                           </td>
                           <td>
                             <span style={{ fontWeight: 'bold' }}>
@@ -1889,6 +1907,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     code: offerForm.code.toUpperCase(),
                     discountType: offerForm.discountType,
                     discountValue: Number(offerForm.discountValue),
+                    customerType: offerForm.customerType || 'online',
                     startDate: offerForm.startDate,
                     endDate: offerForm.endDate,
                     targetProducts: offerForm.targetProducts
@@ -1917,6 +1936,18 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                   onChange={(e) => setOfferForm({ ...offerForm, title: e.target.value })}
                   placeholder="e.g. New Year Fitness Discount"
                 />
+              </div>
+
+              <div className="form-group">
+                <label>Target Customer / Coupon Visibility *</label>
+                <select
+                  className="form-input"
+                  value={offerForm.customerType || 'online'}
+                  onChange={(e) => setOfferForm({ ...offerForm, customerType: e.target.value })}
+                >
+                  <option value="online">🌐 Online Customer (Listed on Offers Section & Storefront Ticker)</option>
+                  <option value="offline">🔒 Offline / In-Store Customer (Private Coupon - Hidden from Storefront)</option>
+                </select>
               </div>
 
               <div className="form-group">
