@@ -10,9 +10,33 @@ export default function LeadPopupModal() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [copied, setCopied] = useState(false);
+  const [activeCoupon, setActiveCoupon] = useState({
+    code: 'WELCOME10',
+    discountValue: '10%',
+    title: '10% OFF'
+  });
+
+  // Fetch active promotional coupon from backend database
+  useEffect(() => {
+    axios.get(`${API_BASE_URL}/api/offers`)
+      .then(res => {
+        if (res.data.success && Array.isArray(res.data.offers) && res.data.offers.length > 0) {
+          const now = Date.now();
+          const valid = res.data.offers.find(o => o.isActive !== false && new Date(o.endDate).getTime() > now);
+          if (valid) {
+            setActiveCoupon({
+              code: valid.code,
+              discountValue: valid.discountType === 'percentage' ? `${valid.discountValue}%` : `₹${valid.discountValue}`,
+              title: valid.title || `${valid.discountValue}% OFF`
+            });
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText('WELCOME10');
+    navigator.clipboard.writeText(activeCoupon.code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -62,8 +86,8 @@ export default function LeadPopupModal() {
       // Send lead to backend API
       await axios.post(`${API_BASE_URL}/api/leads`, {
         phone: cleanPhone,
-        source: 'WELCOME10_POPUP',
-        couponCode: 'WELCOME10'
+        source: 'WELCOME_POPUP',
+        couponCode: activeCoupon.code
       }).catch((err) => {
         console.warn('Lead submit fallback:', err);
       });
@@ -224,20 +248,20 @@ export default function LeadPopupModal() {
                 backgroundColor: '#ffffff',
                 border: '2px dashed #22c55e',
                 borderRadius: '12px',
-                padding: '12px 16px',
+                padding: '14px 16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 gap: '12px',
-                marginBottom: '16px',
+                marginBottom: '4px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
               }}>
                 <div style={{ textAlign: 'left' }}>
                   <span style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>
                     ACTIVE COUPON CODE
                   </span>
-                  <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#0f172a', letterSpacing: '1px', fontFamily: 'monospace' }}>
-                    WELCOME10
+                  <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a', letterSpacing: '1px', fontFamily: 'monospace' }}>
+                    {activeCoupon.code}
                   </span>
                 </div>
 
@@ -249,9 +273,9 @@ export default function LeadPopupModal() {
                     color: '#ffffff',
                     border: 'none',
                     borderRadius: '8px',
-                    padding: '8px 14px',
+                    padding: '9px 16px',
                     fontWeight: 800,
-                    fontSize: '0.78rem',
+                    fontSize: '0.8rem',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -260,35 +284,9 @@ export default function LeadPopupModal() {
                     textTransform: 'uppercase'
                   }}
                 >
-                  {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy Code</>}
+                  {copied ? <><Check size={15} /> Copied!</> : <><Copy size={15} /> Copy Code</>}
                 </button>
               </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const cleanP = phone.trim().replace(/\D/g, '');
-                  window.open(`https://wa.me/91${cleanP}?text=Hi%20EL%20MEN%20Nutrition%2C%20I%20claimed%20my%2010%25%20OFF%20VIP%20Coupon!`, '_blank');
-                }}
-                style={{
-                  width: '100%',
-                  padding: '11px 16px',
-                  borderRadius: '10px',
-                  backgroundColor: '#25D366',
-                  color: '#ffffff',
-                  border: 'none',
-                  fontWeight: 800,
-                  fontSize: '0.82rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  boxShadow: '0 4px 12px rgba(37, 211, 102, 0.25)'
-                }}
-              >
-                💬 Claim via WhatsApp
-              </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
