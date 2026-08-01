@@ -451,8 +451,8 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
 
   // Reorder product functions
   const handleMoveProduct = (fromIndex, toIndex) => {
-    if (toIndex < 0 || toIndex >= products.length) return;
-    const updated = [...products];
+    if (toIndex < 0 || toIndex >= filteredProducts.length) return;
+    const updated = [...filteredProducts];
     const [moved] = updated.splice(fromIndex, 1);
     updated.splice(toIndex, 0, moved);
     const reorderedWithSeq = updated.map((item, idx) => ({
@@ -460,12 +460,15 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       displayOrder: idx + 1
     }));
     setProducts(reorderedWithSeq);
+    setProductSortOrder('custom');
   };
 
   const handleSaveProductOrder = async () => {
     setIsSavingOrder(true);
     try {
-      const productOrders = products.map((p, index) => ({
+      // Use current displayed table order (filteredProducts)
+      const listToSave = (filteredProducts && filteredProducts.length > 0) ? filteredProducts : products;
+      const productOrders = listToSave.map((p, index) => ({
         id: p._id || p.id,
         displayOrder: index + 1
       }));
@@ -475,7 +478,13 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       });
 
       if (res.data.success) {
-        showSuccess('Product display sequence saved successfully! Storefront updated.');
+        showSuccess('Product sequence saved successfully! Homepage updated.');
+        const updatedProducts = listToSave.map((p, index) => ({
+          ...p,
+          displayOrder: index + 1
+        }));
+        setProducts(updatedProducts);
+        setProductSortOrder('custom');
         fetchAdminData();
         if (onRefreshStoreProducts) onRefreshStoreProducts();
       }

@@ -648,68 +648,6 @@ export default function App() {
                 })}
               </div>
 
-              {/* Homepage Product Sort & Arrange Controls Bar */}
-              <div
-                className="homepage-sort-bar"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: '16px',
-                  margin: '32px 0 28px',
-                  padding: '14px 20px',
-                  backgroundColor: 'rgba(26, 26, 26, 0.7)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid var(--bg-dark-600)',
-                  borderRadius: '16px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 900, color: 'var(--primary-yellow)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    {filteredProducts.length} Product{filteredProducts.length !== 1 ? 's' : ''} Available
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    Arrange By:
-                  </span>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {[
-                      { id: 'default', label: '🎯 Featured' },
-                      { id: 'newest', label: '✨ Newest' },
-                      { id: 'price-low', label: '💵 Price: Low to High' },
-                      { id: 'price-high', label: '💎 Price: High to Low' },
-                      { id: 'name', label: '🔤 Name A-Z' },
-                      { id: 'discount', label: '🔥 Top Offer' },
-                    ].map((opt) => {
-                      const isSelected = sortBy === opt.id;
-                      return (
-                        <button
-                          key={opt.id}
-                          onClick={() => setSortBy(opt.id)}
-                          style={{
-                            backgroundColor: isSelected ? 'var(--primary-yellow)' : 'var(--bg-dark-800)',
-                            color: isSelected ? '#000' : 'var(--text-white)',
-                            border: isSelected ? '1px solid var(--primary-yellow)' : '1px solid var(--bg-dark-600)',
-                            borderRadius: '20px',
-                            padding: '6px 14px',
-                            fontSize: '0.78rem',
-                            fontWeight: 800,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            boxShadow: isSelected ? '0 0 12px rgba(255, 184, 0, 0.3)' : 'none'
-                          }}
-                        >
-                          {opt.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
               {filteredProducts.length === 0 ? (
                 <div style={{ textAlign: 'center', color: 'var(--text-gray)', padding: '40px 0' }}>
                   <p style={{ fontSize: '1.2rem' }}>No products found matching your filters.</p>
