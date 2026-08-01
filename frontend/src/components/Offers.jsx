@@ -190,6 +190,18 @@ export default function Offers({ onGoBack, onShopClick }) {
                   }} />
 
                   <div>
+                    {/* Optional Promotional Image Banner */}
+                    {offer.image && (
+                      <div style={{ width: '100%', height: '170px', borderRadius: '16px', overflow: 'hidden', marginBottom: '18px', position: 'relative', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.04)' }}>
+                        <img
+                          src={offer.image}
+                          alt={offer.title}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.35) 100%)' }} />
+                      </div>
+                    )}
+
                     {/* Top Meta Row */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

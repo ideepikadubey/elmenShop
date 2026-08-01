@@ -5,7 +5,7 @@ const Offer = require('../models/Offer');
 // @access  Private/Admin
 exports.createOffer = async (req, res) => {
   try {
-    const { title, description, code, discountType, discountValue, targetProducts, startDate, endDate, customerType } = req.body;
+    const { title, description, code, discountType, discountValue, targetProducts, startDate, endDate, customerType, image } = req.body;
     
     if (!title || !code || discountValue === undefined || !startDate || !endDate) {
       return res.status(400).json({ success: false, message: 'Required fields missing: title, code, discountValue, startDate, endDate' });
@@ -24,6 +24,7 @@ exports.createOffer = async (req, res) => {
       discountType,
       discountValue,
       customerType: customerType || 'online',
+      image: image || '',
       targetProducts: targetProducts || [],
       startDate: new Date(startDate),
       endDate: new Date(endDate)
@@ -79,6 +80,45 @@ exports.updateOfferStatus = async (req, res) => {
     }
 
     res.status(200).json({ success: true, offer });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Update offer details (title, code, dates, discounts, customerType)
+// @route   PUT /api/offers/:id/details
+// @access  Private/Admin
+exports.updateOffer = async (req, res) => {
+  try {
+    const { title, description, code, discountType, discountValue, customerType, targetProducts, startDate, endDate, image } = req.body;
+
+    const offer = await Offer.findById(req.params.id);
+    if (!offer) {
+      return res.status(404).json({ success: false, message: 'Offer not found.' });
+    }
+
+    // Check if updated code conflicts with another offer
+    if (code && code.toUpperCase() !== offer.code) {
+      const codeExists = await Offer.findOne({ code: code.toUpperCase(), _id: { $ne: req.params.id } });
+      if (codeExists) {
+        return res.status(400).json({ success: false, message: `Offer code "${code.toUpperCase()}" already exists.` });
+      }
+      offer.code = code.toUpperCase();
+    }
+
+    if (title !== undefined) offer.title = title;
+    if (description !== undefined) offer.description = description;
+    if (discountType !== undefined) offer.discountType = discountType;
+    if (discountValue !== undefined) offer.discountValue = Number(discountValue);
+    if (customerType !== undefined) offer.customerType = customerType;
+    if (image !== undefined) offer.image = image;
+    if (targetProducts !== undefined) offer.targetProducts = targetProducts;
+    if (startDate !== undefined) offer.startDate = new Date(startDate);
+    if (endDate !== undefined) offer.endDate = new Date(endDate);
+
+    await offer.save();
+
+    res.status(200).json({ success: true, message: 'Offer updated successfully.', offer });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

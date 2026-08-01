@@ -2,7 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const {
-  createOffer, getOffers, updateOfferStatus, deleteOffer, validateCoupon
+  createOffer, getOffers, updateOfferStatus, updateOffer, deleteOffer, validateCoupon
 } = require('../controllers/offerController');
 const { protect } = require('../middleware/auth');
 const { adminOnly } = require('../middleware/adminAuth');
@@ -35,6 +35,7 @@ router.post('/validate', validateCoupon);
 
 // Admin Only
 router.post('/',          protect, adminOnly, createOffer);
+router.put('/:id/details', protect, adminOnly, updateOffer);
 router.put('/:id',        protect, adminOnly, updateOfferStatus);
 router.delete('/:id',     protect, adminOnly, deleteOffer);
 

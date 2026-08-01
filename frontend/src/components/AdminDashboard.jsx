@@ -45,13 +45,31 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
 
   // Offer Modal State
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+  const [editingOffer, setEditingOffer] = useState(null);
   const [offerForm, setOfferForm] = useState({
     title: '', description: '', code: '', discountType: 'percentage', discountValue: '',
-    customerType: 'online',
+    customerType: 'online', image: '',
     startDate: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
     endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
     targetProducts: []
   });
+
+  const handleOpenEditOffer = (off) => {
+    setEditingOffer(off);
+    setOfferForm({
+      title: off.title || '',
+      description: off.description || '',
+      code: off.code || '',
+      discountType: off.discountType || 'percentage',
+      discountValue: off.discountValue !== undefined ? String(off.discountValue) : '',
+      customerType: off.customerType || 'online',
+      image: off.image || '',
+      startDate: off.startDate ? new Date(new Date(off.startDate).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '',
+      endDate: off.endDate ? new Date(new Date(off.endDate).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '',
+      targetProducts: off.targetProducts ? off.targetProducts.map(p => typeof p === 'object' ? p._id : p) : []
+    });
+    setIsOfferModalOpen(true);
+  };
 
   const getHeaders = () => {
     const token = localStorage.getItem('elmen_token');
@@ -1207,9 +1225,10 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 className="btn btn-primary"
                 style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
                 onClick={() => {
+                  setEditingOffer(null);
                   setOfferForm({
                     title: '', description: '', code: '', discountType: 'percentage', discountValue: '',
-                    customerType: 'online',
+                    customerType: 'online', image: '',
                     startDate: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
                     endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
                     targetProducts: []
@@ -1261,8 +1280,15 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                             </code>
                           </td>
                           <td>
-                            <strong style={{ fontSize: '0.85rem', display: 'block' }}>{off.title}</strong>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{off.description}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              {off.image && (
+                                <img src={off.image} alt={off.title} style={{ width: '42px', height: '42px', borderRadius: '8px', objectFit: 'cover', border: '1px solid var(--bg-dark-600)', flexShrink: 0 }} />
+                              )}
+                              <div>
+                                <strong style={{ fontSize: '0.85rem', display: 'block' }}>{off.title}</strong>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{off.description}</span>
+                              </div>
+                            </div>
                           </td>
                           <td>
                             <span
@@ -1305,6 +1331,14 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                           </td>
                           <td style={{ textAlign: 'right' }}>
                             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                              <button
+                                className="btn-icon"
+                                style={{ color: 'var(--primary-yellow)' }}
+                                onClick={() => handleOpenEditOffer(off)}
+                                title="Edit Promotion Coupon"
+                              >
+                                <Edit2 size={14} />
+                              </button>
                               <button
                                 className="btn btn-secondary"
                                 style={{ padding: '4px 8px', fontSize: '0.7rem' }}
@@ -1892,7 +1926,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
         <div className="admin-modal" onClick={() => setIsOfferModalOpen(false)}>
           <div className="admin-modal-content animate-fade-in" style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
             <h2 style={{ textTransform: 'uppercase', fontWeight: 900, marginBottom: '20px', borderBottom: '1px solid var(--bg-dark-700)', paddingBottom: '12px' }}>
-              🏷️ Create Promotion Coupon
+              {editingOffer ? '✏️ Edit Promotion Coupon' : '🏷️ Create Promotion Coupon'}
             </h2>
 
             <form
@@ -1908,18 +1942,25 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     discountType: offerForm.discountType,
                     discountValue: Number(offerForm.discountValue),
                     customerType: offerForm.customerType || 'online',
+                    image: offerForm.image || '',
                     startDate: offerForm.startDate,
                     endDate: offerForm.endDate,
                     targetProducts: offerForm.targetProducts
                   };
 
-                  await axios.post(`${API_BASE_URL}/api/offers`, body, { headers: getHeaders() });
-                  showSuccess('Promotion Coupon created successfully!');
+                  if (editingOffer) {
+                    await axios.put(`${API_BASE_URL}/api/offers/${editingOffer._id}/details`, body, { headers: getHeaders() });
+                    showSuccess('Promotion Coupon updated successfully!');
+                  } else {
+                    await axios.post(`${API_BASE_URL}/api/offers`, body, { headers: getHeaders() });
+                    showSuccess('Promotion Coupon created successfully!');
+                  }
                   setIsOfferModalOpen(false);
+                  setEditingOffer(null);
                   fetchAdminData();
                   if (onRefreshStoreProducts) onRefreshStoreProducts();
                 } catch (err) {
-                  setErrorMsg(err.response?.data?.message || err.message || 'Failed to create offer.');
+                  setErrorMsg(err.response?.data?.message || err.message || 'Failed to save offer.');
                 } finally {
                   setIsLoading(false);
                 }
@@ -1936,6 +1977,48 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                   onChange={(e) => setOfferForm({ ...offerForm, title: e.target.value })}
                   placeholder="e.g. New Year Fitness Discount"
                 />
+              </div>
+
+              <div className="form-group">
+                <label>Offer Promotional Banner / Image (Optional)</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="form-input"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setOfferForm(prev => ({ ...prev, image: reader.result }));
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>- OR paste image web URL below -</span>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={offerForm.image}
+                    onChange={(e) => setOfferForm({ ...offerForm, image: e.target.value })}
+                    placeholder="e.g. https://images.unsplash.com/photo-..."
+                  />
+                  {offerForm.image && (
+                    <div style={{ position: 'relative', width: '100%', height: '140px', borderRadius: '12px', overflow: 'hidden', border: '1.5px solid var(--primary-yellow)', marginTop: '4px' }}>
+                      <img src={offerForm.image} alt="Offer Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button
+                        type="button"
+                        onClick={() => setOfferForm({ ...offerForm, image: '' })}
+                        style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239, 68, 68, 0.9)', color: '#fff', border: 'none', borderRadius: '50%', width: '26px', height: '26px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}
+                        title="Remove Image"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="form-group">
@@ -2049,7 +2132,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary" disabled={isLoading}>
-                  {isLoading ? 'Creating Campaign...' : 'Create Offer'}
+                  {isLoading ? 'Saving Promotion...' : editingOffer ? 'Save Changes' : 'Create Offer'}
                 </button>
               </div>
             </form>

@@ -44,6 +44,10 @@ const offerSchema = new mongoose.Schema({
     enum: ['online', 'offline'],
     default: 'online'
   },
+  image: {
+    type: String,
+    default: ''
+  },
   isActive: {
     type: Boolean,
     default: true
