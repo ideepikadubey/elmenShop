@@ -456,18 +456,21 @@ export default function App() {
   // Filters and Sorting logic
   const filteredProducts = [...productsList]
     .filter((product) => {
-      const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
+      const query = searchTerm.toLowerCase().trim();
+      const matchesCategory = !query || activeCategory === 'all' || product.category === activeCategory;
       
       const defaultCategoryFlavours = {
-        gainers: ['Malai Kulfi', 'Chocolate'],
-        proteins: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi']
+        gainers: ['Malai Kulfi', 'Chocolate', 'Kesar Badam', 'Vanilla'],
+        proteins: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi', 'Vanilla'],
+        preworkouts: ['Watermelon', 'Fruit Punch', 'Blue Raspberry'],
+        wellness: ['Unflavoured'],
+        accessories: ['Black', 'Navy Blue', 'Grey']
       };
 
       const availableFlavours = Array.isArray(product.flavours) && product.flavours.length > 0
         ? product.flavours
         : (defaultCategoryFlavours[product.category] || []);
 
-      const query = searchTerm.toLowerCase().trim();
       if (!query) return matchesCategory;
 
       const tokens = query.split(/\s+/).filter(Boolean);
@@ -1138,7 +1141,7 @@ export default function App() {
           onRemoveItem={handleRemoveItem}
           onCheckout={handleOpenCheckout}
           user={user}
-          userOrderCount={user ? userOrders.filter(o => o.orderStatus !== 'cancelled').length : 0}
+          userOrderCount={user ? userOrders.filter(o => o.orderStatus !== 'cancelled' && (o.paymentStatus === 'completed' || o.paymentStatus === 'paid' || o.paymentMethod === 'cod')).length : 0}
           onRequireLogin={(priceDetails) => {
             setPendingCheckoutDetails(priceDetails);
             setIsCartOpen(false);

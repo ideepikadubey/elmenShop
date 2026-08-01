@@ -136,56 +136,90 @@ export default function Navbar({
                 padding: '8px'
               }}
             >
-              {productsList
-                .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
-                .slice(0, 5)
-                .map(p => (
-                  <div
-                    key={p._id || p.id}
-                    onClick={() => {
-                      setShowSuggestions(false);
-                      setActiveTab('catalog');
-                      window.dispatchEvent(new CustomEvent('elmen:category', { detail: p.category }));
-                      document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '10px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      transition: 'background 0.2s',
-                      borderBottom: '1px solid var(--bg-dark-700)'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-dark-700)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                  >
-                    <div style={{ width: '40px', height: '40px', borderRadius: '4px', background: 'var(--bg-dark-700)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      {p.image ? (
-                        <img src={p.image.startsWith('http') ? p.image : `${API_BASE_URL}${p.image}`} alt={p.name} style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
-                      ) : (
-                        <div className="jar-graphic" style={{ height: '30px', width: '24px', padding: '1px', borderRadius: '2px', transform: 'scale(0.8)' }}>
-                          <div className="jar-lid" style={{ height: '2px', width: '16px' }}></div>
-                          <div className="jar-label" style={{ background: p.themeColor || 'var(--bg-dark-700)', marginTop: '1px' }} />
+              {(() => {
+                const query = searchTerm.toLowerCase().trim();
+                const defaultCategoryFlavours = {
+                  gainers: ['Malai Kulfi', 'Chocolate', 'Kesar Badam', 'Vanilla'],
+                  proteins: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi', 'Vanilla'],
+                  preworkouts: ['Watermelon', 'Fruit Punch', 'Blue Raspberry'],
+                  wellness: ['Unflavoured'],
+                  accessories: ['Black', 'Navy Blue', 'Grey']
+                };
+                const tokens = query.split(/\s+/).filter(Boolean);
+                const matches = productsList.filter(p => {
+                  const flvs = Array.isArray(p.flavours) && p.flavours.length > 0
+                    ? p.flavours
+                    : (defaultCategoryFlavours[p.category] || []);
+                  const text = [
+                    p.name || '',
+                    p.subtitle || '',
+                    p.category || '',
+                    p.details || '',
+                    p.weight || '',
+                    p.badge || '',
+                    ...flvs
+                  ].join(' ').toLowerCase();
+                  return tokens.every(token => text.includes(token));
+                });
+
+                if (matches.length === 0) {
+                  return (
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', padding: '12px' }}>
+                      No suggestions matching "{searchTerm}".
+                    </div>
+                  );
+                }
+
+                return matches.slice(0, 6).map(p => {
+                  const displayFlavours = Array.isArray(p.flavours) && p.flavours.length > 0
+                    ? p.flavours
+                    : (defaultCategoryFlavours[p.category] || []);
+
+                  return (
+                    <div
+                      key={p._id || p.id}
+                      onClick={() => {
+                        setShowSuggestions(false);
+                        setActiveTab('catalog');
+                        window.dispatchEvent(new CustomEvent('elmen:category', { detail: 'all' }));
+                        document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '10px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s',
+                        borderBottom: '1px solid var(--bg-dark-700)'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-dark-700)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <div style={{ width: '40px', height: '40px', borderRadius: '4px', background: 'var(--bg-dark-700)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {p.image ? (
+                          <img src={p.image.startsWith('http') ? p.image : `${API_BASE_URL}${p.image}`} alt={p.name} style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+                        ) : (
+                          <div className="jar-graphic" style={{ height: '30px', width: '24px', padding: '1px', borderRadius: '2px', transform: 'scale(0.8)' }}>
+                            <div className="jar-lid" style={{ height: '2px', width: '16px' }}></div>
+                            <div className="jar-label" style={{ background: p.themeColor || 'var(--bg-dark-700)', marginTop: '1px' }} />
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '0.9rem', color: 'var(--text-white)', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--primary-yellow)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          {p.category} {displayFlavours.length > 0 ? `• ${displayFlavours.slice(0, 2).join(', ')}` : ''}
                         </div>
-                      )}
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: 'var(--primary-yellow-hover)', fontWeight: '900' }}>
+                        ₹{((p.price && p.price > 0) ? p.price : (p.originalPrice || 0)).toLocaleString('en-IN')}
+                      </div>
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '0.9rem', color: 'var(--text-white)', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{p.category}</div>
-                    </div>
-                    <div style={{ fontSize: '0.9rem', color: 'var(--primary-yellow-hover)', fontWeight: '900' }}>
-                      ₹{((p.price && p.price > 0) ? p.price : (p.originalPrice || 0)).toLocaleString('en-IN')}
-                    </div>
-                  </div>
-                ))
-              }
-              {productsList.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', padding: '12px' }}>
-                  No suggestions matching your search.
-                </div>
-              )}
+                  );
+                });
+              })()}
             </div>
           )}
         </div>

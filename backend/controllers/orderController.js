@@ -102,9 +102,15 @@ const placeOrder = async (req, res) => {
     }
 
     // Delivery fee logic: Free delivery on 1st order, ₹49 from 2nd order onwards
+    // Only count actual completed/paid orders or COD orders (exclude abandoned/unpaid online attempts)
     const existingOrdersCount = await Order.countDocuments({
       user: req.user._id,
-      orderStatus: { $ne: 'cancelled' }
+      orderStatus: { $ne: 'cancelled' },
+      $or: [
+        { paymentStatus: 'completed' },
+        { paymentStatus: 'paid' },
+        { paymentMethod: 'cod' }
+      ]
     });
     const shippingFee = existingOrdersCount === 0 ? 0 : 49;
     const totalAmount = subtotal - discount + shippingFee;
