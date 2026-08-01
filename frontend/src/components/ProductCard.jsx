@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Plus, Heart } from 'lucide-react';
 import { API_BASE_URL } from "../config/api";
 
@@ -9,8 +9,6 @@ export default function ProductCard({
   onAddToCart,
   onQuickView
 }) {
-  const hoverTimerRef = useRef(null);
-
   // Format price helper
   const formatPrice = (amount) => {
     return amount.toLocaleString('en-IN');
@@ -18,25 +16,9 @@ export default function ProductCard({
 
   const isOutOfStock = product.stock !== undefined && Number(product.stock) <= 0;
 
-  const handleMouseEnter = () => {
-    if (onQuickView) {
-      hoverTimerRef.current = setTimeout(() => {
-        onQuickView(product);
-      }, 350); // Automatically open product modal after brief hover
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (hoverTimerRef.current) {
-      clearTimeout(hoverTimerRef.current);
-      hoverTimerRef.current = null;
-    }
-  };
-
   const handleCardClick = (e) => {
     // If user clicked heart or add button, don't trigger card click modal
     if (e.target.closest('button')) return;
-    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     if (onQuickView) onQuickView(product);
   };
 
@@ -44,8 +26,6 @@ export default function ProductCard({
     <div
       className="product-card animate-fade-in"
       style={{ position: 'relative', opacity: isOutOfStock ? 0.85 : 1, cursor: 'pointer' }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       onClick={handleCardClick}
     >
       {isOutOfStock ? (
@@ -70,7 +50,6 @@ export default function ProductCard({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
             onToggleWishlist(product.id || product._id);
           }}
           style={{
@@ -245,7 +224,6 @@ export default function ProductCard({
             }}
             onClick={(e) => {
               e.stopPropagation();
-              if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
               if (!isOutOfStock) onAddToCart(product);
             }}
           >
