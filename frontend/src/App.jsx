@@ -157,6 +157,7 @@ export default function App() {
       console.warn('Backend products fetch failed, using local static data fallback:', err);
     } finally {
       setIsLoadingProducts(false);
+      fetchTickerOffers();
     }
   };
 
@@ -566,12 +567,14 @@ export default function App() {
 
             const offerTickerItems = tickerOffers.map(o => ({
               text: o.discountType === 'percentage'
-                ? `🔥 USE CODE: ${o.code} FOR ${o.discountValue}% OFF`
-                : `🔥 USE CODE: ${o.code} FOR ₹${o.discountValue} OFF`,
+                ? `🔥 USE CODE ${o.code} FOR ${o.discountValue}% OFF (${o.title})`
+                : `🔥 USE CODE ${o.code} FOR ₹${o.discountValue} OFF (${o.title})`,
               isOffer: true
             }));
 
-            const allTickerItems = [...defaultTickerItems, ...offerTickerItems];
+            const allTickerItems = offerTickerItems.length > 0
+              ? [...offerTickerItems, ...defaultTickerItems, ...offerTickerItems]
+              : defaultTickerItems;
 
             return (
               <div className="ticker-tape">

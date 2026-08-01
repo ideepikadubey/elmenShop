@@ -47,7 +47,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
   const [offerForm, setOfferForm] = useState({
     title: '', description: '', code: '', discountType: 'percentage', discountValue: '',
-    startDate: '', endDate: '', targetProducts: []
+    startDate: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
+    targetProducts: []
   });
 
   const getHeaders = () => {
@@ -1206,7 +1208,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 onClick={() => {
                   setOfferForm({
                     title: '', description: '', code: '', discountType: 'percentage', discountValue: '',
-                    startDate: '', endDate: '', targetProducts: []
+                    startDate: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
+                    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
+                    targetProducts: []
                   });
                   setIsOfferModalOpen(true);
                 }}
@@ -1291,6 +1295,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                                     await axios.put(`${API_BASE_URL}/api/offers/${off._id}`, { isActive: !off.isActive }, { headers: getHeaders() });
                                     showSuccess('Offer status updated.');
                                     fetchAdminData();
+                                    if (onRefreshStoreProducts) onRefreshStoreProducts();
                                   } catch (err) {
                                     setErrorMsg('Failed to toggle offer status.');
                                   }
@@ -1307,6 +1312,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                                     await axios.delete(`${API_BASE_URL}/api/offers/${off._id}`, { headers: getHeaders() });
                                     showSuccess('Promotion deleted successfully.');
                                     fetchAdminData();
+                                    if (onRefreshStoreProducts) onRefreshStoreProducts();
                                   } catch (err) {
                                     setErrorMsg('Failed to delete promotion.');
                                   }
@@ -1892,6 +1898,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                   showSuccess('Promotion Coupon created successfully!');
                   setIsOfferModalOpen(false);
                   fetchAdminData();
+                  if (onRefreshStoreProducts) onRefreshStoreProducts();
                 } catch (err) {
                   setErrorMsg(err.response?.data?.message || err.message || 'Failed to create offer.');
                 } finally {

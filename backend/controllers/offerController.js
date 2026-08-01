@@ -42,14 +42,14 @@ exports.getOffers = async (req, res) => {
     // If the request has authorization and role is admin, show all. Otherwise, only show active.
     let query = {};
     if (req.user && req.user.role === 'admin') {
-      // Return all
       query = {};
     } else {
-      // Return only active within the date range
       const now = new Date();
+      // Allow timezone buffer (+24 hours) for start date so offers created for today are immediately active
+      const startDateMax = new Date(now.getTime() + 24 * 60 * 60 * 1000);
       query = {
         isActive: true,
-        startDate: { $lte: now },
+        startDate: { $lte: startDateMax },
         endDate: { $gte: now }
       };
     }
@@ -106,10 +106,11 @@ exports.validateCoupon = async (req, res) => {
     if (!code) return res.status(400).json({ success: false, message: 'Coupon code is required.' });
 
     const now = new Date();
+    const startDateMax = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     const offer = await Offer.findOne({
       code: code.toUpperCase().trim(),
       isActive: true,
-      startDate: { $lte: now },
+      startDate: { $lte: startDateMax },
       endDate:   { $gte: now }
     });
 
