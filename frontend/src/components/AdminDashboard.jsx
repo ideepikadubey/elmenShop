@@ -27,6 +27,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
 
   // Search and Filter states
   const [productSearch, setProductSearch] = useState('');
+  const [productSortOrder, setProductSortOrder] = useState('newest'); // 'newest' | 'oldest'
   const [orderFilter, setOrderFilter] = useState('all');
 
   // Product Add/Edit Modal state
@@ -448,10 +449,21 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const outOfStockCount = products.filter(p => p.stock <= 0).length;
 
   // Filtered lists
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
-    p.category.toLowerCase().includes(productSearch.toLowerCase())
-  );
+  const filteredProducts = products
+    .filter(p =>
+      p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+      p.category.toLowerCase().includes(productSearch.toLowerCase())
+    )
+    .sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      if (dateA !== dateB) {
+        return productSortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+      }
+      const idA = String(a._id || a.id || '');
+      const idB = String(b._id || b.id || '');
+      return productSortOrder === 'newest' ? idB.localeCompare(idA) : idA.localeCompare(idB);
+    });
 
   const filteredOrders = orders.filter(o =>
     orderFilter === 'all' || o.orderStatus === orderFilter
@@ -720,15 +732,38 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
         {/* ── SUB TAB: PRODUCTS INVENTORY ── */}
         {subTab === 'products' && (
           <div>
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-              <div className="search-bar" style={{ flex: 1, maxWidth: '400px', backgroundColor: 'var(--bg-dark-800)', border: '1px solid var(--bg-dark-600)' }}>
-                <input
-                  type="text"
-                  placeholder="Search by name or category..."
-                  value={productSearch}
-                  onChange={(e) => setProductSearch(e.target.value)}
-                  style={{ width: '100%' }}
-                />
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '16px', flex: 1, maxWidth: '600px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="search-bar" style={{ flex: 1, minWidth: '220px', backgroundColor: 'var(--bg-dark-800)', border: '1px solid var(--bg-dark-600)' }}>
+                  <input
+                    type="text"
+                    placeholder="Search by name or category..."
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: 'var(--text-gray)', fontSize: '0.82rem', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Order By:</span>
+                  <select
+                    value={productSortOrder}
+                    onChange={(e) => setProductSortOrder(e.target.value)}
+                    style={{
+                      backgroundColor: 'var(--bg-dark-800)',
+                      color: 'var(--primary-yellow)',
+                      border: '1px solid var(--bg-dark-600)',
+                      borderRadius: '8px',
+                      padding: '8px 14px',
+                      fontSize: '0.85rem',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="newest">✨ Newest First</option>
+                    <option value="oldest">⏳ Oldest First</option>
+                  </select>
+                </div>
               </div>
               <button className="btn btn-primary" style={{ display: 'flex', gap: '8px', alignItems: 'center' }} onClick={handleOpenAddProduct}>
                 <Plus size={16} /> Add Supplement

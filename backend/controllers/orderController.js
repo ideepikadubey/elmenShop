@@ -95,8 +95,12 @@ const placeOrder = async (req, res) => {
       }
     }
 
-    // Free shipping above ₹1000
-    const shippingFee = subtotal - discount >= 1000 ? 0 : 99;
+    // Delivery fee logic: Free delivery on 1st order, ₹49 from 2nd order onwards
+    const existingOrdersCount = await Order.countDocuments({
+      user: req.user._id,
+      orderStatus: { $ne: 'cancelled' }
+    });
+    const shippingFee = existingOrdersCount === 0 ? 0 : 49;
     const totalAmount = subtotal - discount + shippingFee;
 
     // Create the order

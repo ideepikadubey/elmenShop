@@ -3,7 +3,7 @@ import axios from 'axios';
 import { API_BASE_URL } from "../config/api";
 import { X, Trash2, ArrowRight, Tag, LogIn, ChevronDown, ChevronUp, CheckCircle2, Percent, IndianRupee } from 'lucide-react';
 
-export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveItem, onCheckout, user, onRequireLogin }) {
+export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveItem, onCheckout, user, userOrderCount = 0, onRequireLogin }) {
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null); // { code, discountType, discountValue, title }
   const [promoError, setPromoError] = useState('');
@@ -30,7 +30,7 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
     return Math.min(appliedPromo.discountValue, subtotal); // flat
   })();
 
-  const deliveryCharges = subtotal > 1500 || subtotal === 0 ? 0 : 150;
+  const deliveryCharges = (userOrderCount === 0 || subtotal === 0) ? 0 : 49;
   const finalTotal = subtotal - discountAmount + deliveryCharges;
 
   // Validate coupon via backend (one coupon only)
@@ -359,9 +359,17 @@ export default function CartDrawer({ cartItems, onClose, onUpdateQty, onRemoveIt
                   <span>-₹{formatPrice(discountAmount)}</span>
                 </div>
               )}
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>Delivery Charges</span>
-                <span style={{ fontWeight: 600, color: '#0f172a' }}>{deliveryCharges === 0 ? 'FREE' : `₹${formatPrice(deliveryCharges)}`}</span>
+                <span style={{ fontWeight: 600, color: '#0f172a' }}>
+                  {deliveryCharges === 0 ? (
+                    <span style={{ background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800 }}>
+                      FREE (First Order)
+                    </span>
+                  ) : (
+                    `₹${formatPrice(deliveryCharges)}`
+                  )}
+                </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', fontWeight: 900, color: '#d97706', paddingTop: '8px', borderTop: '1px solid #cbd5e1', marginTop: '4px' }}>
                 <span>Estimated Total</span>

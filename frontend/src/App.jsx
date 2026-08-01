@@ -1054,6 +1054,7 @@ export default function App() {
           onRemoveItem={handleRemoveItem}
           onCheckout={handleOpenCheckout}
           user={user}
+          userOrderCount={user ? userOrders.filter(o => o.orderStatus !== 'cancelled').length : 0}
           onRequireLogin={(priceDetails) => {
             setPendingCheckoutDetails(priceDetails);
             setIsCartOpen(false);
