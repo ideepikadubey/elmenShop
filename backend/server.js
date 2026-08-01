@@ -16,6 +16,7 @@ const offerRoutes     = require('./routes/offers');
 const reviewRoutes    = require('./routes/reviews');
 const instagramRoutes    = require('./routes/instagram');
 const verificationRoutes = require('./routes/verification');
+const leadRoutes         = require('./routes/leads');
 
 // Connect to MongoDB
 connectDB();
@@ -71,6 +72,7 @@ app.use('/api/offers',       offerRoutes);
 app.use('/api/reviews',      reviewRoutes);
 app.use('/api/instagram',    instagramRoutes);
 app.use('/api/verification', verificationRoutes);
+app.use('/api/leads',        leadRoutes);
 
 // ── Health Check ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

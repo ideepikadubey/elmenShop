@@ -18,15 +18,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to VPS
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || secrets.PORT || 22 }}
-          timeout: 120s
+          port: ${{ secrets.VPS_PORT || 22 }}
+          timeout: 30m
           command_timeout: 30m
-          keepalive: 30s
           debug: true
 
           script: |
@@ -43,13 +42,13 @@ jobs:
 
             echo "Building Frontend..."
             cd frontend
-            npm ci
+            npm install
             npm run build
             cd ..
 
             echo "Installing & Restarting Backend..."
             cd backend
-            npm ci --omit=dev
+            npm install --omit=dev
             cd ..
             pm2 restart elmenshop --update-env || pm2 start backend/server.js --name elmenshop
 

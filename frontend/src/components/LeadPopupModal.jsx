@@ -52,13 +52,14 @@ export default function LeadPopupModal() {
     setErrorMsg('');
 
     try {
-      // Send lead to backend API or WhatsApp redirect
-      await axios.post(`${API_BASE_URL}/api/offers`, {
-        code: 'WELCOME10',
-        title: `Popup Lead: ${cleanPhone}`,
-        discountType: 'percentage',
-        discountValue: 10
-      }).catch(() => { }); // Fallback silently if route varies
+      // Send lead to backend API
+      await axios.post(`${API_BASE_URL}/api/leads`, {
+        phone: cleanPhone,
+        source: 'WELCOME10_POPUP',
+        couponCode: 'WELCOME10'
+      }).catch((err) => {
+        console.warn('Lead submit fallback:', err);
+      });
 
       setIsSuccess(true);
       sessionStorage.setItem('elmen_lead_popup_seen', 'true');

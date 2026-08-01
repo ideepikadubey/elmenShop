@@ -18,6 +18,8 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const [orders, setOrders] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
   const [offers, setOffers] = useState([]);
+  const [leads, setLeads] = useState([]);
+  const [leadSearch, setLeadSearch] = useState('');
   const [users, setUsers] = useState([]);
   const [excelFile, setExcelFile] = useState(null);
   const [isUploadingExcel, setIsUploadingExcel] = useState(false);
@@ -121,6 +123,18 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       const offData = offRes.data;
       if (offData.success) {
         setOffers(offData.offers);
+      }
+
+      // Fetch leads
+      try {
+        const leadRes = await axios.get(`${API_BASE_URL}/api/leads`, {
+          headers: getHeaders()
+        });
+        if (leadRes.data && leadRes.data.success) {
+          setLeads(leadRes.data.leads);
+        }
+      } catch (e) {
+        console.warn('Leads fetch error:', e);
       }
 
       // Fetch users
@@ -759,6 +773,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
           <button className={`admin-tab-btn ${subTab === 'offers' ? 'active' : ''}`} onClick={() => setSubTab('offers')}>
             PROMOTIONS & OFFERS ({offers.length})
           </button>
+          <button className={`admin-tab-btn ${subTab === 'leads' ? 'active' : ''}`} onClick={() => setSubTab('leads')}>
+            📱 POPUP LEADS ({leads.length})
+          </button>
           <button className={`admin-tab-btn ${subTab === 'verification' ? 'active' : ''}`} onClick={() => setSubTab('verification')}>
             🛡️ CODES VERIFICATION ({verificationStats ? verificationStats.totalCount : 0})
           </button>
@@ -815,6 +832,16 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 <div>
                   <span style={{ color: 'var(--text-gray)', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Active Catalog Items</span>
                   <div className="admin-stat-val">{products.length}</div>
+                </div>
+              </div>
+
+              <div className="admin-stat-card" style={{ cursor: 'pointer' }} onClick={() => setSubTab('leads')}>
+                <div className="admin-stat-icon" style={{ color: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)' }}>
+                  <User size={24} />
+                </div>
+                <div>
+                  <span style={{ color: 'var(--text-gray)', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Captured Popup Leads</span>
+                  <div className="admin-stat-val" style={{ color: '#10b981' }}>{leads.length}</div>
                 </div>
               </div>
 
@@ -1424,6 +1451,158 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                         </tr>
                       );
                     })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        {/* ── SUB TAB: POPUP LEADS ── */}
+        {subTab === 'leads' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+              <div>
+                <h3 style={{ textTransform: 'uppercase', fontWeight: 900, margin: 0 }}>
+                  📱 Captured VIP Popup Leads ({leads.length})
+                </h3>
+                <p style={{ color: 'var(--text-gray)', fontSize: '0.85rem', margin: '4px 0 0 0' }}>
+                  Mobile numbers submitted via the VIP Welcome Popup coupon form.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  placeholder="Search phone number..."
+                  value={leadSearch}
+                  onChange={(e) => setLeadSearch(e.target.value)}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--bg-dark-600)',
+                    backgroundColor: 'var(--bg-dark-700)',
+                    color: '#fff',
+                    fontSize: '0.85rem'
+                  }}
+                />
+                <button
+                  className="btn btn-secondary"
+                  style={{ display: 'flex', gap: '6px', alignItems: 'center', fontSize: '0.8rem' }}
+                  onClick={() => {
+                    const csvContent = "data:text/csv;charset=utf-8,"
+                      + ["Phone Number,Source,Coupon Code,Status,Captured Date"].join(",") + "\n"
+                      + leads.map(l => `"${l.phone}","${l.source}","${l.couponCode}","${l.status}","${new Date(l.createdAt).toLocaleString()}"`).join("\n");
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", `elmen_popup_leads_${new Date().toISOString().slice(0,10)}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                >
+                  📥 Export CSV
+                </button>
+              </div>
+            </div>
+
+            {leads.length === 0 ? (
+              <p style={{ color: 'var(--text-gray)', textAlign: 'center', padding: '40px' }}>No popup leads captured yet.</p>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Mobile Number</th>
+                      <th>Source / Offer</th>
+                      <th>Captured Date</th>
+                      <th>Status</th>
+                      <th style={{ textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {leads
+                      .filter(l => l.phone.includes(leadSearch))
+                      .map((lead) => (
+                        <tr key={lead._id}>
+                          <td style={{ fontWeight: 'bold', fontSize: '1rem', color: 'var(--primary-yellow)' }}>
+                            <a
+                              href={`https://wa.me/91${lead.phone}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{ color: 'var(--primary-yellow)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                            >
+                              💬 +91 {lead.phone}
+                            </a>
+                          </td>
+                          <td>
+                            <span className="admin-badge" style={{ backgroundColor: 'rgba(255, 190, 0, 0.1)', color: 'var(--primary-yellow)' }}>
+                              {lead.couponCode || 'WELCOME10'}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: '0.8rem', color: 'var(--text-gray)' }}>
+                            {new Date(lead.createdAt).toLocaleString()}
+                          </td>
+                          <td>
+                            <select
+                              value={lead.status || 'new'}
+                              onChange={async (e) => {
+                                try {
+                                  await axios.put(`${API_BASE_URL}/api/leads/${lead._id}`, { status: e.target.value }, { headers: getHeaders() });
+                                  setSuccessMsg('Lead status updated.');
+                                  setTimeout(() => setSuccessMsg(''), 3000);
+                                  fetchAdminData();
+                                } catch (err) {
+                                  setErrorMsg('Failed to update lead status.');
+                                }
+                              }}
+                              style={{
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                backgroundColor: 'var(--bg-dark-700)',
+                                color: lead.status === 'converted' ? '#27ae60' : lead.status === 'contacted' ? '#e65100' : '#fff',
+                                border: '1px solid var(--bg-dark-600)',
+                                fontSize: '0.78rem',
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              <option value="new">🆕 New</option>
+                              <option value="contacted">📞 Contacted</option>
+                              <option value="converted">✅ Converted</option>
+                              <option value="archived">📁 Archived</option>
+                            </select>
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                              <a
+                                className="btn btn-secondary"
+                                style={{ padding: '4px 8px', fontSize: '0.75rem', textDecoration: 'none' }}
+                                href={`https://wa.me/91${lead.phone}?text=Hi%2C%20this%20is%20EL%20MEN%20Nutrition!`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                WhatsApp
+                              </a>
+                              <button
+                                className="btn-icon"
+                                style={{ color: 'var(--primary-red)' }}
+                                onClick={async () => {
+                                  if (!window.confirm(`Delete lead +91 ${lead.phone}?`)) return;
+                                  try {
+                                    await axios.delete(`${API_BASE_URL}/api/leads/${lead._id}`, { headers: getHeaders() });
+                                    setSuccessMsg('Lead deleted.');
+                                    setTimeout(() => setSuccessMsg(''), 3000);
+                                    fetchAdminData();
+                                  } catch (err) {
+                                    setErrorMsg('Failed to delete lead.');
+                                  }
+                                }}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
