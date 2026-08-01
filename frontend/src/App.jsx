@@ -457,7 +457,7 @@ export default function App() {
   const filteredProducts = [...productsList]
     .filter((product) => {
       const query = searchTerm.toLowerCase().trim();
-      const matchesCategory = !query || activeCategory === 'all' || product.category === activeCategory;
+      const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
       
       const defaultCategoryFlavours = {
         gainers: ['Malai Kulfi', 'Chocolate', 'Kesar Badam', 'Vanilla'],

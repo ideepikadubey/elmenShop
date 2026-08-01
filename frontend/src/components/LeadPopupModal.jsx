@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Sparkles, Phone, Check, ArrowRight } from 'lucide-react';
+import { X, Sparkles, Phone, Check, ArrowRight, Copy } from 'lucide-react';
 import axios from 'axios';
 import { API_BASE_URL } from "../config/api";
 
@@ -9,6 +9,13 @@ export default function LeadPopupModal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText('WELCOME10');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     // Check if user has already seen or closed the popup in this session
@@ -63,12 +70,6 @@ export default function LeadPopupModal() {
 
       setIsSuccess(true);
       sessionStorage.setItem('elmen_lead_popup_seen', 'true');
-
-      setTimeout(() => {
-        // Open WhatsApp with welcome offer
-        window.open(`https://wa.me/91${cleanPhone}?text=Hi%20EL%20MEN%20Nutrition%2C%20I%20claimed%20my%2010%25%20OFF%20VIP%20Coupon!`, '_blank');
-      }, 1200);
-
     } catch (err) {
       console.error('Lead popup error:', err);
       setIsSuccess(true);
@@ -206,12 +207,88 @@ export default function LeadPopupModal() {
           </p>
 
           {isSuccess ? (
-            <div style={{ backgroundColor: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '14px', padding: '16px', textAlign: 'center', animation: 'fadeIn 0.3s ease' }}>
-              <div style={{ width: '42px', height: '42px', backgroundColor: '#22c55e', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
-                <Check size={22} />
+            <div style={{ backgroundColor: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '16px', padding: '20px 16px', textAlign: 'center', animation: 'fadeIn 0.3s ease' }}>
+              <div style={{ width: '48px', height: '48px', backgroundColor: '#22c55e', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' }}>
+                <Check size={26} strokeWidth={3} />
               </div>
-              <h4 style={{ margin: '0 0 4px 0', color: '#14532d', fontSize: '1rem', fontWeight: 800 }}>VIP Offer Unlocked!</h4>
-              <p style={{ margin: 0, color: '#166534', fontSize: '0.82rem' }}>Redirecting to WhatsApp to claim your 10% coupon code...</p>
+
+              <h4 style={{ margin: '0 0 6px 0', color: '#14532d', fontSize: '1.1rem', fontWeight: 900 }}>
+                🎉 VIP OFFER UNLOCKED!
+              </h4>
+              <p style={{ margin: '0 0 16px 0', color: '#166534', fontSize: '0.82rem', lineHeight: 1.4 }}>
+                Your 10% OFF discount coupon code is ready. Use it at checkout to claim your savings!
+              </p>
+
+              {/* Coupon Box with Copy Button */}
+              <div style={{
+                backgroundColor: '#ffffff',
+                border: '2px dashed #22c55e',
+                borderRadius: '12px',
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px',
+                marginBottom: '16px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+              }}>
+                <div style={{ textAlign: 'left' }}>
+                  <span style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>
+                    ACTIVE COUPON CODE
+                  </span>
+                  <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#0f172a', letterSpacing: '1px', fontFamily: 'monospace' }}>
+                    WELCOME10
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  style={{
+                    backgroundColor: copied ? '#22c55e' : '#0f172a',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '8px 14px',
+                    fontWeight: 800,
+                    fontSize: '0.78rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.2s ease',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy Code</>}
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const cleanP = phone.trim().replace(/\D/g, '');
+                  window.open(`https://wa.me/91${cleanP}?text=Hi%20EL%20MEN%20Nutrition%2C%20I%20claimed%20my%2010%25%20OFF%20VIP%20Coupon!`, '_blank');
+                }}
+                style={{
+                  width: '100%',
+                  padding: '11px 16px',
+                  borderRadius: '10px',
+                  backgroundColor: '#25D366',
+                  color: '#ffffff',
+                  border: 'none',
+                  fontWeight: 800,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: '0 4px 12px rgba(37, 211, 102, 0.25)'
+                }}
+              >
+                💬 Claim via WhatsApp
+              </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
