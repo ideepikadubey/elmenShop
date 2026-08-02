@@ -1715,11 +1715,15 @@ footer {
 
 @media (max-width: 768px) {
   header {
-    height: 70px;
+    height: auto !important;
   }
   .navbar-container {
-    height: 70px;
+    height: 60px !important;
     padding: 0 16px;
+  }
+  .mobile-search-row {
+    display: block !important;
+    padding: 0 16px 10px 16px;
   }
   .sub-navbar {
     height: 0;
@@ -1740,7 +1744,7 @@ footer {
     display: flex;
     flex-direction: column;
     position: absolute;
-    top: 70px;
+    top: 110px;
     left: 0;
     right: 0;
     background-color: var(--bg-dark-900);
@@ -1757,11 +1761,6 @@ footer {
   }
   .mobile-nav-toggle {
     display: block;
-  }
-  .mobile-search-trigger-btn {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
   }
   .hero-grid {
     grid-template-columns: 1fr;

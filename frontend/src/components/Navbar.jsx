@@ -239,21 +239,6 @@ export default function Navbar({
         </div>
 
         <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {/* Mobile Search Icon Trigger */}
-          <button
-            className="cart-icon-btn mobile-search-trigger-btn"
-            onClick={() => {
-              setIsMobileMenuOpen(true);
-              setTimeout(() => {
-                const mobileInput = mobileSearchContainerRef.current?.querySelector('input');
-                if (mobileInput) mobileInput.focus();
-              }, 100);
-            }}
-            aria-label="Open Search"
-          >
-            <Search size={20} />
-          </button>
-
           {/* Wishlist Icon Button */}
           <button
             className="cart-icon-btn"
@@ -315,169 +300,168 @@ export default function Navbar({
         </div>
       </div>
 
+      {/* Mobile Dedicated Search Bar Row */}
+      <div className="mobile-search-row">
+        <div
+          className="search-bar"
+          ref={mobileSearchContainerRef}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
+            backgroundColor: '#ffffff',
+            border: '1.5px solid var(--bg-dark-600)',
+            borderRadius: '30px',
+            padding: '8px 16px',
+            position: 'relative'
+          }}
+        >
+          <Search size={16} style={{ color: '#666666', marginRight: '8px', flexShrink: 0 }} />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onFocus={() => setShowSuggestions(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setShowSuggestions(false);
+                if (activeTab !== 'catalog') {
+                  setActiveTab('catalog');
+                }
+                document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                e.target.blur();
+              }
+            }}
+            onChange={(e) => {
+              onSearchChange(e.target.value);
+              setShowSuggestions(true);
+              if (activeTab !== 'catalog') {
+                setActiveTab('catalog');
+                document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              outline: 'none',
+              color: '#121212',
+              width: '100%',
+              fontSize: '0.9rem',
+              fontWeight: '500'
+            }}
+          />
+          {showSuggestions && searchTerm.trim() && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                backgroundColor: '#ffffff',
+                border: '1px solid var(--bg-dark-600)',
+                borderRadius: '8px',
+                marginTop: '8px',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+                zIndex: 1000,
+                maxHeight: '300px',
+                overflowY: 'auto',
+                padding: '8px'
+              }}
+            >
+              {(() => {
+                const query = searchTerm.toLowerCase().trim();
+                const defaultCategoryFlavours = {
+                  gainers: ['Malai Kulfi', 'Chocolate', 'Kesar Badam', 'Vanilla'],
+                  proteins: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi', 'Vanilla'],
+                  preworkouts: ['Watermelon', 'Fruit Punch', 'Blue Raspberry'],
+                  wellness: ['Unflavoured'],
+                  accessories: ['Black', 'Navy Blue', 'Grey']
+                };
+                const tokens = query.split(/\s+/).filter(Boolean);
+                const matches = productsList.filter(p => {
+                  const flvs = Array.isArray(p.flavours) && p.flavours.length > 0
+                    ? p.flavours
+                    : (defaultCategoryFlavours[p.category] || []);
+                  const text = [
+                    p.name || '',
+                    p.subtitle || '',
+                    p.category || '',
+                    p.details || '',
+                    p.weight || '',
+                    p.badge || '',
+                    ...flvs
+                  ].join(' ').toLowerCase();
+                  return tokens.every(token => text.includes(token));
+                });
+
+                if (matches.length === 0) {
+                  return (
+                    <div style={{ fontSize: '0.8rem', color: '#666666', textAlign: 'center', padding: '12px' }}>
+                      No suggestions matching "{searchTerm}".
+                    </div>
+                  );
+                }
+
+                return matches.slice(0, 6).map(p => {
+                  const displayFlavours = Array.isArray(p.flavours) && p.flavours.length > 0
+                    ? p.flavours
+                    : (defaultCategoryFlavours[p.category] || []);
+
+                  return (
+                    <div
+                      key={p._id || p.id}
+                      onClick={() => {
+                        setShowSuggestions(false);
+                        setIsMobileMenuOpen(false);
+                        setActiveTab('catalog');
+                        window.dispatchEvent(new CustomEvent('elmen:category', { detail: 'all' }));
+                        document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '10px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s',
+                        borderBottom: '1px solid #f0f0f0'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <div style={{ width: '40px', height: '40px', borderRadius: '4px', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {p.image ? (
+                          <img src={p.image.startsWith('http') ? p.image : `${API_BASE_URL}${p.image}`} alt={p.name} style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+                        ) : (
+                          <div className="jar-graphic" style={{ height: '30px', width: '24px', padding: '1px', borderRadius: '2px', transform: 'scale(0.8)' }}>
+                            <div className="jar-lid" style={{ height: '2px', width: '16px' }}></div>
+                            <div className="jar-label" style={{ background: p.themeColor || 'var(--bg-dark-700)', marginTop: '1px' }} />
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '0.9rem', color: '#121212', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          {p.category} {displayFlavours.length > 0 ? `• ${displayFlavours.slice(0, 2).join(', ')}` : ''}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#b45309', fontWeight: '900' }}>
+                        ₹{((p.price && p.price > 0) ? p.price : (p.originalPrice || 0)).toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Row 2: Sub-Navbar */}
       <nav className="sub-navbar">
         <div className="container sub-navbar-container">
           <ul className={`sub-nav-links ${isMobileMenuOpen ? 'open' : ''}`}>
-
-            {/* Mobile-only Search Bar */}
-            <li className="mobile-search-item" style={{ width: '100%', marginBottom: '10px' }}>
-              <div
-                className="search-bar"
-                ref={mobileSearchContainerRef}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  width: '100%',
-                  backgroundColor: '#ffffff',
-                  border: '1.5px solid var(--bg-dark-600)',
-                  borderRadius: '30px',
-                  padding: '8px 16px',
-                  position: 'relative'
-                }}
-              >
-                <Search size={16} style={{ color: '#666666', marginRight: '8px', flexShrink: 0 }} />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchTerm}
-                  onFocus={() => setShowSuggestions(true)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setShowSuggestions(false);
-                      setIsMobileMenuOpen(false);
-                      if (activeTab !== 'catalog') {
-                        setActiveTab('catalog');
-                      }
-                      document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-                      e.target.blur();
-                    }
-                  }}
-                  onChange={(e) => {
-                    onSearchChange(e.target.value);
-                    setShowSuggestions(true);
-                    if (activeTab !== 'catalog') {
-                      setActiveTab('catalog');
-                      document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    outline: 'none',
-                    color: '#121212',
-                    width: '100%',
-                    fontSize: '0.9rem',
-                    fontWeight: '500'
-                  }}
-                />
-                {showSuggestions && searchTerm.trim() && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: 0,
-                      right: 0,
-                      backgroundColor: '#ffffff',
-                      border: '1px solid var(--bg-dark-600)',
-                      borderRadius: '8px',
-                      marginTop: '8px',
-                      boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
-                      zIndex: 1000,
-                      maxHeight: '300px',
-                      overflowY: 'auto',
-                      padding: '8px'
-                    }}
-                  >
-                    {(() => {
-                      const query = searchTerm.toLowerCase().trim();
-                      const defaultCategoryFlavours = {
-                        gainers: ['Malai Kulfi', 'Chocolate', 'Kesar Badam', 'Vanilla'],
-                        proteins: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi', 'Vanilla'],
-                        preworkouts: ['Watermelon', 'Fruit Punch', 'Blue Raspberry'],
-                        wellness: ['Unflavoured'],
-                        accessories: ['Black', 'Navy Blue', 'Grey']
-                      };
-                      const tokens = query.split(/\s+/).filter(Boolean);
-                      const matches = productsList.filter(p => {
-                        const flvs = Array.isArray(p.flavours) && p.flavours.length > 0
-                          ? p.flavours
-                          : (defaultCategoryFlavours[p.category] || []);
-                        const text = [
-                          p.name || '',
-                          p.subtitle || '',
-                          p.category || '',
-                          p.details || '',
-                          p.weight || '',
-                          p.badge || '',
-                          ...flvs
-                        ].join(' ').toLowerCase();
-                        return tokens.every(token => text.includes(token));
-                      });
-
-                      if (matches.length === 0) {
-                        return (
-                          <div style={{ fontSize: '0.8rem', color: '#666666', textAlign: 'center', padding: '12px' }}>
-                            No suggestions matching "{searchTerm}".
-                          </div>
-                        );
-                      }
-
-                      return matches.slice(0, 6).map(p => {
-                        const displayFlavours = Array.isArray(p.flavours) && p.flavours.length > 0
-                          ? p.flavours
-                          : (defaultCategoryFlavours[p.category] || []);
-
-                        return (
-                          <div
-                            key={p._id || p.id}
-                            onClick={() => {
-                              setShowSuggestions(false);
-                              setIsMobileMenuOpen(false);
-                              setActiveTab('catalog');
-                              window.dispatchEvent(new CustomEvent('elmen:category', { detail: 'all' }));
-                              document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-                            }}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '12px',
-                              padding: '10px',
-                              borderRadius: '6px',
-                              cursor: 'pointer',
-                              transition: 'background 0.2s',
-                              borderBottom: '1px solid #f0f0f0'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                          >
-                            <div style={{ width: '40px', height: '40px', borderRadius: '4px', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                              {p.image ? (
-                                <img src={p.image.startsWith('http') ? p.image : `${API_BASE_URL}${p.image}`} alt={p.name} style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
-                              ) : (
-                                <div className="jar-graphic" style={{ height: '30px', width: '24px', padding: '1px', borderRadius: '2px', transform: 'scale(0.8)' }}>
-                                  <div className="jar-lid" style={{ height: '2px', width: '16px' }}></div>
-                                  <div className="jar-label" style={{ background: p.themeColor || 'var(--bg-dark-700)', marginTop: '1px' }} />
-                                </div>
-                              )}
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: '0.9rem', color: '#121212', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
-                              <div style={{ fontSize: '0.75rem', color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                {p.category} {displayFlavours.length > 0 ? `• ${displayFlavours.slice(0, 2).join(', ')}` : ''}
-                              </div>
-                            </div>
-                            <div style={{ fontSize: '0.9rem', color: '#b45309', fontWeight: '900' }}>
-                              ₹{((p.price && p.price > 0) ? p.price : (p.originalPrice || 0)).toLocaleString('en-IN')}
-                            </div>
-                          </div>
-                        );
-                      });
-                    })()}
-                  </div>
-                )}
-              </div>
-            </li>
 
             {/* ALL PRODUCTS with category mega-dropdown */}
             <li className="has-dropdown" ref={dropdownRef}>
