@@ -1713,7 +1713,15 @@ footer {
   }
 }
 
+.hero-section {
+  position: relative;
+  padding-top: 135px;
+}
+
 @media (max-width: 768px) {
+  .hero-section {
+    padding-top: 115px;
+  }
   header {
     height: auto !important;
   }
