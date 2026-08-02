@@ -189,6 +189,10 @@ header.scrolled .navbar-container {
   margin: 0 auto;
 }
 
+.mobile-search-trigger-btn {
+  display: none;
+}
+
 .sub-navbar {
   background-color: var(--bg-dark-800);
   border-top: 1px solid var(--bg-dark-700);
@@ -1753,6 +1757,11 @@ footer {
   }
   .mobile-nav-toggle {
     display: block;
+  }
+  .mobile-search-trigger-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
   }
   .hero-grid {
     grid-template-columns: 1fr;

@@ -485,9 +485,7 @@ export default function App() {
         ...availableFlavours
       ].join(' ').toLowerCase();
 
-      const matchesSearch = tokens.every(token => searchableText.includes(token));
-
-      return matchesCategory && matchesSearch;
+      return matchesSearch;
     })
     .sort((a, b) => {
       if (sortBy === 'price-low') {

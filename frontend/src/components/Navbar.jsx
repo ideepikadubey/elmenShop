@@ -112,6 +112,16 @@ export default function Navbar({
             placeholder="Search products..."
             value={searchTerm}
             onFocus={() => setShowSuggestions(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setShowSuggestions(false);
+                if (activeTab !== 'catalog') {
+                  setActiveTab('catalog');
+                }
+                document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                e.target.blur();
+              }
+            }}
             onChange={(e) => {
               onSearchChange(e.target.value);
               setShowSuggestions(true);
@@ -229,6 +239,21 @@ export default function Navbar({
         </div>
 
         <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {/* Mobile Search Icon Trigger */}
+          <button
+            className="cart-icon-btn mobile-search-trigger-btn"
+            onClick={() => {
+              setIsMobileMenuOpen(true);
+              setTimeout(() => {
+                const mobileInput = mobileSearchContainerRef.current?.querySelector('input');
+                if (mobileInput) mobileInput.focus();
+              }, 100);
+            }}
+            aria-label="Open Search"
+          >
+            <Search size={20} />
+          </button>
+
           {/* Wishlist Icon Button */}
           <button
             className="cart-icon-btn"
@@ -317,6 +342,17 @@ export default function Navbar({
                   placeholder="Search products..."
                   value={searchTerm}
                   onFocus={() => setShowSuggestions(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setShowSuggestions(false);
+                      setIsMobileMenuOpen(false);
+                      if (activeTab !== 'catalog') {
+                        setActiveTab('catalog');
+                      }
+                      document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                      e.target.blur();
+                    }
+                  }}
                   onChange={(e) => {
                     onSearchChange(e.target.value);
                     setShowSuggestions(true);
