@@ -485,6 +485,8 @@ export default function App() {
         ...availableFlavours
       ].join(' ').toLowerCase();
 
+      const matchesSearch = tokens.every(token => searchableText.includes(token));
+
       return matchesSearch;
     })
     .sort((a, b) => {
