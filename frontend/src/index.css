@@ -1718,7 +1718,13 @@ footer {
     padding: 0 16px;
   }
   .sub-navbar {
-    display: none !important;
+    height: 0;
+    min-height: 0;
+    border: none;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    overflow: visible;
   }
   .centered-search {
     display: none !important;
