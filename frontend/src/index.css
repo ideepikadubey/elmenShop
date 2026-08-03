@@ -193,6 +193,10 @@ header.scrolled .navbar-container {
   display: none;
 }
 
+.mobile-search-row {
+  display: none;
+}
+
 .sub-navbar {
   background-color: var(--bg-dark-800);
   border-top: 1px solid var(--bg-dark-700);
