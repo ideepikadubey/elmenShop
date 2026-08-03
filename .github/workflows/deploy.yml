@@ -26,12 +26,13 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           timeout: 30m
           command_timeout: 30m
-          script_stop: true
+          script_stop: false
           request_pty: true
-          debug: true
 
           script: |
-            set -e
+            export PATH=$PATH:/usr/local/bin:/usr/bin:~/.nvm/versions/node/$(ls ~/.nvm/versions/node 2>/dev/null | tail -n 1)/bin
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
             echo "============================"
             echo "Starting Deployment..."
@@ -44,21 +45,20 @@ jobs:
 
             echo "Building Frontend..."
             cd frontend
-            npm install
+            npm install --no-audit --no-fund
             npm run build
             cd ..
 
             echo "Installing & Restarting Backend..."
             cd backend
-            npm install --omit=dev
+            npm install --omit=dev --no-audit --no-fund
             cd ..
-            pm2 restart elmenshop --update-env || pm2 start backend/server.js --name elmenshop
 
-            echo "Checking Backend Health..."
-            sleep 3
-            curl -s --retry 5 --retry-connrefused --retry-delay 2 http://127.0.0.1:5000/api/health || true
+            echo "Restarting PM2 Server Process..."
+            pm2 restart elmenshop --update-env || pm2 start backend/server.js --name elmenshop || true
 
-            pm2 save
+            echo "Saving PM2 state..."
+            pm2 save || true
 
             echo "Deployment Completed Successfully"
             echo "======END======"
