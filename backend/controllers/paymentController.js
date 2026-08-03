@@ -2,6 +2,7 @@ const crypto  = require('crypto');
 const Razorpay = require('razorpay');
 const Payment  = require('../models/Payment');
 const Order    = require('../models/Order');
+const { sendOrderEmail } = require('../config/mailer');
 
 // Initialise Razorpay client (will use real keys when provided)
 const getRazorpay = () => {
@@ -112,16 +113,22 @@ const verifyPayment = async (req, res) => {
     if (!process.env.RAZORPAY_KEY_SECRET ||
         process.env.RAZORPAY_KEY_SECRET === 'your_razorpay_key_secret_here') {
 
-      await Order.findByIdAndUpdate(orderId, {
+      const updatedOrder = await Order.findByIdAndUpdate(orderId, {
         paymentStatus:     'paid',
         orderStatus:       'confirmed',
         razorpayPaymentId: razorpayPaymentId || 'mock_payment'
-      });
+      }, { new: true });
 
       await Payment.findOneAndUpdate(
         { razorpayOrderId },
         { status: 'captured', razorpayPaymentId: razorpayPaymentId || 'mock_payment' }
       );
+
+      if (updatedOrder) {
+        sendOrderEmail(updatedOrder, req.user).catch(err => {
+          console.error('Email error on payment verify:', err?.message || err);
+        });
+      }
 
       return res.json({
         success: true,
@@ -141,16 +148,22 @@ const verifyPayment = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Payment verification failed. Invalid signature.' });
     }
 
-    await Order.findByIdAndUpdate(orderId, {
+    const updatedOrder = await Order.findByIdAndUpdate(orderId, {
       paymentStatus:     'paid',
       orderStatus:       'confirmed',
       razorpayPaymentId
-    });
+    }, { new: true });
 
     await Payment.findOneAndUpdate(
       { razorpayOrderId },
       { status: 'captured', razorpayPaymentId, razorpaySignature }
     );
+
+    if (updatedOrder) {
+      sendOrderEmail(updatedOrder, req.user).catch(err => {
+        console.error('Email error on payment verify:', err?.message || err);
+      });
+    }
 
     res.json({ success: true, message: 'Payment verified successfully.' });
   } catch (error) {

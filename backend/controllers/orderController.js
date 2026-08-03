@@ -3,6 +3,7 @@ const Product = require('../models/Product');
 const Offer = require('../models/Offer');
 const axios = require('axios');
 const mongoose = require('mongoose');
+const { sendOrderEmail } = require('../config/mailer');
 
 
 // Valid coupon codes
@@ -147,6 +148,13 @@ const placeOrder = async (req, res) => {
     setTimeout(() => {
       pushOrderToIThink(order, req.user).catch(err => {
         console.error('Background iThink order push error:', err?.message || err);
+      });
+    }, 0);
+
+    // Send Email Notification to elmenindia@gmail.com & customer (Async Non-Blocking)
+    setTimeout(() => {
+      sendOrderEmail(order, req.user).catch(err => {
+        console.error('Background order email error:', err?.message || err);
       });
     }, 0);
 

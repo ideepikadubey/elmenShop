@@ -754,7 +754,7 @@ export default function Navbar({
                   href="#admin"
                   className={activeTab === 'admin' ? 'active' : ''}
                   onClick={(e) => { e.preventDefault(); setActiveTab('admin'); }}
-                  style={{ color: 'var(--primary-yellow)', fontWeight: '900', border: '1px dashed var(--primary-yellow)', padding: '6px 12px', borderRadius: '4px' }}
+                  style={{ color: 'var(--primary-yellow)', fontWeight: '900', border: '1px dashed var(--primary-yellow)', padding: '6px 12px', borderRadius: '4px', whiteSpace: 'nowrap' }}
                 >
                   🛠️ ADMIN PANEL
                 </a>
