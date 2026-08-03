@@ -217,33 +217,24 @@ header.scrolled .sub-navbar {
 
 .sub-nav-links {
   display: flex;
-  gap: 16px;
+  gap: 28px;
   list-style: none;
   align-items: center;
   height: 100%;
   margin: 0;
   padding: 0;
   white-space: nowrap;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.sub-nav-links::-webkit-scrollbar {
-  display: none;
 }
 
 .sub-nav-links li {
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .sub-nav-links a {
   color: #1a1a1a;
   text-decoration: none;
-  font-weight: 800;
-  font-size: 0.8rem;
+  font-weight: 700;
+  font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   transition: var(--transition-smooth);
@@ -253,8 +244,7 @@ header.scrolled .sub-navbar {
   line-height: 48px;
   box-sizing: border-box;
   border-bottom: 3px solid transparent;
-  white-space: nowrap !important;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 header.scrolled .sub-nav-links a {
@@ -1738,7 +1728,7 @@ footer {
   padding-top: 135px;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 768px) {
   .hero-section {
     padding-top: 115px;
   }
@@ -2817,7 +2807,7 @@ footer {
 }
 
 /* ── Mobile View Hamburger Menu & Hero Poster Alignment ── */
-@media (max-width: 1080px) {
+@media (max-width: 768px) {
   header {
     overflow: visible !important;
   }

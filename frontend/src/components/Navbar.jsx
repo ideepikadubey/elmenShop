@@ -648,14 +648,6 @@ export default function Navbar({
             </li>
             <li>
               <a
-                href="#my-orders"
-                onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('elmen:openMyOrders')); setIsMobileMenuOpen(false); }}
-              >
-                MY ORDERS
-              </a>
-            </li>
-            <li>
-              <a
                 href="#track-order"
                 className={activeTab === 'track-order' ? 'active' : ''}
                 onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('elmen:openTrackOrder')); setIsMobileMenuOpen(false); }}
