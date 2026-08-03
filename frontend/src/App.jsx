@@ -346,6 +346,22 @@ export default function App() {
     return () => window.removeEventListener('elmen:openTrackOrder', handler);
   }, []);
 
+  // Open my orders profile modal when triggered from hamburger, navbar, footer or checkout
+  useEffect(() => {
+    const handler = () => {
+      const token = localStorage.getItem('elmen_token');
+      if (token) {
+        fetchUserOrders();
+        setIsProfileOpen(true);
+      } else {
+        setAuthPrompt('Please sign in to view your orders and track shipments.');
+        setIsAuthOpen(true);
+      }
+    };
+    window.addEventListener('elmen:openMyOrders', handler);
+    return () => window.removeEventListener('elmen:openMyOrders', handler);
+  }, []);
+
   // Cart operations
   const handleAddToCart = (product, flavourOverride) => {
     const selectedFlavour = flavourOverride || product.selectedFlavour;
@@ -1407,10 +1423,10 @@ export default function App() {
                         onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--bg-dark-700)'}
                       >
                         {/* Order top row */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>ORDER</span>
-                            <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#fff', letterSpacing: '0.5px' }}>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>ORDER ID</span>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary-yellow)', letterSpacing: '0.5px' }}>
                               #{order._id ? order._id.slice(-8).toUpperCase() : 'N/A'}
                             </span>
                           </div>
@@ -1426,6 +1442,18 @@ export default function App() {
                           </span>
                         </div>
 
+                        {/* Tracking ID / AWB details row */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '8px', marginBottom: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                            <strong style={{ color: '#cbd5e1' }}>Tracking ID: </strong>
+                            {order.trackingNumber ? (
+                              <span style={{ color: '#38bdf8', fontWeight: 800 }}>{order.trackingNumber}</span>
+                            ) : (
+                              <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Pending Dispatch (Use Order ID)</span>
+                            )}
+                          </div>
+                        </div>
+
                         {/* Items */}
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-gray)', lineHeight: '1.5', marginBottom: '10px' }}>
                           {order.items ? order.items.map(item => (
@@ -1435,36 +1463,38 @@ export default function App() {
                           )) : '—'}
                         </div>
 
-                        {/* Bottom row: date & total */}
+                        {/* Bottom row: date, track button & total */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid var(--bg-dark-700)', flexWrap: 'wrap', gap: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-muted)', fontSize: '0.72rem' }}>
                             <Calendar size={12} />
                             {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                           </div>
 
-                          {/* If AWB number is attached, show Track button */}
-                          {order.trackingNumber && (
-                            <button
-                              className="btn btn-primary"
-                              onClick={() => {
-                                setIsProfileOpen(false);
-                                setTrackingAwb(order.trackingNumber);
-                                setActiveTab('track-order');
-                              }}
-                              style={{
-                                padding: '4px 10px',
-                                fontSize: '0.7rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                textTransform: 'uppercase',
-                                fontWeight: 800,
-                                borderRadius: '15px'
-                              }}
-                            >
-                              <TruckIcon size={12} /> Track
-                            </button>
-                          )}
+                          <button
+                            className="btn btn-primary"
+                            onClick={() => {
+                              setIsProfileOpen(false);
+                              setTrackingAwb(order.trackingNumber || order._id);
+                              setActiveTab('track-order');
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            style={{
+                              padding: '5px 14px',
+                              fontSize: '0.72rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              textTransform: 'uppercase',
+                              fontWeight: 800,
+                              borderRadius: '20px',
+                              backgroundColor: 'var(--primary-yellow)',
+                              color: '#0f172a',
+                              border: 'none',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <TruckIcon size={12} /> Track Order
+                          </button>
 
                           <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 900, color: 'var(--primary-yellow)', fontSize: '1rem' }}>
                             <IndianRupee size={14} />

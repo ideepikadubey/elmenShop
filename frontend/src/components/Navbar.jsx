@@ -648,6 +648,14 @@ export default function Navbar({
             </li>
             <li>
               <a
+                href="#my-orders"
+                onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('elmen:openMyOrders')); setIsMobileMenuOpen(false); }}
+              >
+                MY ORDERS
+              </a>
+            </li>
+            <li>
+              <a
                 href="#track-order"
                 className={activeTab === 'track-order' ? 'active' : ''}
                 onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('elmen:openTrackOrder')); setIsMobileMenuOpen(false); }}
@@ -860,6 +868,18 @@ export default function Navbar({
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px', background: '#fff', border: 'none', borderBottom: '1px solid #f1f5f9', fontSize: '0.95rem', fontWeight: '800', color: '#0f172a', cursor: 'pointer', width: '100%' }}
             >
               <span>🔥 OFFERS & COUPONS</span>
+            </button>
+
+            <button
+              onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('elmen:openMyOrders')); setIsMobileMenuOpen(false); }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px', background: '#fffbeb', border: 'none', borderBottom: '1px solid #fde68a', fontSize: '0.95rem', fontWeight: '800', color: '#b45309', cursor: 'pointer', width: '100%' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>📦 MY ORDERS</span>
+              </div>
+              <span style={{ fontSize: '0.7rem', background: '#d97706', color: '#ffffff', padding: '3px 8px', borderRadius: '10px', fontWeight: '800' }}>
+                {user ? 'VIEW' : 'LOGIN'}
+              </span>
             </button>
 
             <button
