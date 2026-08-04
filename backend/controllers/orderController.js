@@ -47,13 +47,11 @@ const placeOrder = async (req, res) => {
 
       subtotal += itemPrice * item.quantity;
       orderItems.push({
-        product:  product._id,
-        name:     product.name,
-        price:    itemPrice,
+        product: product._id,
+        name: product.name,
+        price: itemPrice,
         quantity: item.quantity,
-        flavour:  item.flavour || item.selectedFlavour || '',
-        weight:   product.weight || '',
-        image:    product.image
+        image: product.image
       });
     }
 
@@ -121,54 +119,21 @@ const placeOrder = async (req, res) => {
     // Normalize payment method to enum: 'razorpay' | 'cod' | 'upi'
     const validPaymentMethod = paymentMethod === 'cod' ? 'cod' : (paymentMethod === 'upi' ? 'upi' : 'razorpay');
 
-    // Normalize and validate shipping address
-    const sa = shippingAddress || req.body.address || {};
-    const normalizedShippingAddress = {
-      fullName: sa.fullName || sa.name || req.user?.name || 'Customer',
-      phone:    sa.phone || req.user?.phone || '0000000000',
-      email:    sa.email || req.user?.email || 'customer@elmen.in',
-      street:   sa.street || sa.address || sa.line1 || 'N/A',
-      city:     sa.city || 'N/A',
-      state:    sa.state || 'N/A',
-      pincode:  sa.pincode || sa.zip || '000000',
-      country:  sa.country || 'India'
-    };
-
-    // Auto-generate unique initial tracking ID for the order
-    const autoTrackingNumber = `ELM${Date.now().toString().slice(-6)}${Math.floor(100 + Math.random() * 900)}`;
-
     // Create the order
     const order = await Order.create({
-      user:            req.user._id,
-      items:           orderItems,
-      shippingAddress: normalizedShippingAddress,
+      user: req.user._id,
+      items: orderItems,
+      shippingAddress,
       subtotal,
       discount,
       couponApplied,
       shippingFee,
       totalAmount,
-      paymentMethod:   validPaymentMethod,
-      paymentStatus:   'pending',
-      orderStatus:     'processing',
-      trackingNumber:  autoTrackingNumber,
-      notes:           notes || ''
+      paymentMethod: validPaymentMethod,
+      paymentStatus: 'pending',
+      orderStatus: 'processing',
+      notes: notes || ''
     });
-
-    // Also update user's profile with address & phone for future orders
-    try {
-      await User.findByIdAndUpdate(req.user._id, {
-        phone: normalizedShippingAddress.phone,
-        address: {
-          street: normalizedShippingAddress.street,
-          city: normalizedShippingAddress.city,
-          state: normalizedShippingAddress.state,
-          pincode: normalizedShippingAddress.pincode,
-          country: normalizedShippingAddress.country
-        }
-      });
-    } catch (uErr) {
-      console.warn('Failed to update user profile address on order:', uErr?.message || uErr);
-    }
 
     // Deduct stock
     for (const item of items) {
@@ -204,33 +169,20 @@ const placeOrder = async (req, res) => {
   }
 };
 
-// Helper: Parse weight string (e.g. "1kg", "500g", "2.2 lbs") into Kilograms (KG)
-const parseWeightToKg = (weightStr) => {
-  if (!weightStr) return 0.5;
-  const str = String(weightStr).toLowerCase().trim();
-  const num = parseFloat(str.replace(/[^0-9.]/g, ''));
-  if (isNaN(num) || num <= 0) return 0.5;
-
-  if (str.includes('g') && !str.includes('kg')) {
-    return num / 1000;
-  } else if (str.includes('lb') || str.includes('lbs')) {
-    return num * 0.453592;
-  }
-  return num;
-};
-
 // Helper: Automated Order Push to iThink Logistics API
 const pushOrderToIThink = async (order, reqUser) => {
   try {
     const token = process.env.ITHINK_ACCESS_TOKEN;
     const secret = process.env.ITHINK_SECRET_KEY;
-    if (!token || !secret || token.includes('your_ithink') || secret.includes('your_ithink')) {
-      console.warn('iThink credentials missing or placeholder in environment config, skipping automated order push.');
+    if (!token || !secret) {
+      console.warn('iThink credentials missing in environment config, skipping automated order push.');
       return;
     }
 
-    // Default to production endpoint unless explicitly set otherwise
-    const apiUrl = process.env.ITHINK_API_URL || 'https://api.ithinklogistics.com/api_v3/order/add.json';
+    const isProduction = process.env.NODE_ENV === 'production';
+    const apiUrl = isProduction
+      ? 'https://api.ithinklogistics.com/api_v3/order/add.json'
+      : 'https://pre-alpha.ithinklogistics.com/api_v3/order/add.json';
 
     const orderDate = new Date(order.createdAt || Date.now());
     const day = String(orderDate.getDate()).padStart(2, '0');
@@ -240,16 +192,6 @@ const pushOrderToIThink = async (order, reqUser) => {
 
     const sa = order.shippingAddress || {};
     const orderKey = String(order._id);
-    const pickupAddressId = process.env.ITHINK_PICKUP_ADDRESS_ID || '';
-
-    // Dynamically calculate total shipment weight in KG
-    let totalWeightKg = 0;
-    for (const item of order.items || []) {
-      const q = Number(item.quantity) || 1;
-      const w = parseWeightToKg(item.weight || item.product?.weight);
-      totalWeightKg += w * q;
-    }
-    const finalWeight = totalWeightKg > 0 ? totalWeightKg.toFixed(2) : '0.5';
 
     const payload = {
       data: {
@@ -261,7 +203,7 @@ const pushOrderToIThink = async (order, reqUser) => {
             order_date: formattedDate,
             total_amount: String(order.totalAmount),
             name: sa.fullName || reqUser?.name || 'Customer',
-            company_name: 'EL MEN Nutrition',
+            company_name: 'EL MEN Shop',
             add: sa.street || '',
             pin: sa.pincode || '',
             city: sa.city || '',
@@ -270,10 +212,6 @@ const pushOrderToIThink = async (order, reqUser) => {
             phone: sa.phone || reqUser?.phone || '',
             email: sa.email || reqUser?.email || '',
             payment_mode: (order.paymentMethod || 'cod').toLowerCase() === 'cod' ? 'COD' : 'Prepaid',
-            pickup_address_id: pickupAddressId,
-            shipment_type: 'Forward',
-            quantity: String((order.items || []).reduce((sum, item) => sum + (item.quantity || 1), 0)),
-            weight: finalWeight,
             products: (order.items || []).map(item => ({
               product_name: item.name,
               product_sku: item.name,
@@ -290,28 +228,23 @@ const pushOrderToIThink = async (order, reqUser) => {
       }
     };
 
-    console.log(`Sending iThink Logistics order push for Order #${orderKey} to ${apiUrl}...`);
     const response = await axios.post(apiUrl, payload);
     const resData = response.data;
-    console.log('iThink API Raw Response:', JSON.stringify(resData));
-
     if (resData && (resData.status_code === 200 || resData.status === 'success' || resData.data)) {
       const shipmentData = resData.data?.[orderKey] || (Array.isArray(resData.data) ? resData.data[0] : resData.data);
-      const awbNumber = shipmentData?.waybill || shipmentData?.awb_number || shipmentData?.awb_no || shipmentData?.waybill_no;
+      const awbNumber = shipmentData?.waybill || shipmentData?.awb_number || shipmentData?.awb_no;
       if (awbNumber) {
         await Order.findByIdAndUpdate(order._id, {
           trackingNumber: awbNumber,
           orderStatus: 'confirmed'
         });
-        console.log(`✅ Order ${order._id} successfully pushed to iThink Logistics! AWB: ${awbNumber}`);
-      } else {
-        console.warn('⚠️ iThink push returned response but no waybill AWB generated:', shipmentData);
+        console.log(`Order ${order._id} automatically pushed to iThink Logistics! AWB: ${awbNumber}`);
       }
     } else {
-      console.warn('❌ iThink order push error response:', resData?.message || resData?.html_message || resData);
+      console.warn('iThink order push response:', resData?.message || resData);
     }
   } catch (err) {
-    console.error('❌ Automated iThink order push network error:', err.response?.data || err.message);
+    console.error('Automated iThink order push error:', err.response?.data || err.message);
   }
 };
 
