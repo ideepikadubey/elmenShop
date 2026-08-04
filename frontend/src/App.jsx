@@ -641,7 +641,7 @@ export default function App() {
             }));
 
             const allTickerItems = offerTickerItems.length > 0
-              ? [...offerTickerItems, ...defaultTickerItems, ...offerTickerItems]
+              ? [...offerTickerItems, ...defaultTickerItems]
               : defaultTickerItems;
 
             return (
