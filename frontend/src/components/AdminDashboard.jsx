@@ -1938,65 +1938,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 </div>
               </div>
 
-              {/* Row 4: Specs - Dynamic per category */}
-              {productForm.category === 'accessories' ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div className="form-group">
-                    <label>Weight / GSM</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={productForm.weight}
-                      onChange={(e) => setProductForm({ ...productForm, weight: e.target.value })}
-                      placeholder="e.g. 620 GSM / 350g"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Dimensions / Size</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={productForm.servingSize}
-                      onChange={(e) => setProductForm({ ...productForm, servingSize: e.target.value })}
-                      placeholder="e.g. 40cm x 60cm or Free Size"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
-                  <div className="form-group">
-                    <label>Total weight</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={productForm.weight}
-                      onChange={(e) => setProductForm({ ...productForm, weight: e.target.value })}
-                      placeholder="e.g. 2000g (2kg)"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Serving Size</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={productForm.servingSize}
-                      onChange={(e) => setProductForm({ ...productForm, servingSize: e.target.value })}
-                      placeholder="e.g. 1 Scoop (33g)"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Servings Count</label>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={productForm.servingsCount}
-                      onChange={(e) => setProductForm({ ...productForm, servingsCount: e.target.value })}
-                      placeholder="60"
-                      min="0"
-                    />
-                  </div>
-                </div>
-              {/* Row 4.5: Courier Logistics Shipping Specifications */}
+              {/* Row 3.5: Courier Logistics Shipping Specifications */}
               <div style={{ background: 'rgba(255, 190, 0, 0.05)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 190, 0, 0.2)' }}>
                 <label style={{ display: 'block', fontWeight: 900, color: 'var(--primary-yellow)', fontSize: '0.85rem', marginBottom: '8px', textTransform: 'uppercase' }}>
                   🚚 COURIER SHIPPING SPECIFICATIONS (iThink Logistics)
@@ -2056,6 +1998,66 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                   </div>
                 </div>
               </div>
+
+              {/* Row 4: Specs - Dynamic per category */}
+              {productForm.category === 'accessories' ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="form-group">
+                    <label>Weight / GSM</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={productForm.weight}
+                      onChange={(e) => setProductForm({ ...productForm, weight: e.target.value })}
+                      placeholder="e.g. 620 GSM / 350g"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Dimensions / Size</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={productForm.servingSize}
+                      onChange={(e) => setProductForm({ ...productForm, servingSize: e.target.value })}
+                      placeholder="e.g. 40cm x 60cm or Free Size"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                  <div className="form-group">
+                    <label>Total weight</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={productForm.weight}
+                      onChange={(e) => setProductForm({ ...productForm, weight: e.target.value })}
+                      placeholder="e.g. 2000g (2kg)"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Serving Size</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={productForm.servingSize}
+                      onChange={(e) => setProductForm({ ...productForm, servingSize: e.target.value })}
+                      placeholder="e.g. 1 Scoop (33g)"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Servings Count</label>
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={productForm.servingsCount}
+                      onChange={(e) => setProductForm({ ...productForm, servingsCount: e.target.value })}
+                      placeholder="60"
+                      min="0"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Row 5: Protein (Supplements only) and Promo Badge */}
               <div style={{ display: 'grid', gridTemplateColumns: productForm.category === 'accessories' ? '1fr' : '1fr 1fr', gap: '16px' }}>
