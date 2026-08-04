@@ -193,6 +193,33 @@ const pushOrderToIThink = async (order, reqUser) => {
     const sa = order.shippingAddress || {};
     const orderKey = String(order._id);
 
+    // Dynamically calculate total shipment weight and max box dimensions from database products
+    let totalWeight = 0;
+    let maxLength = 10;
+    let maxWidth = 10;
+    let maxHeight = 10;
+
+    if (order.items && order.items.length > 0) {
+      for (const item of order.items) {
+        const prodId = item.product || item.productId;
+        let pDoc = null;
+        if (prodId) {
+          pDoc = await Product.findById(prodId);
+        }
+        const itemQty = Number(item.quantity || 1);
+        const itemWeight = pDoc?.shippingWeight !== undefined && pDoc?.shippingWeight !== null ? Number(pDoc.shippingWeight) : 0.5;
+        const itemLen = pDoc?.lengthCm ? Number(pDoc.lengthCm) : 10;
+        const itemWid = pDoc?.widthCm ? Number(pDoc.widthCm) : 10;
+        const itemHgt = pDoc?.heightCm ? Number(pDoc.heightCm) : 10;
+
+        totalWeight += itemWeight * itemQty;
+        if (itemLen > maxLength) maxLength = itemLen;
+        if (itemWid > maxWidth) maxWidth = itemWid;
+        if (itemHgt > maxHeight) maxHeight = itemHgt;
+      }
+    }
+    if (totalWeight <= 0) totalWeight = 0.5;
+
     const payload = {
       data: {
         shipments: [
@@ -212,6 +239,11 @@ const pushOrderToIThink = async (order, reqUser) => {
             phone: sa.phone || reqUser?.phone || '',
             email: sa.email || reqUser?.email || '',
             payment_mode: (order.paymentMethod || 'cod').toLowerCase() === 'cod' ? 'COD' : 'Prepaid',
+            shipment_type: 'Forward',
+            weight: String(totalWeight.toFixed(2)),
+            length: String(maxLength),
+            width: String(maxWidth),
+            height: String(maxHeight),
             products: (order.items || []).map(item => ({
               product_name: item.name,
               product_sku: item.name,

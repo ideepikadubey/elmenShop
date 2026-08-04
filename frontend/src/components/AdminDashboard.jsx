@@ -42,7 +42,8 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [productForm, setProductForm] = useState({
     name: '', subtitle: '', category: 'proteins', price: '', originalPrice: '',
-    weight: '', servingSize: '', servingsCount: '', protein: '',
+    weight: '', shippingWeight: '0.5', lengthCm: '10', widthCm: '10', heightCm: '10',
+    servingSize: '', servingsCount: '', protein: '',
     features: '', flavours: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi'], details: '', badge: '', stock: '100',
     nutritionFactsInput: [{ key: '', value: '' }]
   });
@@ -256,7 +257,8 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
     setSelectedFiles([]);
     setProductForm({
       name: '', subtitle: '', category: 'proteins', price: '', originalPrice: '',
-      weight: '', servingSize: '', servingsCount: '', protein: '',
+      weight: '', shippingWeight: '0.5', lengthCm: '10', widthCm: '10', heightCm: '10',
+      servingSize: '', servingsCount: '', protein: '',
       features: '', flavours: ['Kesar Badam', 'Cookies & Cream', 'Chocolate', 'Malai Kulfi'], details: '', badge: '', stock: '100',
       nutritionFactsInput: [{ key: 'Protein', value: '24g' }, { key: 'BCAAs', value: '5.5g' }]
     });
@@ -283,6 +285,10 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       price: prod.price.toString(),
       originalPrice: prod.originalPrice ? prod.originalPrice.toString() : '',
       weight: prod.weight || '',
+      shippingWeight: prod.shippingWeight !== undefined && prod.shippingWeight !== null ? prod.shippingWeight.toString() : '0.5',
+      lengthCm: prod.lengthCm ? prod.lengthCm.toString() : '10',
+      widthCm: prod.widthCm ? prod.widthCm.toString() : '10',
+      heightCm: prod.heightCm ? prod.heightCm.toString() : '10',
       servingSize: prod.servingSize || '',
       servingsCount: prod.servingsCount ? prod.servingsCount.toString() : '0',
       protein: prod.protein || '',
@@ -390,6 +396,10 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       formData.append('price', discPrice);
       formData.append('originalPrice', origPrice);
       formData.append('weight', productForm.weight);
+      formData.append('shippingWeight', Number(productForm.shippingWeight || 0.5));
+      formData.append('lengthCm', Number(productForm.lengthCm || 10));
+      formData.append('widthCm', Number(productForm.widthCm || 10));
+      formData.append('heightCm', Number(productForm.heightCm || 10));
       formData.append('servingSize', productForm.servingSize);
       formData.append('servingsCount', Number(productForm.servingsCount || 0));
       formData.append('protein', productForm.protein);
@@ -1986,7 +1996,66 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     />
                   </div>
                 </div>
-              )}
+              {/* Row 4.5: Courier Logistics Shipping Specifications */}
+              <div style={{ background: 'rgba(255, 190, 0, 0.05)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 190, 0, 0.2)' }}>
+                <label style={{ display: 'block', fontWeight: 900, color: 'var(--primary-yellow)', fontSize: '0.85rem', marginBottom: '8px', textTransform: 'uppercase' }}>
+                  🚚 COURIER SHIPPING SPECIFICATIONS (iThink Logistics)
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px' }}>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.78rem' }}>Weight (kg) *</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      className="form-input"
+                      value={productForm.shippingWeight}
+                      onChange={(e) => setProductForm({ ...productForm, shippingWeight: e.target.value })}
+                      placeholder="e.g. 1.0"
+                      min="0.01"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.78rem' }}>Length (cm) *</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      required
+                      className="form-input"
+                      value={productForm.lengthCm}
+                      onChange={(e) => setProductForm({ ...productForm, lengthCm: e.target.value })}
+                      placeholder="e.g. 15"
+                      min="1"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.78rem' }}>Width (cm) *</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      required
+                      className="form-input"
+                      value={productForm.widthCm}
+                      onChange={(e) => setProductForm({ ...productForm, widthCm: e.target.value })}
+                      placeholder="e.g. 15"
+                      min="1"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.78rem' }}>Height (cm) *</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      required
+                      className="form-input"
+                      value={productForm.heightCm}
+                      onChange={(e) => setProductForm({ ...productForm, heightCm: e.target.value })}
+                      placeholder="e.g. 20"
+                      min="1"
+                    />
+                  </div>
+                </div>
+              </div>
 
               {/* Row 5: Protein (Supplements only) and Promo Badge */}
               <div style={{ display: 'grid', gridTemplateColumns: productForm.category === 'accessories' ? '1fr' : '1fr 1fr', gap: '16px' }}>

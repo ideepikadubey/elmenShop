@@ -23,6 +23,10 @@ const productSchema = new mongoose.Schema({
     default: 0
   },
   weight:        { type: String, default: '' },
+  shippingWeight: { type: Number, default: 0.5 },
+  lengthCm:       { type: Number, default: 10 },
+  widthCm:        { type: Number, default: 10 },
+  heightCm:       { type: Number, default: 10 },
   servingSize:   { type: String, default: '' },
   servingsCount: { type: Number, default: 0 },
   protein:       { type: String, default: '0g' },
