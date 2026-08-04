@@ -1136,12 +1136,17 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                         </td>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <User size={14} style={{ color: 'var(--text-muted)' }} />
-                            <strong style={{ fontSize: '0.85rem' }}>{o.shippingAddress?.fullName}</strong>
+                            <User size={14} style={{ color: 'var(--primary-yellow)' }} />
+                            <strong style={{ fontSize: '0.85rem', color: '#fff' }}>{o.shippingAddress?.fullName || 'Customer'}</strong>
                           </div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '20px' }}>
-                            {o.shippingAddress?.email} | {o.shippingAddress?.phone}
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '20px', marginTop: '2px' }}>
+                            📧 {o.shippingAddress?.email} | 📞 {o.shippingAddress?.phone}
                           </div>
+                          {o.shippingAddress && (
+                            <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginLeft: '20px', marginTop: '4px', lineHeight: '1.3' }}>
+                              📍 {o.shippingAddress.street}, {o.shippingAddress.city}, {o.shippingAddress.state} - <strong>{o.shippingAddress.pincode}</strong>
+                            </div>
+                          )}
                         </td>
                         <td>{new Date(o.createdAt).toLocaleDateString()}</td>
                         <td>
@@ -1496,7 +1501,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     const encodedUri = encodeURI(csvContent);
                     const link = document.createElement("a");
                     link.setAttribute("href", encodedUri);
-                    link.setAttribute("download", `elmen_popup_leads_${new Date().toISOString().slice(0,10)}.csv`);
+                    link.setAttribute("download", `elmen_popup_leads_${new Date().toISOString().slice(0, 10)}.csv`);
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
