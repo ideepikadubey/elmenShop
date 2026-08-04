@@ -472,11 +472,3 @@ const ithinkWebhook = async (req, res) => {
 };
 
 module.exports = { placeOrder, getMyOrders, getOrder, getAllOrders, updateOrderStatus, getOrderTracking, pushOrderToIThink, ithinkWebhook };
-res.status(200).json({ success: true, message: 'Webhook processed successfully.', orderId: order._id, status: order.orderStatus });
-  } catch (error) {
-  console.error('iThink Webhook processing error:', error);
-  res.status(500).json({ success: false, message: 'Server error processing webhook.' });
-}
-};
-
-module.exports = { placeOrder, getMyOrders, getOrder, getAllOrders, updateOrderStatus, getOrderTracking, pushOrderToIThink, ithinkWebhook };
