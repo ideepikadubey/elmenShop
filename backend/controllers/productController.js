@@ -11,7 +11,9 @@ const getProducts = async (req, res) => {
 
     const query = { isActive: true };
 
-    if (category) query.category = category.toLowerCase();
+    if (category && category.toLowerCase() !== 'all') {
+      query.category = category.toLowerCase();
+    }
 
     if (search) {
       const tokens = search.trim().split(/\s+/).filter(Boolean);
