@@ -21,6 +21,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
   const [leads, setLeads] = useState([]);
   const [leadSearch, setLeadSearch] = useState('');
   const [users, setUsers] = useState([]);
+  const [selectedUserDetail, setSelectedUserDetail] = useState(null);
   const [excelFile, setExcelFile] = useState(null);
   const [isUploadingExcel, setIsUploadingExcel] = useState(false);
   const [verificationStats, setVerificationStats] = useState(null);
@@ -1762,6 +1763,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                       <th>Orders Placed</th>
                       <th>Account Role</th>
                       <th>Joined Date</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1776,10 +1778,32 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                         return nameMatch || emailMatch || phoneMatch || cityMatch;
                       })
                       .map(u => {
-                        const userOrderCount = orders.filter(o => {
+                        const userOrders = orders.filter(o => {
                           const oUserId = typeof o.user === 'object' ? o.user?._id : o.user;
                           return String(oUserId) === String(u._id);
-                        }).length;
+                        });
+                        const userOrderCount = userOrders.length;
+
+                        // Fallback phone number
+                        const displayPhone = u.phone || (userOrders.length > 0 ? userOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0].shippingAddress?.phone : '');
+
+                        // Fallback saved address
+                        let displayAddress = null;
+                        if (u.address && (u.address.street || u.address.city)) {
+                          displayAddress = u.address;
+                        } else if (userOrders.length > 0) {
+                          const sortedOrders = [...userOrders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                          const latestOrder = sortedOrders[0];
+                          if (latestOrder.shippingAddress) {
+                            displayAddress = {
+                              street: latestOrder.shippingAddress.street,
+                              city: latestOrder.shippingAddress.city,
+                              state: latestOrder.shippingAddress.state,
+                              pincode: latestOrder.shippingAddress.pincode,
+                              country: latestOrder.shippingAddress.country || 'India'
+                            };
+                          }
+                        }
 
                         const initial = (u.name || u.email || 'U').charAt(0).toUpperCase();
 
@@ -1802,14 +1826,14 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                               </div>
                             </td>
                             <td style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                              {u.phone ? u.phone : <span style={{ color: 'var(--text-muted)' }}>Not provided</span>}
+                              {displayPhone ? displayPhone : <span style={{ color: 'var(--text-muted)' }}>Not provided</span>}
                             </td>
                             <td style={{ fontSize: '0.78rem', maxWidth: '240px' }}>
-                              {u.address && (u.address.street || u.address.city) ? (
+                              {displayAddress && (displayAddress.street || displayAddress.city) ? (
                                 <div>
-                                  <div>{u.address.street}</div>
+                                  <div>{displayAddress.street}</div>
                                   <div style={{ color: 'var(--text-muted)' }}>
-                                    {[u.address.city, u.address.state, u.address.pincode].filter(Boolean).join(', ')}
+                                    {[displayAddress.city, displayAddress.state, displayAddress.pincode].filter(Boolean).join(', ')}
                                   </div>
                                 </div>
                               ) : (
@@ -1837,6 +1861,28 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                             </td>
                             <td style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                               {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+                            </td>
+                            <td>
+                              <button
+                                onClick={() => setSelectedUserDetail(u)}
+                                style={{
+                                  background: 'rgba(59, 130, 246, 0.15)',
+                                  color: '#3b82f6',
+                                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                                  padding: '6px 12px',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  fontSize: '0.78rem',
+                                  fontWeight: 600,
+                                  transition: 'all 0.2s ease-in-out'
+                                }}
+                                className="action-btn-view"
+                              >
+                                <Eye size={14} /> Details
+                              </button>
                             </td>
                           </tr>
                         );
@@ -2562,6 +2608,171 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: USER DETAILS ── */}
+      {selectedUserDetail && (
+        <div className="admin-modal" onClick={() => setSelectedUserDetail(null)}>
+          <div className="admin-modal-content animate-fade-in" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '650px', background: 'var(--bg-dark-900)', color: 'var(--text-white)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--bg-dark-700)', paddingBottom: '12px' }}>
+              <h2 style={{ textTransform: 'uppercase', fontWeight: 900, margin: 0, fontSize: '1.25rem' }}>
+                👤 Customer Account Details
+              </h2>
+              <button
+                onClick={() => setSelectedUserDetail(null)}
+                style={{
+                  background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px'
+                }}
+              >
+                &times;
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Profile Card */}
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--bg-dark-800)', padding: '16px', borderRadius: '8px', border: '1px solid var(--bg-dark-700)' }}>
+                <div style={{
+                  width: '50px', height: '50px', borderRadius: '50%',
+                  background: selectedUserDetail.role === 'admin' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                  color: '#fff', fontWeight: 900, fontSize: '1.4rem',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                }}>
+                  {(selectedUserDetail.name || selectedUserDetail.email || 'U').charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', color: '#fff', fontWeight: 800 }}>{selectedUserDetail.name || 'N/A'}</h3>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-gray)' }}>{selectedUserDetail.email}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-gray)', marginTop: '4px' }}>
+                    Role: <span style={{
+                      padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase',
+                      background: selectedUserDetail.role === 'admin' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(59, 130, 246, 0.15)',
+                      color: selectedUserDetail.role === 'admin' ? 'var(--primary-yellow)' : '#60a5fa'
+                    }}>
+                      {selectedUserDetail.role === 'admin' ? '👑 Admin' : '👤 Customer'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Details */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ background: 'var(--bg-dark-800)', padding: '14px', borderRadius: '8px', border: '1px solid var(--bg-dark-700)' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '6px' }}>Phone Number</span>
+                  <strong style={{ fontSize: '0.9rem', color: '#fff' }}>
+                    {(() => {
+                      const userOrders = orders.filter(o => {
+                        const oUserId = typeof o.user === 'object' ? o.user?._id : o.user;
+                        return String(oUserId) === String(selectedUserDetail._id);
+                      });
+                      return selectedUserDetail.phone || (userOrders.length > 0 ? userOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0].shippingAddress?.phone : '') || 'Not provided';
+                    })()}
+                  </strong>
+                </div>
+                <div style={{ background: 'var(--bg-dark-800)', padding: '14px', borderRadius: '8px', border: '1px solid var(--bg-dark-700)' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '6px' }}>Joined Date</span>
+                  <strong style={{ fontSize: '0.9rem', color: '#fff' }}>
+                    {selectedUserDetail.createdAt ? new Date(selectedUserDetail.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Address details */}
+              <div style={{ background: 'var(--bg-dark-800)', padding: '16px', borderRadius: '8px', border: '1px solid var(--bg-dark-700)' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '8px' }}>Saved Delivery Address</span>
+                {(() => {
+                  const userOrders = orders.filter(o => {
+                    const oUserId = typeof o.user === 'object' ? o.user?._id : o.user;
+                    return String(oUserId) === String(selectedUserDetail._id);
+                  });
+                  let addressSource = 'Profile';
+                  let addr = selectedUserDetail.address;
+
+                  if (!(addr && (addr.street || addr.city)) && userOrders.length > 0) {
+                    const sorted = [...userOrders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    if (sorted[0].shippingAddress) {
+                      addr = sorted[0].shippingAddress;
+                      addressSource = 'Latest Order';
+                    }
+                  }
+
+                  if (addr && (addr.street || addr.city)) {
+                    return (
+                      <div>
+                        <div style={{ fontSize: '0.9rem', color: '#fff', marginBottom: '4px', fontWeight: 600 }}>{addr.street}</div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-gray)' }}>
+                          {[addr.city, addr.state, addr.pincode, addr.country].filter(Boolean).join(', ')}
+                        </div>
+                        <span style={{ display: 'inline-block', marginTop: '8px', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: 'var(--bg-dark-700)', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
+                          Source: {addressSource}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  return <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No saved address found</span>;
+                })()}
+              </div>
+
+              {/* Orders History */}
+              <div>
+                <h4 style={{ textTransform: 'uppercase', fontWeight: 800, margin: '0 0 10px 0', fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '0.5px' }}>
+                  Order History
+                </h4>
+                {(() => {
+                  const userOrders = orders.filter(o => {
+                    const oUserId = typeof o.user === 'object' ? o.user?._id : o.user;
+                    return String(oUserId) === String(selectedUserDetail._id);
+                  });
+
+                  if (userOrders.length === 0) {
+                    return (
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '16px', background: 'var(--bg-dark-800)', borderRadius: '8px', border: '1px solid var(--bg-dark-700)', margin: 0 }}>
+                        No orders placed by this user yet.
+                      </p>
+                    );
+                  }
+
+                  return (
+                    <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
+                      {userOrders.map(o => (
+                        <div key={o._id} style={{ background: 'var(--bg-dark-800)', padding: '12px', borderRadius: '6px', border: '1px solid var(--bg-dark-700)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
+                          <div>
+                            <div style={{ fontWeight: 'bold', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span>#{o._id.substring(o._id.length - 8).toUpperCase()}</span>
+                              <span style={{ fontWeight: 'normal', color: 'var(--text-gray)', fontSize: '0.75rem' }}>
+                                ({new Date(o.createdAt).toLocaleDateString()})
+                              </span>
+                            </div>
+                            <div style={{ color: 'var(--text-gray)', fontSize: '0.75rem', marginTop: '6px' }}>
+                              {o.items.map(it => `${it.name} (x${it.quantity})`).join(', ')}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                            <div style={{ fontWeight: '900', color: '#fff' }}>₹{o.totalAmount.toLocaleString('en-IN')}</div>
+                            <span className={`admin-badge badge-${o.orderStatus}`} style={{ fontSize: '0.65rem', padding: '2px 6px' }}>
+                              {o.orderStatus}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px', borderTop: '1px solid var(--bg-dark-700)', paddingTop: '16px' }}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setSelectedUserDetail(null)}
+                style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
