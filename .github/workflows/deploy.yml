@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - Main
+  workflow_dispatch:
 
 concurrency:
   group: production
