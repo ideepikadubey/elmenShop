@@ -51,6 +51,7 @@ const placeOrder = async (req, res) => {
         name: product.name,
         price: itemPrice,
         quantity: item.quantity,
+        flavour: item.flavour || '',
         image: product.image
       });
     }

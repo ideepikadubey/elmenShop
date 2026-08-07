@@ -1156,11 +1156,26 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                         </td>
                         <td>{new Date(o.createdAt).toLocaleDateString()}</td>
                         <td>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             {o.items.map((it, idx) => (
-                              <span key={idx} style={{ fontSize: '0.78rem', color: 'var(--text-gray)' }}>
-                                • {it.name} (x{it.quantity})
-                              </span>
+                              <div key={idx} style={{ fontSize: '0.78rem', color: 'var(--text-gray)', lineHeight: '1.4' }}>
+                                <div style={{ fontWeight: 600, color: 'var(--text-white)' }}>• {it.name} (x{it.quantity})</div>
+                                {it.flavour && (
+                                  <span style={{
+                                    display: 'inline-block',
+                                    fontSize: '0.7rem',
+                                    color: 'var(--primary-yellow)',
+                                    background: 'rgba(255, 190, 0, 0.12)',
+                                    padding: '2px 8px',
+                                    borderRadius: '6px',
+                                    border: '1px solid rgba(255, 190, 0, 0.3)',
+                                    marginTop: '2px',
+                                    fontWeight: 700
+                                  }}>
+                                    🍦 Option/Flavour: {it.flavour}
+                                  </span>
+                                )}
+                              </div>
                             ))}
                           </div>
                         </td>
@@ -2616,8 +2631,8 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
       {selectedUserDetail && (
         <div className="admin-modal" onClick={() => setSelectedUserDetail(null)}>
           <div className="admin-modal-content animate-fade-in" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '650px', background: 'var(--bg-dark-900)', color: 'var(--text-white)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--bg-dark-700)', paddingBottom: '12px' }}>
-              <h2 style={{ textTransform: 'uppercase', fontWeight: 900, margin: 0, fontSize: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--bg-dark-600)', paddingBottom: '12px' }}>
+              <h2 style={{ textTransform: 'uppercase', fontWeight: 900, margin: 0, fontSize: '1.25rem', color: 'var(--text-white)' }}>
                 👤 Customer Account Details
               </h2>
               <button
@@ -2632,35 +2647,45 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {/* Profile Card */}
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--bg-dark-800)', padding: '16px', borderRadius: '8px', border: '1px solid var(--bg-dark-700)' }}>
-                <div style={{
-                  width: '50px', height: '50px', borderRadius: '50%',
-                  background: selectedUserDetail.role === 'admin' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                  color: '#fff', fontWeight: 900, fontSize: '1.4rem',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                }}>
-                  {(selectedUserDetail.name || selectedUserDetail.email || 'U').charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', color: '#fff', fontWeight: 800 }}>{selectedUserDetail.name || 'N/A'}</h3>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-gray)' }}>{selectedUserDetail.email}</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-gray)', marginTop: '4px' }}>
-                    Role: <span style={{
-                      padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase',
-                      background: selectedUserDetail.role === 'admin' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(59, 130, 246, 0.15)',
-                      color: selectedUserDetail.role === 'admin' ? 'var(--primary-yellow)' : '#60a5fa'
+              {(() => {
+                const userOrders = orders.filter(o => {
+                  const oUserId = typeof o.user === 'object' ? o.user?._id : o.user;
+                  return String(oUserId) === String(selectedUserDetail._id);
+                });
+                const displayName = selectedUserDetail.name || (userOrders.length > 0 ? userOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0].shippingAddress?.fullName : '') || 'Not provided';
+                
+                return (
+                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--bg-dark-800)', padding: '16px', borderRadius: '8px', border: '1px solid var(--bg-dark-600)' }}>
+                    <div style={{
+                      width: '50px', height: '50px', borderRadius: '50%',
+                      background: selectedUserDetail.role === 'admin' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                      color: '#fff', fontWeight: 900, fontSize: '1.4rem',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
                     }}>
-                      {selectedUserDetail.role === 'admin' ? '👑 Admin' : '👤 Customer'}
-                    </span>
+                      {(displayName || selectedUserDetail.email || 'U').charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', color: 'var(--text-white)', fontWeight: 800 }}>{displayName}</h3>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-gray)' }}>{selectedUserDetail.email}</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-gray)', marginTop: '4px' }}>
+                        Role: <span style={{
+                          padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase',
+                          background: selectedUserDetail.role === 'admin' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(59, 130, 246, 0.15)',
+                          color: selectedUserDetail.role === 'admin' ? 'var(--primary-yellow)' : '#60a5fa'
+                        }}>
+                          {selectedUserDetail.role === 'admin' ? '👑 Admin' : '👤 Customer'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* Contact Details */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div style={{ background: 'var(--bg-dark-800)', padding: '14px', borderRadius: '8px', border: '1px solid var(--bg-dark-700)' }}>
+                <div style={{ background: 'var(--bg-dark-800)', padding: '14px', borderRadius: '8px', border: '1px solid var(--bg-dark-600)' }}>
                   <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '6px' }}>Phone Number</span>
-                  <strong style={{ fontSize: '0.9rem', color: '#fff' }}>
+                  <strong style={{ fontSize: '0.9rem', color: 'var(--text-white)' }}>
                     {(() => {
                       const userOrders = orders.filter(o => {
                         const oUserId = typeof o.user === 'object' ? o.user?._id : o.user;
@@ -2670,16 +2695,16 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                     })()}
                   </strong>
                 </div>
-                <div style={{ background: 'var(--bg-dark-800)', padding: '14px', borderRadius: '8px', border: '1px solid var(--bg-dark-700)' }}>
+                <div style={{ background: 'var(--bg-dark-800)', padding: '14px', borderRadius: '8px', border: '1px solid var(--bg-dark-600)' }}>
                   <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '6px' }}>Joined Date</span>
-                  <strong style={{ fontSize: '0.9rem', color: '#fff' }}>
+                  <strong style={{ fontSize: '0.9rem', color: 'var(--text-white)' }}>
                     {selectedUserDetail.createdAt ? new Date(selectedUserDetail.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}
                   </strong>
                 </div>
               </div>
 
               {/* Address details */}
-              <div style={{ background: 'var(--bg-dark-800)', padding: '16px', borderRadius: '8px', border: '1px solid var(--bg-dark-700)' }}>
+              <div style={{ background: 'var(--bg-dark-800)', padding: '16px', borderRadius: '8px', border: '1px solid var(--bg-dark-600)' }}>
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800, display: 'block', marginBottom: '8px' }}>Saved Delivery Address</span>
                 {(() => {
                   const userOrders = orders.filter(o => {
@@ -2700,7 +2725,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                   if (addr && (addr.street || addr.city)) {
                     return (
                       <div>
-                        <div style={{ fontSize: '0.9rem', color: '#fff', marginBottom: '4px', fontWeight: 600 }}>{addr.street}</div>
+                        <div style={{ fontSize: '0.9rem', color: 'var(--text-white)', marginBottom: '4px', fontWeight: 600 }}>{addr.street}</div>
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-gray)' }}>
                           {[addr.city, addr.state, addr.pincode, addr.country].filter(Boolean).join(', ')}
                         </div>
@@ -2728,7 +2753,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
 
                   if (userOrders.length === 0) {
                     return (
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '16px', background: 'var(--bg-dark-800)', borderRadius: '8px', border: '1px solid var(--bg-dark-700)', margin: 0 }}>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '16px', background: 'var(--bg-dark-800)', borderRadius: '8px', border: '1px solid var(--bg-dark-600)', margin: 0 }}>
                         No orders placed by this user yet.
                       </p>
                     );
@@ -2737,9 +2762,9 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                   return (
                     <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
                       {userOrders.map(o => (
-                        <div key={o._id} style={{ background: 'var(--bg-dark-800)', padding: '12px', borderRadius: '6px', border: '1px solid var(--bg-dark-700)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
+                        <div key={o._id} style={{ background: 'var(--bg-dark-800)', padding: '12px', borderRadius: '6px', border: '1px solid var(--bg-dark-600)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
                           <div>
-                            <div style={{ fontWeight: 'bold', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ fontWeight: 'bold', color: 'var(--text-white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <span>#{o._id.substring(o._id.length - 8).toUpperCase()}</span>
                               <span style={{ fontWeight: 'normal', color: 'var(--text-gray)', fontSize: '0.75rem' }}>
                                 ({new Date(o.createdAt).toLocaleDateString()})
@@ -2750,7 +2775,7 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                             </div>
                           </div>
                           <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                            <div style={{ fontWeight: '900', color: '#fff' }}>₹{o.totalAmount.toLocaleString('en-IN')}</div>
+                            <div style={{ fontWeight: '900', color: 'var(--text-white)' }}>₹{o.totalAmount.toLocaleString('en-IN')}</div>
                             <span className={`admin-badge badge-${o.orderStatus}`} style={{ fontSize: '0.65rem', padding: '2px 6px' }}>
                               {o.orderStatus}
                             </span>

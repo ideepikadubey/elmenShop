@@ -1456,9 +1456,10 @@ export default function App() {
 
                         {/* Items */}
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-gray)', lineHeight: '1.5', marginBottom: '10px' }}>
-                          {order.items ? order.items.map(item => (
-                            <span key={item.name} style={{ display: 'inline-block', background: 'var(--bg-dark-700)', borderRadius: '6px', padding: '2px 8px', marginRight: '6px', marginBottom: '4px', fontSize: '0.78rem' }}>
+                          {order.items ? order.items.map((item, iIdx) => (
+                            <span key={iIdx} style={{ display: 'inline-block', background: 'var(--bg-dark-700)', borderRadius: '6px', padding: '2px 8px', marginRight: '6px', marginBottom: '4px', fontSize: '0.78rem' }}>
                               {item.name} × {item.quantity}
+                              {item.flavour ? ` (${item.flavour})` : ''}
                             </span>
                           )) : '—'}
                         </div>
