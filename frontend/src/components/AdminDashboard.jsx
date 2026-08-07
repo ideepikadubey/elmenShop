@@ -2770,8 +2770,25 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                                 ({new Date(o.createdAt).toLocaleDateString()})
                               </span>
                             </div>
-                            <div style={{ color: 'var(--text-gray)', fontSize: '0.75rem', marginTop: '6px' }}>
-                              {o.items.map(it => `${it.name} (x${it.quantity})`).join(', ')}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
+                              {o.items.map((it, idx) => (
+                                <div key={idx} style={{ fontSize: '0.75rem', color: 'var(--text-gray)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                  <span>{it.name} <strong style={{ color: 'var(--text-white)' }}>(x{it.quantity})</strong></span>
+                                  {it.flavour ? (
+                                    <span style={{
+                                      fontSize: '0.68rem',
+                                      color: 'var(--primary-yellow)',
+                                      background: 'rgba(255, 190, 0, 0.12)',
+                                      border: '1px solid rgba(255, 190, 0, 0.3)',
+                                      padding: '1px 6px',
+                                      borderRadius: '4px',
+                                      fontWeight: 800
+                                    }}>
+                                      🍦 {it.flavour}
+                                    </span>
+                                  ) : null}
+                                </div>
+                              ))}
                             </div>
                           </div>
                           <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
