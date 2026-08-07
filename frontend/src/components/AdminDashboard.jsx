@@ -1157,26 +1157,32 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                         <td>{new Date(o.createdAt).toLocaleDateString()}</td>
                         <td>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            {o.items.map((it, idx) => (
-                              <div key={idx} style={{ fontSize: '0.78rem', color: 'var(--text-gray)', lineHeight: '1.4' }}>
-                                <div style={{ fontWeight: 600, color: 'var(--text-white)' }}>• {it.name} (x{it.quantity})</div>
-                                {it.flavour && (
-                                  <span style={{
-                                    display: 'inline-block',
-                                    fontSize: '0.7rem',
-                                    color: 'var(--primary-yellow)',
-                                    background: 'rgba(255, 190, 0, 0.12)',
-                                    padding: '2px 8px',
-                                    borderRadius: '6px',
-                                    border: '1px solid rgba(255, 190, 0, 0.3)',
-                                    marginTop: '2px',
-                                    fontWeight: 700
-                                  }}>
-                                    🍦 Option/Flavour: {it.flavour}
-                                  </span>
-                                )}
-                              </div>
-                            ))}
+                            {o.items.map((it, idx) => {
+                              const matchedProd = products.find(p => String(p._id || p.id) === String(it.product || it.productId)) ||
+                                                  products.find(p => p.name && it.name && p.name.toLowerCase().trim() === it.name.toLowerCase().trim());
+                              const resolvedFlavour = it.flavour || (matchedProd?.flavours && matchedProd.flavours.length > 0 ? (matchedProd.flavours.length === 1 ? matchedProd.flavours[0] : matchedProd.flavours[0]) : (matchedProd?.category === 'gainers' ? 'Malai Kulfi' : (matchedProd?.category === 'proteins' ? 'Cookies & Cream' : '')));
+
+                              return (
+                                <div key={idx} style={{ fontSize: '0.78rem', color: 'var(--text-gray)', lineHeight: '1.4' }}>
+                                  <div style={{ fontWeight: 600, color: 'var(--text-white)' }}>• {it.name} (x{it.quantity})</div>
+                                  {resolvedFlavour && (
+                                    <span style={{
+                                      display: 'inline-block',
+                                      fontSize: '0.7rem',
+                                      color: 'var(--primary-yellow)',
+                                      background: 'rgba(255, 190, 0, 0.15)',
+                                      padding: '2px 8px',
+                                      borderRadius: '6px',
+                                      border: '1px solid rgba(255, 190, 0, 0.4)',
+                                      marginTop: '2px',
+                                      fontWeight: 700
+                                    }}>
+                                      🍦 Option/Flavour: {resolvedFlavour}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         </td>
                         <td style={{ fontWeight: '900' }}>₹{o.totalAmount.toLocaleString('en-IN')}</td>
@@ -2771,24 +2777,30 @@ export default function AdminDashboard({ onRefreshStoreProducts, onLogout, onGoT
                               </span>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
-                              {o.items.map((it, idx) => (
-                                <div key={idx} style={{ fontSize: '0.75rem', color: 'var(--text-gray)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                                  <span>{it.name} <strong style={{ color: 'var(--text-white)' }}>(x{it.quantity})</strong></span>
-                                  {it.flavour ? (
-                                    <span style={{
-                                      fontSize: '0.68rem',
-                                      color: 'var(--primary-yellow)',
-                                      background: 'rgba(255, 190, 0, 0.12)',
-                                      border: '1px solid rgba(255, 190, 0, 0.3)',
-                                      padding: '1px 6px',
-                                      borderRadius: '4px',
-                                      fontWeight: 800
-                                    }}>
-                                      🍦 {it.flavour}
-                                    </span>
-                                  ) : null}
-                                </div>
-                              ))}
+                              {o.items.map((it, idx) => {
+                                const matchedProd = products.find(p => String(p._id || p.id) === String(it.product || it.productId)) ||
+                                                    products.find(p => p.name && it.name && p.name.toLowerCase().trim() === it.name.toLowerCase().trim());
+                                const resolvedFlavour = it.flavour || (matchedProd?.flavours && matchedProd.flavours.length > 0 ? (matchedProd.flavours.length === 1 ? matchedProd.flavours[0] : matchedProd.flavours[0]) : (matchedProd?.category === 'gainers' ? 'Malai Kulfi' : (matchedProd?.category === 'proteins' ? 'Cookies & Cream' : '')));
+
+                                return (
+                                  <div key={idx} style={{ fontSize: '0.75rem', color: 'var(--text-gray)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                    <span>{it.name} <strong style={{ color: 'var(--text-white)' }}>(x{it.quantity})</strong></span>
+                                    {resolvedFlavour ? (
+                                      <span style={{
+                                        fontSize: '0.68rem',
+                                        color: 'var(--primary-yellow)',
+                                        background: 'rgba(255, 190, 0, 0.15)',
+                                        border: '1px solid rgba(255, 190, 0, 0.4)',
+                                        padding: '1px 8px',
+                                        borderRadius: '6px',
+                                        fontWeight: 800
+                                      }}>
+                                        🍦 Flavour/Option: {resolvedFlavour}
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                           <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
