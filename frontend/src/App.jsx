@@ -17,6 +17,7 @@ import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
 import Offers from './components/Offers';
 import DisclaimerModal from './components/DisclaimerModal';
+import ManufacturerModal from './components/ManufacturerModal';
 import TermsPolicyModal from './components/TermsPolicyModal';
 import TrackOrder from './components/TrackOrder';
 import LeadPopupModal from './components/LeadPopupModal';
@@ -126,6 +127,7 @@ export default function App() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [userOrders, setUserOrders] = useState([]);
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
+  const [isManufacturerOpen, setIsManufacturerOpen] = useState(false);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [legalActiveTab, setLegalActiveTab] = useState('terms');
   const [isReturnPolicyOpen, setIsReturnPolicyOpen] = useState(false);
@@ -297,6 +299,13 @@ export default function App() {
     const handler = () => setIsDisclaimerOpen(true);
     window.addEventListener('elmen:openDisclaimer', handler);
     return () => window.removeEventListener('elmen:openDisclaimer', handler);
+  }, []);
+
+  // Open manufacturer details modal when triggered from footer
+  useEffect(() => {
+    const handler = () => setIsManufacturerOpen(true);
+    window.addEventListener('elmen:openManufacturer', handler);
+    return () => window.removeEventListener('elmen:openManufacturer', handler);
   }, []);
 
   // Open terms modal when triggered from footer
@@ -1538,6 +1547,12 @@ export default function App() {
       {isDisclaimerOpen && (
         <DisclaimerModal
           onClose={() => setIsDisclaimerOpen(false)}
+        />
+      )}
+
+      {isManufacturerOpen && (
+        <ManufacturerModal
+          onClose={() => setIsManufacturerOpen(false)}
         />
       )}
 

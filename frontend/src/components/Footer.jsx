@@ -174,6 +174,7 @@ export default function Footer({ onNavClick }) {
           <a href="#privacy" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('elmen:openPrivacy')); }} style={{ color: '#aaa', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary-yellow)'} onMouseLeave={(e) => e.currentTarget.style.color = '#aaa'}>Privacy Policy</a>
           <a href="#disclaimer" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('elmen:openDisclaimer')); }} style={{ color: '#aaa', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary-yellow)'} onMouseLeave={(e) => e.currentTarget.style.color = '#aaa'}>Disclaimer</a>
           <a href="#contact" onClick={(e) => { e.preventDefault(); onNavClick('contact'); }} style={{ color: '#aaa', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary-yellow)'} onMouseLeave={(e) => e.currentTarget.style.color = '#aaa'}>Contact Us</a>
+          <a href="#manufacture-details" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('elmen:openManufacturer')); }} style={{ color: '#aaa', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary-yellow)'} onMouseLeave={(e) => e.currentTarget.style.color = '#aaa'}>Manufacture Details</a>
         </div>
 
         {/* Disclaimer box */}
